@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -51,7 +52,7 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Kong Teleop", group="Linear OpMode")
+@TeleOp(name="Teleop", group="Robot")
 @Disabled
 public class KongTeleop extends LinearOpMode {
 
@@ -62,10 +63,21 @@ public class KongTeleop extends LinearOpMode {
     private DcMotor BLMotor = null;
     private DcMotor BRMotor = null;
     private DcMotor IntakeMotor = null;
+    private Servo servo1 = null;
+    private Servo servo2 = null;
+    private Servo servo3 = null;
+    private Servo servo4 = null;
+    private Servo servo5 = null;
+    private Servo servo6 = null;
+    private Servo servo7 = null;
+    private Servo servo8 = null;
+    private Servo servo9 = null;
+    private Servo servo10 = null;
+    private Servo servo11 = null;
 
     @Override
     public void runOpMode() {
-        telemetry.addData("Status", "Initialized");
+        telemetry.addData("Status", "sInitialized");
         telemetry.update();
 
         // Initialize the hardware variables. Note that the strings used here as parameters
@@ -77,14 +89,25 @@ public class KongTeleop extends LinearOpMode {
         BRMotor = hardwareMap.get(DcMotor.class, "3");
         IntakeMotor = hardwareMap.get(DcMotor.class, "in");
 
+        FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        FRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        IntakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
         FLMotor.setDirection(DcMotor.Direction.REVERSE);
-        FRMotor.setDirection(DcMotor.Direction.FORWARD);
+        FRMotor.setDirection(DcMotor.Direction.REVERSE);
         BLMotor.setDirection(DcMotor.Direction.REVERSE);
         BRMotor.setDirection(DcMotor.Direction.FORWARD);
         IntakeMotor.setDirection(DcMotor.Direction.FORWARD);
+
+        FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        FRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -128,8 +151,8 @@ public class KongTeleop extends LinearOpMode {
                 FRMotor.setPower(rightPower);
                 BLMotor.setPower(leftPower);
                 BRMotor.setPower(rightPower);
-                IntakeMotor.setPower(gamepad2.left_stick_y);
             }
+            IntakeMotor.setPower(gamepad2.left_stick_y);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
