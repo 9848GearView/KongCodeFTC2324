@@ -29,12 +29,10 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -52,11 +50,12 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TeleopA", group="Robot")
-public class KongTeleop extends LinearOpMode {
+@TeleOp(name="TestTeleop", group="Robot")
+public class KongTeleopTest extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
+    private final double MOTOR_SPEED_MODIFIER = 0.5;
     private DcMotor FLMotor = null;
     private DcMotor FRMotor = null;
     private DcMotor BLMotor = null;
@@ -103,10 +102,10 @@ public class KongTeleop extends LinearOpMode {
         BRMotor.setDirection(DcMotor.Direction.FORWARD);
         IntakeMotor.setDirection(DcMotor.Direction.FORWARD);
 
-        FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        FRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        BLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        BRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        FLMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        FRMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BLMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BRMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -136,22 +135,31 @@ public class KongTeleop extends LinearOpMode {
 
             // Send calculated power to wheels
             if (gamepad1.right_bumper) {
-                FLMotor.setPower(1);
-                FRMotor.setPower(-1);
-                BLMotor.setPower(-1);
-                BRMotor.setPower(1);
+                FLMotor.setPower(1 * MOTOR_SPEED_MODIFIER);
+                FRMotor.setPower(-1 * MOTOR_SPEED_MODIFIER);
+                BLMotor.setPower(-1 * MOTOR_SPEED_MODIFIER);
+                BRMotor.setPower(1 * MOTOR_SPEED_MODIFIER);
             } else if (gamepad1.left_bumper) {
-                FLMotor.setPower(-1);
-                FRMotor.setPower(1);
-                BLMotor.setPower(1);
-                BRMotor.setPower(-1);
+                FLMotor.setPower(-1 * MOTOR_SPEED_MODIFIER);
+                FRMotor.setPower(1 * MOTOR_SPEED_MODIFIER);
+                BLMotor.setPower(1 * MOTOR_SPEED_MODIFIER);
+                BRMotor.setPower(-1 * MOTOR_SPEED_MODIFIER);
             } else {
-                FLMotor.setPower(leftPower);
-                FRMotor.setPower(rightPower);
-                BLMotor.setPower(leftPower);
-                BRMotor.setPower(rightPower);
+                FLMotor.setPower(leftPower * MOTOR_SPEED_MODIFIER);
+                FRMotor.setPower(rightPower * MOTOR_SPEED_MODIFIER);
+                BLMotor.setPower(leftPower * MOTOR_SPEED_MODIFIER);
+                BRMotor.setPower(rightPower * MOTOR_SPEED_MODIFIER);
             }
             IntakeMotor.setPower(gamepad2.left_stick_y);
+
+//            if (!gamepad1.circle)
+//                FRMotor.setPower(0);
+//            if (!gamepad1.triangle)
+//                FLMotor.setPower(0);
+//            if (!gamepad1.square)
+//                BLMotor.setPower(0);
+//            if (!gamepad1.cross)
+//                BRMotor.setPower(0);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
