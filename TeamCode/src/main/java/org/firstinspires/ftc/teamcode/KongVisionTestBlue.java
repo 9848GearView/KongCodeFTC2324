@@ -33,8 +33,10 @@ import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvInternalCamera;
 import org.openftc.easyopencv.OpenCvPipeline;
+import org.openftc.easyopencv.OpenCvWebcam;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+
 
 /*
  * This sample demonstrates a basic (but battle-tested and essentially
@@ -44,7 +46,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 @TeleOp
 public class KongVisionTestBlue extends LinearOpMode
 {
-    OpenCvInternalCamera phoneCam;
+    OpenCvWebcam webcam;
     TeamElementDeterminationPipeline pipeline;
 
     @Override
@@ -58,21 +60,20 @@ public class KongVisionTestBlue extends LinearOpMode
          */
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
-        pipeline = new TeamElementDeterminationPipeline();
-        phoneCam.setPipeline(pipeline);
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);        pipeline = new TeamElementDeterminationPipeline();
+        webcam.setPipeline(pipeline);
 
         // We set the viewport policy to optimized view so the preview doesn't appear 90 deg
         // out when the RC activity is in portrait. We do our actual image processing assuming
         // landscape orientation, though.
-        phoneCam.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
-
-        phoneCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+//        webcam.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
+        webcam.setMillisecondsPermissionTimeout(2500);
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
             @Override
             public void onOpened()
             {
-                phoneCam.startStreaming(640,320, OpenCvCameraRotation.SIDEWAYS_LEFT);
+                webcam.startStreaming(640,480, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
@@ -81,6 +82,7 @@ public class KongVisionTestBlue extends LinearOpMode
                 /*
                  * This will be called if the camera could not be opened
                  */
+                telemetry.addData("erroCode", errorCode);
             }
         });
 
@@ -121,9 +123,9 @@ public class KongVisionTestBlue extends LinearOpMode
         static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(0,80);
         static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(80,80);
         static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(560,80);
-        static final Point REGION1_BOTTOMRIGHT_ANCHOR_POINT = new Point(80,560);
+        static final Point REGION1_BOTTOMRIGHT_ANCHOR_POINT = new Point(80,480);
         static final Point REGION2_BOTTOMRIGHT_ANCHOR_POINT = new Point(560,160);
-        static final Point REGION3_BOTTOMRIGHT_ANCHOR_POINT = new Point(640,80);
+        static final Point REGION3_BOTTOMRIGHT_ANCHOR_POINT = new Point(640,480);
 
         /*
          * Points which actually define the sample region rectangles, derived from above values

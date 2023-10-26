@@ -32,7 +32,6 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -51,7 +50,7 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TeleopA", group="Robot")
+@TeleOp(name="TeleopB", group="Robot")
 public class KongTeleop extends LinearOpMode {
 
     // Declare OpMode members.
@@ -63,17 +62,13 @@ public class KongTeleop extends LinearOpMode {
     private DcMotor IntakeMotor = null;
     private DcMotor LeftSlide = null;
     private DcMotor RightSlide = null;
-    private Servo LeftArmServo = null;
-    private Servo RightArmServo = null;
+    private Servo LeftElbowServo = null;
+    private Servo RightElbowServo = null;
+    private Servo LeftWristServo = null;
+    private Servo RightWristServo = null;
+    private Servo HangArmServo = null;
+    private Servo HangElbowServo = null;
     private Servo Grabber = null;
-    private Servo servo4 = null;
-    private Servo servo5 = null;
-    private Servo servo6 = null;
-    private Servo servo7 = null;
-    private Servo servo8 = null;
-    private Servo servo9 = null;
-    private Servo servo10 = null;
-    private Servo servo11 = null;
 
     @Override
     public void runOpMode() {
@@ -90,8 +85,12 @@ public class KongTeleop extends LinearOpMode {
         IntakeMotor = hardwareMap.get(DcMotor.class, "IN");
         LeftSlide = hardwareMap.get(DcMotor.class, "LS");
         RightSlide = hardwareMap.get(DcMotor.class, "RS");
-        LeftArmServo = hardwareMap.get(Servo.class, "LA");
-        RightArmServo = hardwareMap.get(Servo.class, "RA");
+        LeftElbowServo = hardwareMap.get(Servo.class, "LE");
+        RightElbowServo = hardwareMap.get(Servo.class, "RE");
+        LeftWristServo = hardwareMap.get(Servo.class, "LW");
+        RightWristServo = hardwareMap.get(Servo.class, "RW");
+        HangArmServo = hardwareMap.get(Servo.class, "HA");
+        HangElbowServo = hardwareMap.get(Servo.class, "HE");
         Grabber = hardwareMap.get(Servo.class, "G");
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -112,8 +111,12 @@ public class KongTeleop extends LinearOpMode {
         IntakeMotor.setDirection(DcMotor.Direction.FORWARD);
         LeftSlide.setDirection(DcMotor.Direction.FORWARD);
         RightSlide.setDirection(DcMotor.Direction.REVERSE);
-        LeftArmServo.setDirection(Servo.Direction.FORWARD);
-        RightArmServo.setDirection(Servo.Direction.REVERSE);
+        LeftElbowServo.setDirection(Servo.Direction.FORWARD);
+        RightElbowServo.setDirection(Servo.Direction.REVERSE);
+        LeftWristServo.setDirection(Servo.Direction.FORWARD);
+        RightWristServo.setDirection(Servo.Direction.REVERSE);
+        HangArmServo.setDirection(Servo.Direction.FORWARD);
+        HangElbowServo.setDirection(Servo.Direction.FORWARD);
         Grabber.setDirection(Servo.Direction.FORWARD);
 
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -163,31 +166,52 @@ public class KongTeleop extends LinearOpMode {
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
 
-            if (gamepad2.circle) {
-                LeftArmServo.setPosition(1);
-                RightArmServo.setPosition(1);
+            if (gamepad2.left_bumper) {
+                HangElbowServo.setPosition(0);
             } else {
-                LeftArmServo.setPosition(0);
-                RightArmServo.setPosition(0);
+                HangElbowServo.setPosition(1);
             }
 
-            if (gamepad2.cross && (gamepad2.cross != oldCrossPressed)) {
-                if (clawIsClosed) {
-                    Grabber.setPosition(0.8);
-                    clawIsClosed = false;
-                } else {
-                    Grabber.setPosition(0.65);
-                    clawIsClosed = true;
-                }
+            if (gamepad2.right_bumper) {
+                HangArmServo.setPosition(0);
+            } else {
+                HangArmServo.setPosition(1);
             }
+
+            if (gamepad2.circle) {
+                LeftElbowServo.setPosition(1);
+                RightElbowServo.setPosition(1);
+            } else {
+                LeftElbowServo.setPosition(0);
+                RightElbowServo.setPosition(0);
+            }
+
+            if (gamepad2.triangle) {
+                LeftWristServo.setPosition(0);
+                RightWristServo.setPosition(0);
+            } else {
+                LeftWristServo.setPosition(1);
+                RightWristServo.setPosition(1);
+            }
+
+//            if (gamepad2.cross && !oldCrossPressed) {
+            if (gamepad2.cross) {
+                Grabber.setPosition(0.55);
+                clawIsClosed = false;
+            } else {
+                Grabber.setPosition(0.5);
+                clawIsClosed = true;
+            }
+//            }
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-            telemetry.addData("Bumpers", "", gamepad1.left_bumper, gamepad1.right_bumper);
+            telemetry.addData("Bumpers", "(%b), (%b)", gamepad1.left_bumper, gamepad1.right_bumper);
             telemetry.addData("Intake", gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
             telemetry.addData("Slides", gamepad2.left_stick_y);
-            telemetry.addData("GrabberPressed", "OldGrabberPressed", gamepad2.cross, oldCrossPressed);
+            telemetry.addData("GrabberPressed", "(%b), (%b)", gamepad2.cross, oldCrossPressed);
+            telemetry.addData("Claw", clawIsClosed);
             telemetry.update();
             oldCrossPressed = gamepad2.cross;
         }

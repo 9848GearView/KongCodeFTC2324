@@ -72,7 +72,9 @@ public class KongVisionTestRed extends LinearOpMode
             @Override
             public void onOpened()
             {
-                phoneCam.startStreaming(640,320, OpenCvCameraRotation.SIDEWAYS_LEFT);
+                phoneCam.startStreaming(640,480, OpenCvCameraRotation.SIDEWAYS_LEFT);
+                phoneCam.setZoom(0);
+
             }
 
             @Override
@@ -121,8 +123,8 @@ public class KongVisionTestRed extends LinearOpMode
         static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(0,80);
         static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(80,80);
         static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(560,80);
-        static final Point REGION1_BOTTOMRIGHT_ANCHOR_POINT = new Point(80,560);
-        static final Point REGION2_BOTTOMRIGHT_ANCHOR_POINT = new Point(560,160);
+        static final Point REGION1_BOTTOMRIGHT_ANCHOR_POINT = new Point(80,480);
+        static final Point REGION2_BOTTOMRIGHT_ANCHOR_POINT = new Point(560,120);
         static final Point REGION3_BOTTOMRIGHT_ANCHOR_POINT = new Point(640,80);
 
         /*
@@ -149,7 +151,7 @@ public class KongVisionTestRed extends LinearOpMode
         Mat region1_Cr, region2_Cr, region3_Cr;
         Mat YCrCb = new Mat();
         Mat Cr = new Mat();
-        int avg1, avg2, avg3;
+        int[] avg = {0, 0, 0};
 
         // Volatile since accessed by OpMode thread w/o synchronization
         private volatile TeamElementPosition position = TeamElementPosition.LEFT;
@@ -238,9 +240,9 @@ public class KongVisionTestRed extends LinearOpMode
              * pixel value of the 3-channel image, and referenced the value
              * at index 2 here.
              */
-            avg1 = (int) Core.mean(region1_Cr).val[0];
-            avg2 = (int) Core.mean(region2_Cr).val[0];
-            avg3 = (int) Core.mean(region3_Cr).val[0];
+            avg[0] = (int) Core.mean(region1_Cr).val[0];
+            avg[1] = (int) Core.mean(region2_Cr).val[0];
+            avg[2] = (int) Core.mean(region3_Cr).val[0];
 
             /*
              * Draw a rectangle showing sample region 1 on the screen.
@@ -279,14 +281,14 @@ public class KongVisionTestRed extends LinearOpMode
             /*
              * Find the max of the 3 averages
              */
-            int maxOneTwo = Math.max(avg1, avg2);
-            int max = Math.max(maxOneTwo, avg3);
+            int maxOneTwo = Math.max(avg[0], avg[1]);
+            int max = Math.max(maxOneTwo, avg[2]);
 
             /*
              * Now that we found the max, we actually need to go and
              * figure out which sample region that value was from
              */
-            if(max == avg1) // Was it from region 1?
+            if(max == avg[0]) // Was it from region 1?
             {
                 position = TeamElementPosition.LEFT; // Record our analysis
 
@@ -301,7 +303,7 @@ public class KongVisionTestRed extends LinearOpMode
                         GREEN, // The color the rectangle is drawn in
                         -1); // Negative thickness means solid fill
             }
-            else if(max == avg2) // Was it from region 2?
+            else if(max == avg[1]) // Was it from region 2?
             {
                 position = TeamElementPosition.CENTER; // Record our analysis
 
@@ -316,7 +318,7 @@ public class KongVisionTestRed extends LinearOpMode
                         GREEN, // The color the rectangle is drawn in
                         -1); // Negative thickness means solid fill
             }
-            else if(max == avg3) // Was it from region 3?
+            else if(max == avg[2]) // Was it from region 3?
             {
                 position = TeamElementPosition.RIGHT; // Record our analysis
 
@@ -327,7 +329,7 @@ public class KongVisionTestRed extends LinearOpMode
                 Imgproc.rectangle(
                         input, // Buffer to draw on
                         REGION3_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
-                        REGION3_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle, 
+                        REGION3_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle,
                         GREEN, // The color the rectangle is drawn in
                         -1); // Negative thickness means solid fill
             }
