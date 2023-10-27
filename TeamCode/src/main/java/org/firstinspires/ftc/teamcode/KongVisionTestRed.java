@@ -21,6 +21,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -33,18 +34,20 @@ import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvInternalCamera;
 import org.openftc.easyopencv.OpenCvPipeline;
+import org.openftc.easyopencv.OpenCvWebcam;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+
 
 /*
  * This sample demonstrates a basic (but battle-tested and essentially
  * 100% accurate) method of detecting the TeamElement when lined up with
  * the sample regions over the first 3 stones.
  */
-@TeleOp
+@Autonomous
 public class KongVisionTestRed extends LinearOpMode
 {
-    OpenCvInternalCamera phoneCam;
+    OpenCvWebcam webcam;
     TeamElementDeterminationPipeline pipeline;
 
     @Override
@@ -58,23 +61,20 @@ public class KongVisionTestRed extends LinearOpMode
          */
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
-        pipeline = new TeamElementDeterminationPipeline();
-        phoneCam.setPipeline(pipeline);
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);        pipeline = new TeamElementDeterminationPipeline();
+        webcam.setPipeline(pipeline);
 
         // We set the viewport policy to optimized view so the preview doesn't appear 90 deg
         // out when the RC activity is in portrait. We do our actual image processing assuming
         // landscape orientation, though.
-        phoneCam.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
-
-        phoneCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+//        webcam.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
+        webcam.setMillisecondsPermissionTimeout(2500);
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
             @Override
             public void onOpened()
             {
-                phoneCam.startStreaming(640,480, OpenCvCameraRotation.SIDEWAYS_LEFT);
-                phoneCam.setZoom(0);
-
+                webcam.startStreaming(640,480, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
@@ -83,6 +83,7 @@ public class KongVisionTestRed extends LinearOpMode
                 /*
                  * This will be called if the camera could not be opened
                  */
+                telemetry.addData("erroCode", errorCode);
             }
         });
 
@@ -121,11 +122,11 @@ public class KongVisionTestRed extends LinearOpMode
          * The core values which define the location and size of the sample regions
          */
         static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(0,80);
-        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(80,80);
-        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(560,80);
-        static final Point REGION1_BOTTOMRIGHT_ANCHOR_POINT = new Point(80,480);
-        static final Point REGION2_BOTTOMRIGHT_ANCHOR_POINT = new Point(560,120);
-        static final Point REGION3_BOTTOMRIGHT_ANCHOR_POINT = new Point(640,80);
+        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(160,80);
+        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(480,80);
+        static final Point REGION1_BOTTOMRIGHT_ANCHOR_POINT = new Point(80,320);
+        static final Point REGION2_BOTTOMRIGHT_ANCHOR_POINT = new Point(480,160);
+        static final Point REGION3_BOTTOMRIGHT_ANCHOR_POINT = new Point(640,320);
 
         /*
          * Points which actually define the sample region rectangles, derived from above values
@@ -148,29 +149,29 @@ public class KongVisionTestRed extends LinearOpMode
         /*
          * Working variables
          */
-        Mat region1_Cr, region2_Cr, region3_Cr;
+        Mat region1_Cb, region2_Cb, region3_Cb;
         Mat YCrCb = new Mat();
-        Mat Cr = new Mat();
-        int[] avg = {0, 0, 0};
+        Mat Cb = new Mat();
+        int avg1, avg2, avg3;
 
         // Volatile since accessed by OpMode thread w/o synchronization
         private volatile TeamElementPosition position = TeamElementPosition.LEFT;
 
         /*
-         * This function takes the RGB frame, converts to YCrCr,
-         * and extracts the Cr channel to the 'Cr' variable
+         * This function takes the RGB frame, converts to YCrCb,
+         * and extracts the Cb channel to the 'Cb' variable
          */
-        void inputToCr(Mat input)
+        void inputToCb(Mat input)
         {
             Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
-            Core.extractChannel(YCrCb, Cr, 2);
+            Core.extractChannel(YCrCb, Cb, 1);
         }
 
         @Override
         public void init(Mat firstFrame)
         {
             /*
-             * We need to call this in order to make sure the 'Cr'
+             * We need to call this in order to make sure the 'Cb'
              * object is initialized, so that the submats we make
              * will still be linked to it on subsequent frames. (If
              * the object were to only be initialized in processFrame,
@@ -178,16 +179,16 @@ public class KongVisionTestRed extends LinearOpMode
              * buffer would be re-allocated the first time a real frame
              * was crunched)
              */
-            inputToCr(firstFrame);
+            inputToCb(firstFrame);
 
             /*
              * Submats are a persistent reference to a region of the parent
              * buffer. Any changes to the child affect the parent, and the
              * reverse also holds true.
              */
-            region1_Cr = Cr.submat(new Rect(REGION1_TOPLEFT_ANCHOR_POINT, REGION1_BOTTOMRIGHT_ANCHOR_POINT));
-            region2_Cr = Cr.submat(new Rect(REGION2_TOPLEFT_ANCHOR_POINT, REGION2_BOTTOMRIGHT_ANCHOR_POINT));
-            region3_Cr = Cr.submat(new Rect(REGION3_TOPLEFT_ANCHOR_POINT, REGION3_BOTTOMRIGHT_ANCHOR_POINT));
+            region1_Cb = Cb.submat(new Rect(REGION1_TOPLEFT_ANCHOR_POINT, REGION1_BOTTOMRIGHT_ANCHOR_POINT));
+            region2_Cb = Cb.submat(new Rect(REGION2_TOPLEFT_ANCHOR_POINT, REGION2_BOTTOMRIGHT_ANCHOR_POINT));
+            region3_Cb = Cb.submat(new Rect(REGION3_TOPLEFT_ANCHOR_POINT, REGION3_BOTTOMRIGHT_ANCHOR_POINT));
         }
 
         @Override
@@ -196,24 +197,24 @@ public class KongVisionTestRed extends LinearOpMode
             /*
              * Overview of what we're doing:
              *
-             * We first convert to YCrCr color space, from RGB color space.
+             * We first convert to YCrCb color space, from RGB color space.
              * Why do we do this? Well, in the RGB color space, chroma and
-             * luma are intertwined. In YCrCr, chroma and luma are separated.
-             * YCrCr is a 3-channel color space, just like RGB. YCrCr's 3 channels
+             * luma are intertwined. In YCrCb, chroma and luma are separated.
+             * YCrCb is a 3-channel color space, just like RGB. YCrCb's 3 channels
              * are Y, the luma channel (which essentially just a B&W image), the
-             * Cr channel, which records the difference from red, and the Cr channel,
+             * Cr channel, which records the difference from red, and the Cb channel,
              * which records the difference from blue. Because chroma and luma are
-             * not related in YCrCr, vision code written to look for certain values
-             * in the Cr/Cr channels will not be severely affected by differing
+             * not related in YCrCb, vision code written to look for certain values
+             * in the Cr/Cb channels will not be severely affected by differing
              * light intensity, since that difference would most likely just be
              * reflected in the Y channel.
              *
-             * After we've converted to YCrCr, we extract just the 2nd channel, the
-             * Cr channel. We do this because stones are bright yellow and contrast
-             * STRONGLY on the Cr channel against everything else, including TeamElements
+             * After we've converted to YCrCb, we extract just the 2nd channel, the
+             * Cb channel. We do this because stones are bright yellow and contrast
+             * STRONGLY on the Cb channel against everything else, including TeamElements
              * (because TeamElements have a black label).
              *
-             * We then take the average pixel value of 3 different regions on that Cr
+             * We then take the average pixel value of 3 different regions on that Cb
              * channel, one positioned over each stone. The brightest of the 3 regions
              * is where we assume the TeamElement to be, since the normal stones show up
              * extremely darkly.
@@ -229,9 +230,9 @@ public class KongVisionTestRed extends LinearOpMode
              */
 
             /*
-             * Get the Cr channel of the input frame after conversion to YCrCr
+             * Get the Cb channel of the input frame after conversion to YCrCb
              */
-            inputToCr(input);
+            inputToCb(input);
 
             /*
              * Compute the average pixel value of each submat region. We're
@@ -240,9 +241,9 @@ public class KongVisionTestRed extends LinearOpMode
              * pixel value of the 3-channel image, and referenced the value
              * at index 2 here.
              */
-            avg[0] = (int) Core.mean(region1_Cr).val[0];
-            avg[1] = (int) Core.mean(region2_Cr).val[0];
-            avg[2] = (int) Core.mean(region3_Cr).val[0];
+            avg1 = (int) Core.mean(region1_Cb).val[0];
+            avg2 = (int) Core.mean(region2_Cb).val[0];
+            avg3 = (int) Core.mean(region3_Cb).val[0];
 
             /*
              * Draw a rectangle showing sample region 1 on the screen.
@@ -281,14 +282,14 @@ public class KongVisionTestRed extends LinearOpMode
             /*
              * Find the max of the 3 averages
              */
-            int maxOneTwo = Math.max(avg[0], avg[1]);
-            int max = Math.max(maxOneTwo, avg[2]);
+            int maxOneTwo = Math.max(avg1, avg2);
+            int max = Math.max(maxOneTwo, avg3);
 
             /*
              * Now that we found the max, we actually need to go and
              * figure out which sample region that value was from
              */
-            if(max == avg[0]) // Was it from region 1?
+            if(max == avg1) // Was it from region 1?
             {
                 position = TeamElementPosition.LEFT; // Record our analysis
 
@@ -303,7 +304,7 @@ public class KongVisionTestRed extends LinearOpMode
                         GREEN, // The color the rectangle is drawn in
                         -1); // Negative thickness means solid fill
             }
-            else if(max == avg[1]) // Was it from region 2?
+            else if(max == avg2) // Was it from region 2?
             {
                 position = TeamElementPosition.CENTER; // Record our analysis
 
@@ -318,7 +319,7 @@ public class KongVisionTestRed extends LinearOpMode
                         GREEN, // The color the rectangle is drawn in
                         -1); // Negative thickness means solid fill
             }
-            else if(max == avg[2]) // Was it from region 3?
+            else if(max == avg3) // Was it from region 3?
             {
                 position = TeamElementPosition.RIGHT; // Record our analysis
 

@@ -23,8 +23,11 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -36,7 +39,6 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
 
 /*
@@ -45,8 +47,50 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
  * the sample regions over the first 3 stones.
  */
 @Autonomous
-public class KongVisionTestBlue extends LinearOpMode
+public class KongBlueStacks extends LinearOpMode
 {
+    enum DriveDirection {
+        FORWARD,
+        LEFT,
+        RIGHT,
+        BACKWARD
+    }
+
+    enum StartingPositionEnum {
+        LEFT,
+        RIGHT
+    }
+
+    enum SlidePackDirection {
+        UP,
+        DOWN
+    }
+
+    enum SpikeMarkPosition {
+        UNO,
+        DOS,
+        TRES
+    }
+    private ElapsedTime runtime = new ElapsedTime();
+    private DcMotor FLMotor = null;
+    private DcMotor FRMotor = null;
+    private DcMotor BLMotor = null;
+    private DcMotor BRMotor = null;
+    private DcMotor IntakeMotor = null;
+    private DcMotor LeftSlide = null;
+    private DcMotor RightSlide = null;
+    private Servo LeftElbowServo = null;
+    private Servo RightElbowServo = null;
+    private Servo LeftWristServo = null;
+    private Servo RightWristServo = null;
+    private Servo HangArmServo = null;
+    private Servo HangElbowServo = null;
+    private Servo Grabber = null;
+    private ElapsedTime eTime = new ElapsedTime();
+
+
+    static final double     FORWARD_SPEED = 0.5;
+    static final double     TURN_SPEED    = 0.5;
     OpenCvWebcam webcam;
     TeamElementDeterminationPipeline pipeline;
 
@@ -59,6 +103,64 @@ public class KongVisionTestBlue extends LinearOpMode
          * you should take a look at {@link InternalCamera1Example} or its
          * webcam counterpart, {@link WebcamExample} first.
          */
+        telemetry.addData("Status", "sInitialized");
+        telemetry.update();
+
+        // Initialize the hardware variables. Note that the strings used here as parameters
+        // to 'get' must correspond to the names assigned during the robot configuration
+        // step (using the FTC Robot Controller app on the phone).
+        FLMotor = hardwareMap.get(DcMotor.class, "FL");
+        FRMotor = hardwareMap.get(DcMotor.class, "FR");
+        BLMotor = hardwareMap.get(DcMotor.class, "BL");
+        BRMotor = hardwareMap.get(DcMotor.class, "BR");
+        IntakeMotor = hardwareMap.get(DcMotor.class, "IN");
+        LeftSlide = hardwareMap.get(DcMotor.class, "LS");
+        RightSlide = hardwareMap.get(DcMotor.class, "RS");
+        LeftElbowServo = hardwareMap.get(Servo.class, "LE");
+        RightElbowServo = hardwareMap.get(Servo.class, "RE");
+        LeftWristServo = hardwareMap.get(Servo.class, "LW");
+        RightWristServo = hardwareMap.get(Servo.class, "RW");
+        HangArmServo = hardwareMap.get(Servo.class, "HA");
+        HangElbowServo = hardwareMap.get(Servo.class, "HE");
+        Grabber = hardwareMap.get(Servo.class, "G");
+
+        FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        FRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        IntakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        LeftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        RightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
+        // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
+        // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
+        FLMotor.setDirection(DcMotor.Direction.REVERSE);
+        FRMotor.setDirection(DcMotor.Direction.FORWARD);
+        BLMotor.setDirection(DcMotor.Direction.REVERSE);
+        BRMotor.setDirection(DcMotor.Direction.FORWARD);
+        IntakeMotor.setDirection(DcMotor.Direction.FORWARD);
+        LeftSlide.setDirection(DcMotor.Direction.FORWARD);
+        RightSlide.setDirection(DcMotor.Direction.REVERSE);
+        LeftElbowServo.setDirection(Servo.Direction.FORWARD);
+        RightElbowServo.setDirection(Servo.Direction.REVERSE);
+        LeftWristServo.setDirection(Servo.Direction.FORWARD);
+        RightWristServo.setDirection(Servo.Direction.REVERSE);
+        HangArmServo.setDirection(Servo.Direction.FORWARD);
+        HangElbowServo.setDirection(Servo.Direction.FORWARD);
+        Grabber.setDirection(Servo.Direction.FORWARD);
+
+        FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        FRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        IntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        // Wait for the game to start (driver presses PLAY)
+        waitForStart();
+        runtime.reset();
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);        pipeline = new TeamElementDeterminationPipeline();
@@ -94,8 +196,10 @@ public class KongVisionTestBlue extends LinearOpMode
             telemetry.addData("Analysis", pipeline.getAnalysis());
             telemetry.update();
 
+            doActions(StartingPositionEnum.LEFT, SpikeMarkPosition.UNO);
+
             // Don't burn CPU cycles busy-looping in this sample
-            sleep(50);
+            sleep(30000);
         }
     }
 
@@ -350,5 +454,136 @@ public class KongVisionTestBlue extends LinearOpMode
         {
             return position;
         }
+    }
+
+    private void doActions(StartingPositionEnum position, SpikeMarkPosition smp) {
+        // ps = ParkingSpace.UNO;
+        boolean needInvert = (position != StartingPositionEnum.LEFT);
+
+        drive(DriveDirection.FORWARD, FORWARD_SPEED, 900);
+        turn(getCorrectDirection(DriveDirection.LEFT, needInvert), TURN_SPEED, 1000);
+        drive(DriveDirection.FORWARD, FORWARD_SPEED, 3000);
+    }
+
+    private DriveDirection getCorrectDirection(DriveDirection direction, boolean needInvert) {
+        if (!needInvert)
+            return direction;
+
+        DriveDirection invertedDirection = direction;
+        switch (direction) {
+            case LEFT:
+                invertedDirection = DriveDirection.RIGHT;
+                break;
+            case RIGHT:
+                invertedDirection = DriveDirection.LEFT;
+                break;
+            case FORWARD:
+                invertedDirection = DriveDirection.BACKWARD;
+                break;
+            case BACKWARD:
+                invertedDirection = DriveDirection.FORWARD;
+                break;
+            default:
+                break;
+        }
+
+        return invertedDirection;
+    }
+
+    private void drive(DriveDirection direction, double power, double time) {
+        eTime.reset();
+        switch(direction) {
+            case FORWARD:
+                FLMotor.setPower(power);
+                FRMotor.setPower(power);
+                BLMotor.setPower(power);
+                BRMotor.setPower(power);
+                break;
+            case RIGHT:
+                FLMotor.setPower(-power);
+                FRMotor.setPower(power);
+                BLMotor.setPower(-power);
+                BRMotor.setPower(power);
+                break;
+            case LEFT:
+                FLMotor.setPower(power);
+                FRMotor.setPower(-power);
+                BLMotor.setPower(power);
+                BRMotor.setPower(-power);
+                break;
+            case BACKWARD:
+                FLMotor.setPower(-power);
+                FRMotor.setPower(-power);
+                BLMotor.setPower(-power);
+                BRMotor.setPower(-power);
+        }
+        while(opModeIsActive() && eTime.milliseconds() < time){
+            telemetry.addData("Time:", eTime);
+            telemetry.update();
+        }
+        FLMotor.setPower(0);
+        FRMotor.setPower(0);
+        BLMotor.setPower(0);
+        BRMotor.setPower(0);
+    }
+
+    private void strafe(DriveDirection driveDirection, double power, double time){
+        eTime.reset();
+        switch (driveDirection) {
+            case LEFT:
+                while(opModeIsActive() && eTime.milliseconds() < time){
+                    FLMotor.setPower(-power);
+                    FRMotor.setPower(power);
+                    BLMotor.setPower(power);
+                    BRMotor.setPower(-power);
+                    telemetry.addData("Time:", eTime);
+                    telemetry.update();
+                }
+                break;
+            case RIGHT:
+                while(opModeIsActive() && eTime.milliseconds() < time){
+                    FLMotor.setPower(power);
+                    FRMotor.setPower(-power);
+                    BLMotor.setPower(-power);
+                    BRMotor.setPower(power);
+                    telemetry.addData("Time:", eTime);
+                    telemetry.update();
+                }
+                break;
+        }
+        FLMotor.setPower(0);
+        FRMotor.setPower(0);
+        BLMotor.setPower(0);
+        BRMotor.setPower(0);
+    }
+
+    private void turn(DriveDirection driveDirection, double power, double time){
+        eTime.reset();
+        switch (driveDirection) {
+            case LEFT:
+                while(opModeIsActive() && eTime.milliseconds() < time){
+                    FLMotor.setPower(-power);
+                    FRMotor.setPower(power);
+                    BLMotor.setPower(-power);
+                    BRMotor.setPower(power);
+                    telemetry.addData("Time:", eTime);
+                    telemetry.update();
+                }
+                break;
+            case RIGHT:
+                while(opModeIsActive() && eTime.milliseconds() < time){
+                    FLMotor.setPower(power);
+                    FRMotor.setPower(-power);
+                    BLMotor.setPower(power);
+                    BRMotor.setPower(-power);
+                    telemetry.addData("Time:", eTime);
+                    telemetry.update();
+                }
+                break;
+        }
+        FLMotor.setPower(0);
+        FRMotor.setPower(0);
+        BLMotor.setPower(0);
+        BRMotor.setPower(0);
     }
 }

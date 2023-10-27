@@ -179,19 +179,19 @@ public class KongTeleop extends LinearOpMode {
             }
 
             if (gamepad2.circle) {
-                LeftElbowServo.setPosition(1);
-                RightElbowServo.setPosition(1);
+                LeftElbowServo.setPosition(.95);
+                RightElbowServo.setPosition(.95);
             } else {
-                LeftElbowServo.setPosition(0);
-                RightElbowServo.setPosition(0);
+                LeftElbowServo.setPosition(.2);
+                RightElbowServo.setPosition(.2);
             }
 
             if (gamepad2.triangle) {
+                LeftWristServo.setPosition(0.2);
+                RightWristServo.setPosition(0.2);
+            } else {
                 LeftWristServo.setPosition(0);
                 RightWristServo.setPosition(0);
-            } else {
-                LeftWristServo.setPosition(1);
-                RightWristServo.setPosition(1);
             }
 
 //            if (gamepad2.cross && !oldCrossPressed) {

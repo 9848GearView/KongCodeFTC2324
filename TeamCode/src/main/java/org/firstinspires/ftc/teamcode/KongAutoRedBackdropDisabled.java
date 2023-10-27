@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -53,8 +54,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name="BlueBackdropAuto", group="Robot")
-public class KongAutoBlueBackdrop extends LinearOpMode {
+@Autonomous(name="RedBackdropAuto", group="Robot")
+@Disabled
+public class KongAutoRedBackdropDisabled extends LinearOpMode {
 
     enum DriveDirection {
         FORWARD,
@@ -123,7 +125,7 @@ public class KongAutoBlueBackdrop extends LinearOpMode {
         waitForStart();
 
         // Step through each leg of the path, ensuring that the Auto mode has not been stopped along the way
-        doActions(StartingPositionEnum.LEFT, SpikeMarkPosition.UNO);
+        doActions(StartingPositionEnum.RIGHT, SpikeMarkPosition.UNO);
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
