@@ -450,9 +450,18 @@ public class KongBlueStacks extends LinearOpMode
         /*
          * Call this from the OpMode thread to obtain the latest analysis
          */
-        public TeamElementPosition getAnalysis()
+        public SpikeMarkPosition getAnalysis()
         {
-            return position;
+            switch (position) {
+                case LEFT:
+                    return SpikeMarkPosition.UNO;
+                case CENTER:
+                    return SpikeMarkPosition.DOS;
+                case RIGHT:
+                    return SpikeMarkPosition.TRES;
+                default:
+                    return SpikeMarkPosition.UNO;
+            }
         }
     }
 
