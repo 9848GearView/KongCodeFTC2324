@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -55,23 +56,24 @@ public class KongTeleopTest extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private final double MOTOR_SPEED_MODIFIER = 0.5;
     private DcMotor FLMotor = null;
     private DcMotor FRMotor = null;
     private DcMotor BLMotor = null;
     private DcMotor BRMotor = null;
     private DcMotor IntakeMotor = null;
-    private Servo servo1 = null;
-    private Servo servo2 = null;
-    private Servo servo3 = null;
-    private Servo servo4 = null;
-    private Servo servo5 = null;
-    private Servo servo6 = null;
-    private Servo servo7 = null;
-    private Servo servo8 = null;
-    private Servo servo9 = null;
-    private Servo servo10 = null;
-    private Servo servo11 = null;
+    private DcMotor LeftSlide = null;
+    private DcMotor RightSlide = null;
+    private Servo LeftElbowServo = null;
+    private Servo RightElbowServo = null;
+    private Servo LeftWristServo = null;
+    private Servo RightWristServo = null;
+    private Servo HangArmServo = null;
+    private Servo HangElbowServo = null;
+    private Servo Grabber = null;
+    private boolean oldCrossPressed = true;
+    private boolean oldTrianglePressed = true;
+    private boolean oldCirclePressed = true;
+    private boolean clawIsClosed = true;
 
     @Override
     public void runOpMode() {
@@ -81,17 +83,28 @@ public class KongTeleopTest extends LinearOpMode {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        FLMotor = hardwareMap.get(DcMotor.class, "0");
-        FRMotor = hardwareMap.get(DcMotor.class, "1");
-        BLMotor = hardwareMap.get(DcMotor.class, "2");
-        BRMotor = hardwareMap.get(DcMotor.class, "3");
-        IntakeMotor = hardwareMap.get(DcMotor.class, "in");
+        FLMotor = hardwareMap.get(DcMotor.class, "FL");
+        FRMotor = hardwareMap.get(DcMotor.class, "FR");
+        BLMotor = hardwareMap.get(DcMotor.class, "BL");
+        BRMotor = hardwareMap.get(DcMotor.class, "BR");
+        IntakeMotor = hardwareMap.get(DcMotor.class, "IN");
+        LeftSlide = hardwareMap.get(DcMotor.class, "LS");
+        RightSlide = hardwareMap.get(DcMotor.class, "RS");
+        LeftElbowServo = hardwareMap.get(Servo.class, "LE");
+        RightElbowServo = hardwareMap.get(Servo.class, "RE");
+        LeftWristServo = hardwareMap.get(Servo.class, "LW");
+        RightWristServo = hardwareMap.get(Servo.class, "RW");
+        HangArmServo = hardwareMap.get(Servo.class, "HA");
+        HangElbowServo = hardwareMap.get(Servo.class, "HE");
+        Grabber = hardwareMap.get(Servo.class, "G");
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         FRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         BLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         BRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         IntakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        LeftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        RightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -101,11 +114,23 @@ public class KongTeleopTest extends LinearOpMode {
         BLMotor.setDirection(DcMotor.Direction.REVERSE);
         BRMotor.setDirection(DcMotor.Direction.FORWARD);
         IntakeMotor.setDirection(DcMotor.Direction.FORWARD);
+        LeftSlide.setDirection(DcMotor.Direction.REVERSE);
+        RightSlide.setDirection(DcMotor.Direction.FORWARD);
+        LeftElbowServo.setDirection(Servo.Direction.FORWARD);
+        RightElbowServo.setDirection(Servo.Direction.REVERSE);
+        LeftWristServo.setDirection(Servo.Direction.FORWARD);
+        RightWristServo.setDirection(Servo.Direction.REVERSE);
+        HangArmServo.setDirection(Servo.Direction.FORWARD);
+        HangElbowServo.setDirection(Servo.Direction.FORWARD);
+        Grabber.setDirection(Servo.Direction.FORWARD);
 
-        FLMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        FRMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        BLMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        BRMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        FRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        IntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -114,57 +139,78 @@ public class KongTeleopTest extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-            // Setup a variable for each drive wheel to save power level for telemetry
             double leftPower;
             double rightPower;
 
-            // Choose to drive using either Tank Mode, or POV Mode
-            // Comment out the method that's not used.  The default below is POV.
-
-            // POV Mode uses left stick to go forward, and right stick to turn.
-            // - This uses basic math to combine motions and is easier to drive straight.
             double drive = -gamepad1.left_stick_y;
             double turn  =  gamepad1.right_stick_x;
-            leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-            rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
-
-            // Tank Mode uses one stick to control each wheel.
-            // - This requires no math, but it is hard to drive forward slowly and keep straight.
-            // leftPower  = -gamepad1.left_stick_y ;
-            // rightPower = -gamepad1.right_stick_y ;
+            leftPower    = Range.clip(drive + turn, -1.0, 1.0);
+            rightPower   = Range.clip(drive - turn, -1.0, 1.0);
 
             // Send calculated power to wheels
             if (gamepad1.right_bumper) {
-                FLMotor.setPower(1 * MOTOR_SPEED_MODIFIER);
-                FRMotor.setPower(-1 * MOTOR_SPEED_MODIFIER);
-                BLMotor.setPower(-1 * MOTOR_SPEED_MODIFIER);
-                BRMotor.setPower(1 * MOTOR_SPEED_MODIFIER);
+                FLMotor.setPower(1);
+                FRMotor.setPower(-1);
+                BLMotor.setPower(-1);
+                BRMotor.setPower(1);
             } else if (gamepad1.left_bumper) {
-                FLMotor.setPower(-1 * MOTOR_SPEED_MODIFIER);
-                FRMotor.setPower(1 * MOTOR_SPEED_MODIFIER);
-                BLMotor.setPower(1 * MOTOR_SPEED_MODIFIER);
-                BRMotor.setPower(-1 * MOTOR_SPEED_MODIFIER);
+                FLMotor.setPower(-1);
+                FRMotor.setPower(1);
+                BLMotor.setPower(1);
+                BRMotor.setPower(-1);
             } else {
-                FLMotor.setPower(leftPower * MOTOR_SPEED_MODIFIER);
-                FRMotor.setPower(rightPower * MOTOR_SPEED_MODIFIER);
-                BLMotor.setPower(leftPower * MOTOR_SPEED_MODIFIER);
-                BRMotor.setPower(rightPower * MOTOR_SPEED_MODIFIER);
+                FLMotor.setPower(leftPower);
+                FRMotor.setPower(rightPower);
+                BLMotor.setPower(leftPower);
+                BRMotor.setPower(rightPower);
             }
-            IntakeMotor.setPower(gamepad2.left_stick_y);
 
-//            if (!gamepad1.circle)
-//                FRMotor.setPower(0);
-//            if (!gamepad1.triangle)
-//                FLMotor.setPower(0);
-//            if (!gamepad1.square)
-//                BLMotor.setPower(0);
-//            if (!gamepad1.cross)
-//                BRMotor.setPower(0);
+            IntakeMotor.setPower(gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
+            LeftSlide.setPower(gamepad2.left_stick_y);
+            RightSlide.setPower(gamepad2.left_stick_y);
+
+            if (gamepad2.left_bumper) {
+                HangElbowServo.setPosition(0);
+            } else {
+                HangElbowServo.setPosition(1);
+            }
+
+            if (gamepad2.right_bumper) {
+                HangArmServo.setPosition(0);
+            } else {
+                HangArmServo.setPosition(1);
+            }
+
+            boolean circlePressed = gamepad2.circle;
+            if (circlePressed && !oldCirclePressed) {
+                LeftElbowServo.setPosition(LeftElbowServo.getPosition() == .93 ? .2 : .93);
+                RightElbowServo.setPosition(RightElbowServo.getPosition() == .93 ? .2 : .93);
+            }
+
+            boolean trianglePressed = gamepad2.triangle;
+            if (trianglePressed && !oldTrianglePressed) {
+                LeftWristServo.setPosition(LeftWristServo.getPosition() == 0.22 ? 0 : 0.22);
+                RightWristServo.setPosition(RightWristServo.getPosition() == 0.22 ? 0 : 0.22);
+            }
+
+            // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
+            boolean crossPressed = gamepad2.cross;
+            if (crossPressed && !oldCrossPressed) {
+                Grabber.setPosition(Grabber.getPosition() == 0.5 ? 0.57 : 0.5);
+            }
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+            telemetry.addData("Bumpers", "(%b), (%b)", gamepad1.left_bumper, gamepad1.right_bumper);
+            telemetry.addData("Intake", gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
+            telemetry.addData("Slides", gamepad2.left_stick_y);
+            telemetry.addData("GrabberPressed", "(%b), (%b)", gamepad2.cross, oldCrossPressed);
+            telemetry.addData("Claw", clawIsClosed);
             telemetry.update();
+            oldCrossPressed = crossPressed;
+            oldTrianglePressed = trianglePressed;
+            oldCirclePressed = circlePressed;
         }
     }
 }

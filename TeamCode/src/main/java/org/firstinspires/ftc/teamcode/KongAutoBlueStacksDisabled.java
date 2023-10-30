@@ -55,7 +55,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @Autonomous(name="BlueStacksAuto", group="Robot")
-@Disabled
 public class KongAutoBlueStacksDisabled extends LinearOpMode {
 
     enum DriveDirection {
@@ -87,6 +86,7 @@ public class KongAutoBlueStacksDisabled extends LinearOpMode {
     private DcMotor FRMotor = null;
     private DcMotor BLMotor = null;
     private DcMotor BRMotor = null;
+    private DcMotor IntakeMotor = null;
 
     private ElapsedTime eTime = new ElapsedTime();
 
@@ -97,11 +97,13 @@ public class KongAutoBlueStacksDisabled extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-    // Initialize the drive system variables.
-        FLMotor = hardwareMap.get(DcMotor.class, "0");
-        FRMotor = hardwareMap.get(DcMotor.class, "1");
-        BLMotor = hardwareMap.get(DcMotor.class, "2");
-        BRMotor = hardwareMap.get(DcMotor.class, "3");
+        // Initialize the drive system variables.
+        FLMotor = hardwareMap.get(DcMotor.class, "FL");
+        FRMotor = hardwareMap.get(DcMotor.class, "FR");
+        BLMotor = hardwareMap.get(DcMotor.class, "BL");
+        BRMotor = hardwareMap.get(DcMotor.class, "BR");
+        IntakeMotor = hardwareMap.get(DcMotor.class, "IN");
+        IntakeMotor.setDirection(DcMotor.Direction.FORWARD);
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // When run, this OpMode should start both motors driving forward. So adjust these two lines based on your first test drive.
@@ -112,7 +114,7 @@ public class KongAutoBlueStacksDisabled extends LinearOpMode {
         BRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         FLMotor.setDirection(DcMotor.Direction.REVERSE);
-        FRMotor.setDirection(DcMotor.Direction.REVERSE);
+        FRMotor.setDirection(DcMotor.Direction.FORWARD);
         BLMotor.setDirection(DcMotor.Direction.REVERSE);
         BRMotor.setDirection(DcMotor.Direction.FORWARD);
 
@@ -137,7 +139,9 @@ public class KongAutoBlueStacksDisabled extends LinearOpMode {
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
 
         strafe(getCorrectDirection(DriveDirection.LEFT, needInvert), FORWARD_SPEED, 200);
+        sleep(500);
         drive(DriveDirection.FORWARD, FORWARD_SPEED, 3000);
+        spinIntakeMotor(KongBlueStacks.DriveDirection.FORWARD, 1, 1000);
     }
 
     private DriveDirection getCorrectDirection(DriveDirection direction, boolean needInvert) {
@@ -230,5 +234,22 @@ public class KongAutoBlueStacksDisabled extends LinearOpMode {
         FRMotor.setPower(0);
         BLMotor.setPower(0);
         BRMotor.setPower(0);
+    }
+    private void spinIntakeMotor(KongBlueStacks.DriveDirection direction, double power, double time) {
+        eTime.reset();
+        switch(direction) {
+            case FORWARD:
+                IntakeMotor.setPower(power);
+                break;
+            case BACKWARD:
+                IntakeMotor.setPower(-power);
+            default:
+                return;
+        }
+        while(opModeIsActive() && eTime.milliseconds() < time){
+            telemetry.addData("Time:", eTime);
+            telemetry.update();
+        }
+        IntakeMotor.setPower(0);
     }
 }

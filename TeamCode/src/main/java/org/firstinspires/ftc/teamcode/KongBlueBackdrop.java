@@ -49,7 +49,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
  */
 @Autonomous
 //@Disabled
-public class KongBlueStacks extends LinearOpMode
+public class KongBlueBackdrop extends LinearOpMode
 {
     enum DriveDirection {
         FORWARD,
@@ -490,7 +490,7 @@ public class KongBlueStacks extends LinearOpMode
             sleep(500);
 //            IntakeMotor.setPower(0);
         }
-        drive(DriveDirection.BACKWARD, FORWARD_SPEED, 3200);
+        drive(DriveDirection.BACKWARD, FORWARD_SPEED, 500);
         sleep(200);
         strafe(getCorrectDirection(DriveDirection.RIGHT, needInvert), FORWARD_SPEED,750);
     }

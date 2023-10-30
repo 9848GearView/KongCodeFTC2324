@@ -49,7 +49,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
  */
 @Autonomous
 //@Disabled
-public class KongBlueStacks extends LinearOpMode
+public class KongRedBackdrop extends LinearOpMode
 {
     enum DriveDirection {
         FORWARD,
@@ -160,7 +160,7 @@ public class KongBlueStacks extends LinearOpMode
         LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-
+        // Wait for the game to start (driver presses PLAY)
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);        pipeline = new TeamElementDeterminationPipeline();
@@ -195,8 +195,7 @@ public class KongBlueStacks extends LinearOpMode
         {
             telemetry.addData("Analysis", pipeline.getAnalysis());
             telemetry.update();
-
-            doActions(StartingPositionEnum.LEFT, pipeline.getAnalysis());
+            doActions(StartingPositionEnum.RIGHT, pipeline.getAnalysis());
 
             // Don't burn CPU cycles busy-looping in this sample
             sleep(30000);
@@ -268,7 +267,7 @@ public class KongBlueStacks extends LinearOpMode
         void inputToCb(Mat input)
         {
             Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
-            Core.extractChannel(YCrCb, Cb, 2);
+            Core.extractChannel(YCrCb, Cb, 1);
         }
 
         @Override
@@ -478,19 +477,19 @@ public class KongBlueStacks extends LinearOpMode
         }
         turn(getCorrectDirection(DriveDirection.RIGHT, needInvert), TURN_SPEED, 750);
         sleep(200);
-        if (smp == SpikeMarkPosition.TRES) {
+        if (smp == SpikeMarkPosition.UNO) {
             spinIntakeMotor(DriveDirection.BACKWARD, 0.5, 1000);
             sleep(500);
 //            IntakeMotor.setPower(0);
         }
         drive(DriveDirection.BACKWARD, FORWARD_SPEED, 750);
         sleep(200);
-        if (smp == SpikeMarkPosition.UNO) {
+        if (smp == SpikeMarkPosition.TRES) {
             spinIntakeMotor(DriveDirection.BACKWARD, 0.5, 1000);
             sleep(500);
 //            IntakeMotor.setPower(0);
         }
-        drive(DriveDirection.BACKWARD, FORWARD_SPEED, 3200);
+        drive(DriveDirection.BACKWARD, FORWARD_SPEED, 500);
         sleep(200);
         strafe(getCorrectDirection(DriveDirection.RIGHT, needInvert), FORWARD_SPEED,750);
     }

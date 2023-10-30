@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -69,6 +70,8 @@ public class KongTeleop extends LinearOpMode {
     private Servo HangArmServo = null;
     private Servo HangElbowServo = null;
     private Servo Grabber = null;
+    private boolean oldCrossPressed = true;
+    private boolean clawIsClosed = true;
 
     @Override
     public void runOpMode() {
@@ -109,8 +112,8 @@ public class KongTeleop extends LinearOpMode {
         BLMotor.setDirection(DcMotor.Direction.REVERSE);
         BRMotor.setDirection(DcMotor.Direction.FORWARD);
         IntakeMotor.setDirection(DcMotor.Direction.FORWARD);
-        LeftSlide.setDirection(DcMotor.Direction.FORWARD);
-        RightSlide.setDirection(DcMotor.Direction.REVERSE);
+        LeftSlide.setDirection(DcMotor.Direction.REVERSE);
+        RightSlide.setDirection(DcMotor.Direction.FORWARD);
         LeftElbowServo.setDirection(Servo.Direction.FORWARD);
         RightElbowServo.setDirection(Servo.Direction.REVERSE);
         LeftWristServo.setDirection(Servo.Direction.FORWARD);
@@ -131,8 +134,6 @@ public class KongTeleop extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        boolean oldCrossPressed = false;
-        boolean clawIsClosed = true;
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
@@ -165,40 +166,44 @@ public class KongTeleop extends LinearOpMode {
             IntakeMotor.setPower(gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
+//
+//            if (gamepad2.left_bumper) {
+//                HangElbowServo.setPosition(0);
+//            } else {
+//                HangElbowServo.setPosition(1);
+//            }
+//
+//            if (gamepad2.right_bumper) {
+//                HangArmServo.setPosition(0);
+//            } else {
+//                HangArmServo.setPosition(1);
+//            }
 
             if (gamepad2.left_bumper) {
-                HangElbowServo.setPosition(0);
-            } else {
-                HangElbowServo.setPosition(1);
+                LeftElbowServo.setPosition(.93);
+                RightElbowServo.setPosition(.93);
             }
-
             if (gamepad2.right_bumper) {
-                HangArmServo.setPosition(0);
-            } else {
-                HangArmServo.setPosition(1);
-            }
-
-            if (gamepad2.circle) {
-                LeftElbowServo.setPosition(.95);
-                RightElbowServo.setPosition(.95);
-            } else {
                 LeftElbowServo.setPosition(.2);
                 RightElbowServo.setPosition(.2);
             }
 
             if (gamepad2.triangle) {
-                LeftWristServo.setPosition(0.2);
-                RightWristServo.setPosition(0.2);
-            } else {
+                LeftWristServo.setPosition(0.22);
+                RightWristServo.setPosition(0.22);
+            }
+            if (gamepad2.square){
                 LeftWristServo.setPosition(0);
                 RightWristServo.setPosition(0);
             }
 
-//            if (gamepad2.cross && !oldCrossPressed) {
-            if (gamepad2.cross) {
+            boolean crossPressed = gamepad2.cross;
+//            if (crossPressed && !oldCrossPressed) {
+            if (crossPressed) {
                 Grabber.setPosition(0.55);
                 clawIsClosed = false;
-            } else {
+            }
+            if (gamepad2.circle){
                 Grabber.setPosition(0.5);
                 clawIsClosed = true;
             }
@@ -213,7 +218,7 @@ public class KongTeleop extends LinearOpMode {
             telemetry.addData("GrabberPressed", "(%b), (%b)", gamepad2.cross, oldCrossPressed);
             telemetry.addData("Claw", clawIsClosed);
             telemetry.update();
-            oldCrossPressed = gamepad2.cross;
+            oldCrossPressed = crossPressed;
         }
     }
 }
