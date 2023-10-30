@@ -32,7 +32,6 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -51,7 +50,7 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TeleopB", group="Robot")
+@TeleOp(name="KongTeleop", group="Robot")
 public class KongTeleop extends LinearOpMode {
 
     // Declare OpMode members.
@@ -67,10 +66,14 @@ public class KongTeleop extends LinearOpMode {
     private Servo RightElbowServo = null;
     private Servo LeftWristServo = null;
     private Servo RightWristServo = null;
-    private Servo HangArmServo = null;
-    private Servo HangElbowServo = null;
+    private Servo HangLeftForearmServo = null;
+    private Servo HangLeftElbowServo = null;
+    private Servo HangRightForearmServo = null;
+    private Servo HangRightElbowServo = null;
     private Servo Grabber = null;
     private boolean oldCrossPressed = true;
+    private boolean oldTrianglePressed = true;
+    private boolean oldCirclePressed = true;
     private boolean clawIsClosed = true;
 
     @Override
@@ -92,8 +95,10 @@ public class KongTeleop extends LinearOpMode {
         RightElbowServo = hardwareMap.get(Servo.class, "RE");
         LeftWristServo = hardwareMap.get(Servo.class, "LW");
         RightWristServo = hardwareMap.get(Servo.class, "RW");
-        HangArmServo = hardwareMap.get(Servo.class, "HA");
-        HangElbowServo = hardwareMap.get(Servo.class, "HE");
+        HangLeftForearmServo = hardwareMap.get(Servo.class, "HLA");
+        HangLeftElbowServo = hardwareMap.get(Servo.class, "HLE");
+        HangRightForearmServo = hardwareMap.get(Servo.class, "HRA");
+        HangRightElbowServo = hardwareMap.get(Servo.class, "HRE");
         Grabber = hardwareMap.get(Servo.class, "G");
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -118,8 +123,10 @@ public class KongTeleop extends LinearOpMode {
         RightElbowServo.setDirection(Servo.Direction.REVERSE);
         LeftWristServo.setDirection(Servo.Direction.FORWARD);
         RightWristServo.setDirection(Servo.Direction.REVERSE);
-        HangArmServo.setDirection(Servo.Direction.FORWARD);
-        HangElbowServo.setDirection(Servo.Direction.FORWARD);
+        HangLeftForearmServo.setDirection(Servo.Direction.FORWARD);
+        HangLeftElbowServo.setDirection(Servo.Direction.FORWARD);
+        HangRightForearmServo.setDirection(Servo.Direction.FORWARD);
+        HangRightElbowServo.setDirection(Servo.Direction.REVERSE);
         Grabber.setDirection(Servo.Direction.FORWARD);
 
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -166,48 +173,40 @@ public class KongTeleop extends LinearOpMode {
             IntakeMotor.setPower(gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
-//
-//            if (gamepad2.left_bumper) {
-//                HangElbowServo.setPosition(0);
-//            } else {
-//                HangElbowServo.setPosition(1);
-//            }
-//
-//            if (gamepad2.right_bumper) {
-//                HangArmServo.setPosition(0);
-//            } else {
-//                HangArmServo.setPosition(1);
-//            }
 
             if (gamepad2.left_bumper) {
-                LeftElbowServo.setPosition(.93);
-                RightElbowServo.setPosition(.93);
+                HangLeftElbowServo.setPosition(0);
+                HangRightElbowServo.setPosition(0);
+            } else {
+                HangLeftElbowServo.setPosition(.42);
+                HangRightElbowServo.setPosition(.42);
             }
+
             if (gamepad2.right_bumper) {
-                LeftElbowServo.setPosition(.2);
-                RightElbowServo.setPosition(.2);
+                HangLeftForearmServo.setPosition(0);
+                HangRightForearmServo.setPosition(0);
+            } else {
+                HangLeftForearmServo.setPosition(1);
+                HangRightForearmServo.setPosition(1);
             }
 
-            if (gamepad2.triangle) {
-                LeftWristServo.setPosition(0.22);
-                RightWristServo.setPosition(0.22);
-            }
-            if (gamepad2.square){
-                LeftWristServo.setPosition(0);
-                RightWristServo.setPosition(0);
+            boolean circlePressed = gamepad2.circle;
+            if (circlePressed && !oldCirclePressed) {
+                LeftElbowServo.setPosition(LeftElbowServo.getPosition() == .93 ? .2 : .93);
+                RightElbowServo.setPosition(RightElbowServo.getPosition() == .93 ? .2 : .93);
             }
 
+            boolean trianglePressed = gamepad2.triangle;
+            if (trianglePressed && !oldTrianglePressed) {
+                LeftWristServo.setPosition(LeftWristServo.getPosition() == 0.22 ? 0 : 0.22);
+                RightWristServo.setPosition(RightWristServo.getPosition() == 0.22 ? 0 : 0.22);
+            }
+
+            // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
             boolean crossPressed = gamepad2.cross;
-//            if (crossPressed && !oldCrossPressed) {
-            if (crossPressed) {
-                Grabber.setPosition(0.55);
-                clawIsClosed = false;
+            if (crossPressed && !oldCrossPressed) {
+                Grabber.setPosition(Grabber.getPosition() == 0.5 ? 0.57 : 0.5);
             }
-            if (gamepad2.circle){
-                Grabber.setPosition(0.5);
-                clawIsClosed = true;
-            }
-//            }
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
@@ -219,6 +218,8 @@ public class KongTeleop extends LinearOpMode {
             telemetry.addData("Claw", clawIsClosed);
             telemetry.update();
             oldCrossPressed = crossPressed;
+            oldTrianglePressed = trianglePressed;
+            oldCirclePressed = circlePressed;
         }
     }
 }

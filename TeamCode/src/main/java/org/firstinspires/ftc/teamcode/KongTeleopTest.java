@@ -32,7 +32,6 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -67,8 +66,10 @@ public class KongTeleopTest extends LinearOpMode {
     private Servo RightElbowServo = null;
     private Servo LeftWristServo = null;
     private Servo RightWristServo = null;
-    private Servo HangArmServo = null;
-    private Servo HangElbowServo = null;
+    private Servo HangLeftForearmServo = null;
+    private Servo HangLeftElbowServo = null;
+    private Servo HangRightForearmServo = null;
+    private Servo HangRightElbowServo = null;
     private Servo Grabber = null;
     private boolean oldCrossPressed = true;
     private boolean oldTrianglePressed = true;
@@ -77,6 +78,7 @@ public class KongTeleopTest extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+
         telemetry.addData("Status", "sInitialized");
         telemetry.update();
 
@@ -94,8 +96,10 @@ public class KongTeleopTest extends LinearOpMode {
         RightElbowServo = hardwareMap.get(Servo.class, "RE");
         LeftWristServo = hardwareMap.get(Servo.class, "LW");
         RightWristServo = hardwareMap.get(Servo.class, "RW");
-        HangArmServo = hardwareMap.get(Servo.class, "HA");
-        HangElbowServo = hardwareMap.get(Servo.class, "HE");
+        HangLeftForearmServo = hardwareMap.get(Servo.class, "HLA");
+        HangLeftElbowServo = hardwareMap.get(Servo.class, "HLE");
+        HangRightForearmServo = hardwareMap.get(Servo.class, "HRA");
+        HangRightElbowServo = hardwareMap.get(Servo.class, "HRE");
         Grabber = hardwareMap.get(Servo.class, "G");
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -120,8 +124,10 @@ public class KongTeleopTest extends LinearOpMode {
         RightElbowServo.setDirection(Servo.Direction.REVERSE);
         LeftWristServo.setDirection(Servo.Direction.FORWARD);
         RightWristServo.setDirection(Servo.Direction.REVERSE);
-        HangArmServo.setDirection(Servo.Direction.FORWARD);
-        HangElbowServo.setDirection(Servo.Direction.FORWARD);
+        HangLeftForearmServo.setDirection(Servo.Direction.FORWARD);
+        HangLeftElbowServo.setDirection(Servo.Direction.FORWARD);
+        HangRightForearmServo.setDirection(Servo.Direction.FORWARD);
+        HangRightElbowServo.setDirection(Servo.Direction.REVERSE);
         Grabber.setDirection(Servo.Direction.FORWARD);
 
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -170,15 +176,23 @@ public class KongTeleopTest extends LinearOpMode {
             RightSlide.setPower(gamepad2.left_stick_y);
 
             if (gamepad2.left_bumper) {
-                HangElbowServo.setPosition(0);
+                HangLeftElbowServo.setPosition(0);
+                HangRightElbowServo.setPosition(0);
             } else {
-                HangElbowServo.setPosition(1);
+                HangLeftElbowServo.setPosition(.4);
+                HangRightElbowServo.setPosition(.4);
             }
 
             if (gamepad2.right_bumper) {
-                HangArmServo.setPosition(0);
+                HangLeftForearmServo.setPosition(0);
+                HangRightForearmServo.setPosition(0);
             } else {
-                HangArmServo.setPosition(1);
+                HangLeftForearmServo.setPosition(1);
+                HangRightForearmServo.setPosition(1);
+            }
+
+            if (gamepad2.square) {
+
             }
 
             boolean circlePressed = gamepad2.circle;
