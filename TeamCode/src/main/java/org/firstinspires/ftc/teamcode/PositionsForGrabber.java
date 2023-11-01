@@ -31,7 +31,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -50,16 +49,21 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TestFourServo", group="Robot")
-public class AAAAA extends LinearOpMode {
+@TeleOp(name="OhNo", group="Robot")
+public class PositionsForGrabber extends LinearOpMode {
     private Servo LeftElbowServo = null;
     private Servo RightElbowServo = null;
     private Servo LeftWristServo = null;
     private Servo RightWristServo = null;
     private boolean oldCrossPressed = false;
-    private boolean oldTrianglePressed = false;
-    private boolean oldDPAD_UPPressed = false;
-    private boolean oldDPAD_DOWNPressed = false;
+    private int index = 0;
+    private double[] LEServoPositions = {0, .25, .5, .94};
+    private double[] REServoPositions = {0, .25, .5, .94};
+    private double[] LWServoPositions = {0, .25, .5, .21};
+    private double[] RWServoPositions = {0, .25, .5, .21};
+//    private boolean oldTrianglePressed = false;
+//    private boolean oldDPAD_UPPressed = false;
+//    private boolean oldDPAD_DOWNPressed = false;
     private ElapsedTime runtime = new ElapsedTime();
 
     @Override
@@ -78,11 +82,10 @@ public class AAAAA extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        LeftElbowServo.setPosition(.5);
-        RightElbowServo.setPosition(.5);
-        LeftWristServo.setPosition(.5);
-        RightWristServo.setPosition(.5);
-
+        LeftElbowServo.setPosition(0);
+        RightElbowServo.setPosition(0);
+        LeftWristServo.setPosition(0);
+        RightWristServo.setPosition(0);
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -90,26 +93,11 @@ public class AAAAA extends LinearOpMode {
             // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
             boolean crossPressed = gamepad2.cross;
             if (crossPressed && !oldCrossPressed) {
-                LeftElbowServo.setPosition(Range.clip(LeftElbowServo.getPosition() + 0.01, 0.0, 1.0));
-                RightElbowServo.setPosition(Range.clip(RightElbowServo.getPosition() + 0.01, 0.0, 1.0));
-            }
-
-            boolean trianglePressed = gamepad2.triangle;
-            if (trianglePressed && !oldTrianglePressed) {
-                LeftElbowServo.setPosition(Range.clip(LeftElbowServo.getPosition() - 0.01, 0.0, 1.0));
-                RightElbowServo.setPosition(Range.clip(RightElbowServo.getPosition() - 0.01, 0.0, 1.0));
-            }
-
-            boolean dpad_up = gamepad2.dpad_up;
-            if (dpad_up && !oldDPAD_UPPressed) {
-                LeftWristServo.setPosition(Range.clip(LeftWristServo.getPosition() + 0.01, 0.0, 1.0));
-                RightWristServo.setPosition(Range.clip(RightWristServo.getPosition() + 0.01, 0.0, 1.0));
-            }
-
-            boolean dpad_down = gamepad2.dpad_down;
-            if (dpad_down && !oldDPAD_DOWNPressed) {
-                LeftWristServo.setPosition(Range.clip(LeftWristServo.getPosition() - 0.01, 0.0, 1.0));
-                RightWristServo.setPosition(Range.clip(RightWristServo.getPosition() - 0.01, 0.0, 1.0));
+                LeftElbowServo.setPosition(index);
+                RightElbowServo.setPosition(index);
+                LeftWristServo.setPosition(index);
+                RightWristServo.setPosition(index);
+                index++;
             }
 
             // Show the elapsed game time and wheel power.
@@ -117,12 +105,10 @@ public class AAAAA extends LinearOpMode {
             telemetry.addData("RightElbowServoPosition", RightElbowServo.getPosition());
             telemetry.addData("LeftWristServoPosition", LeftWristServo.getPosition());
             telemetry.addData("RightWristServoPosition", RightWristServo.getPosition());
+            telemetry.addData("Index", index);
 
             telemetry.update();
             oldCrossPressed = crossPressed;
-            oldTrianglePressed = trianglePressed;
-            oldDPAD_UPPressed = dpad_up;
-            oldDPAD_DOWNPressed = dpad_down;
         }
     }
 }

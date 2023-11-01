@@ -153,16 +153,46 @@ public class KongTeleop extends LinearOpMode {
             rightPower   = Range.clip(drive - turn, -1.0, 1.0);
 
             // Send calculated power to wheels
-            if (gamepad1.right_bumper) {
-                FLMotor.setPower(1);
-                FRMotor.setPower(-1);
-                BLMotor.setPower(-1);
-                BRMotor.setPower(1);
-            } else if (gamepad1.left_bumper) {
-                FLMotor.setPower(-1);
-                FRMotor.setPower(1);
-                BLMotor.setPower(1);
-                BRMotor.setPower(-1);
+            if (gamepad1.right_bumper || gamepad1.left_bumper) {
+                if (gamepad1.right_stick_x == 0 && gamepad1.right_stick_y == 0) {
+                    if (gamepad1.right_bumper) {
+                        FLMotor.setPower(1);
+                        FRMotor.setPower(-1);
+                        BLMotor.setPower(-1);
+                        BRMotor.setPower(1);
+                    } else {
+                        FLMotor.setPower(-1);
+                        FRMotor.setPower(1);
+                        BLMotor.setPower(1);
+                        BRMotor.setPower(-1);
+                    }
+                } else {
+                    if (-gamepad1.right_stick_y > 0) {
+                        if (gamepad1.right_bumper) {
+                            FLMotor.setPower(1);
+                            FRMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
+                            BLMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
+                            BRMotor.setPower(1);
+                        } else {
+                            FLMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
+                            FRMotor.setPower(1);
+                            BLMotor.setPower(1);
+                            BRMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
+                        }
+                    } else {
+                        if (gamepad1.right_bumper) {
+                            FLMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
+                            FRMotor.setPower(-1);
+                            BLMotor.setPower(-1);
+                            BRMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
+                        } else {
+                            FLMotor.setPower(-1);
+                            FRMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
+                            BLMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
+                            BRMotor.setPower(-1);
+                        }
+                    }
+                }
             } else {
                 FLMotor.setPower(leftPower);
                 FRMotor.setPower(rightPower);

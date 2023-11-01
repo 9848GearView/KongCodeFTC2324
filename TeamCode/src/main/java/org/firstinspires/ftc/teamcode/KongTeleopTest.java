@@ -50,7 +50,7 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TestTeleop", group="Robot")
+@TeleOp(name="KongTeleopTest", group="Robot")
 public class KongTeleopTest extends LinearOpMode {
 
     // Declare OpMode members.
@@ -78,7 +78,6 @@ public class KongTeleopTest extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-
         telemetry.addData("Status", "sInitialized");
         telemetry.update();
 
@@ -154,16 +153,46 @@ public class KongTeleopTest extends LinearOpMode {
             rightPower   = Range.clip(drive - turn, -1.0, 1.0);
 
             // Send calculated power to wheels
-            if (gamepad1.right_bumper) {
-                FLMotor.setPower(1);
-                FRMotor.setPower(-1);
-                BLMotor.setPower(-1);
-                BRMotor.setPower(1);
-            } else if (gamepad1.left_bumper) {
-                FLMotor.setPower(-1);
-                FRMotor.setPower(1);
-                BLMotor.setPower(1);
-                BRMotor.setPower(-1);
+            if (gamepad1.right_bumper || gamepad1.left_bumper) {
+                if (gamepad1.right_stick_x == 0 && gamepad1.right_stick_y == 0) {
+                    if (gamepad1.right_bumper) {
+                        FLMotor.setPower(1);
+                        FRMotor.setPower(-1);
+                        BLMotor.setPower(-1);
+                        BRMotor.setPower(1);
+                    } else {
+                        FLMotor.setPower(-1);
+                        FRMotor.setPower(1);
+                        BLMotor.setPower(1);
+                        BRMotor.setPower(-1);
+                    }
+                } else {
+                    if (gamepad1.right_stick_x > 0) {
+                        if (gamepad1.right_bumper) {
+                            FLMotor.setPower(1);
+                            FRMotor.setPower(-1);
+                            BLMotor.setPower(-1 + Math.abs(gamepad1.right_stick_x));
+                            BRMotor.setPower(1 - Math.abs(gamepad1.right_stick_x));
+                        } else {
+                            FLMotor.setPower(-1 + Math.abs(gamepad1.right_stick_x));
+                            FRMotor.setPower(1 - Math.abs(gamepad1.right_stick_x));
+                            BLMotor.setPower(1);
+                            BRMotor.setPower(-1);
+                        }
+                    } else {
+                        if (gamepad1.right_bumper) {
+                            FLMotor.setPower(1 - Math.abs(gamepad1.right_stick_x));
+                            FRMotor.setPower(-1 + Math.abs(gamepad1.right_stick_x));
+                            BLMotor.setPower(-1);
+                            BRMotor.setPower(1);
+                        } else {
+                            FLMotor.setPower(-1);
+                            FRMotor.setPower(1);
+                            BLMotor.setPower(1 - Math.abs(gamepad1.right_stick_x));
+                            BRMotor.setPower(-1 + Math.abs(gamepad1.right_stick_x));
+                        }
+                    }
+                }
             } else {
                 FLMotor.setPower(leftPower);
                 FRMotor.setPower(rightPower);
@@ -179,8 +208,8 @@ public class KongTeleopTest extends LinearOpMode {
                 HangLeftElbowServo.setPosition(0);
                 HangRightElbowServo.setPosition(0);
             } else {
-                HangLeftElbowServo.setPosition(.4);
-                HangRightElbowServo.setPosition(.4);
+                HangLeftElbowServo.setPosition(.42);
+                HangRightElbowServo.setPosition(.42);
             }
 
             if (gamepad2.right_bumper) {
@@ -189,10 +218,6 @@ public class KongTeleopTest extends LinearOpMode {
             } else {
                 HangLeftForearmServo.setPosition(1);
                 HangRightForearmServo.setPosition(1);
-            }
-
-            if (gamepad2.square) {
-
             }
 
             boolean circlePressed = gamepad2.circle;
