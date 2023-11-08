@@ -74,7 +74,14 @@ public class KongTeleopTest extends LinearOpMode {
     private boolean oldCrossPressed = true;
     private boolean oldTrianglePressed = true;
     private boolean oldCirclePressed = true;
+    private boolean oldLeftTriggerPressed = false;
+    private boolean oldRightTriggerPressed = false;
     private boolean clawIsClosed = true;
+    private int index = 0;
+    private double[] LEServoPositions = {0.28, 0.28, 0.23, 0.23, 0.20, 0.20, 0.18, 0.18, 0.20, 0.20, 0.21, 0.21, 0.22, 0.23, 0.25, 0.25, 0.40, 0.70, 0.92};
+    private double[] REServoPositions = {0.28, 0.28, 0.23, 0.23, 0.20, 0.20, 0.18, 0.18, 0.20, 0.20, 0.21, 0.21, 0.22, 0.23, 0.25, 0.25, 0.40, 0.70, 0.92};
+    private double[] LWServoPositions = {0.50, 0.30, 0.30, 0.26, 0.26, 0.20, 0.20, 0.19, 0.21, 0.36, 0.36, 0.38, 0.39, 0.41, 0.41, 0.44, 0.44, 0.20, 0.0};
+    private double[] RWServoPositions = {0.50, 0.30, 0.30, 0.26, 0.26, 0.20, 0.20, 0.19, 0.21, 0.36, 0.36, 0.38, 0.39, 0.41, 0.41, 0.44, 0.44, 0.20, 0.0};
 
     @Override
     public void runOpMode() {
@@ -137,6 +144,12 @@ public class KongTeleopTest extends LinearOpMode {
         LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        LeftElbowServo.setPosition(0.5);
+        RightElbowServo.setPosition(0.5);
+        LeftWristServo.setPosition(0.5);
+        RightWristServo.setPosition(0.5);
+        Grabber.setPosition(.5);
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -167,29 +180,29 @@ public class KongTeleopTest extends LinearOpMode {
                         BRMotor.setPower(-1);
                     }
                 } else {
-                    if (gamepad1.right_stick_x > 0) {
+                    if (-gamepad1.right_stick_y > 0) {
                         if (gamepad1.right_bumper) {
                             FLMotor.setPower(1);
-                            FRMotor.setPower(-1);
-                            BLMotor.setPower(-1 + Math.abs(gamepad1.right_stick_x));
-                            BRMotor.setPower(1 - Math.abs(gamepad1.right_stick_x));
+                            FRMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
+                            BLMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
+                            BRMotor.setPower(1);
                         } else {
-                            FLMotor.setPower(-1 + Math.abs(gamepad1.right_stick_x));
-                            FRMotor.setPower(1 - Math.abs(gamepad1.right_stick_x));
+                            FLMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
+                            FRMotor.setPower(1);
                             BLMotor.setPower(1);
-                            BRMotor.setPower(-1);
+                            BRMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
                         }
                     } else {
                         if (gamepad1.right_bumper) {
-                            FLMotor.setPower(1 - Math.abs(gamepad1.right_stick_x));
-                            FRMotor.setPower(-1 + Math.abs(gamepad1.right_stick_x));
+                            FLMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
+                            FRMotor.setPower(-1);
                             BLMotor.setPower(-1);
-                            BRMotor.setPower(1);
+                            BRMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
                         } else {
                             FLMotor.setPower(-1);
-                            FRMotor.setPower(1);
-                            BLMotor.setPower(1 - Math.abs(gamepad1.right_stick_x));
-                            BRMotor.setPower(-1 + Math.abs(gamepad1.right_stick_x));
+                            FRMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
+                            BLMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
+                            BRMotor.setPower(-1);
                         }
                     }
                 }
@@ -204,38 +217,39 @@ public class KongTeleopTest extends LinearOpMode {
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
 
-            if (gamepad2.left_bumper) {
-                HangLeftElbowServo.setPosition(0);
-                HangRightElbowServo.setPosition(0);
-            } else {
-                HangLeftElbowServo.setPosition(.42);
-                HangRightElbowServo.setPosition(.42);
-            }
+//            boolean circlePressed = gamepad2.circle;
+//            if (circlePressed && !oldCirclePressed) {
+//                LeftElbowServo.setPosition(LeftElbowServo.getPosition() == .93 ? .2 : .93);
+//                RightElbowServo.setPosition(RightElbowServo.getPosition() == .93 ? .2 : .93);
+//            }
+//
+//            boolean trianglePressed = gamepad2.triangle;
+//            if (trianglePressed && !oldTrianglePressed) {
+//                LeftWristServo.setPosition(LeftWristServo.getPosition() == 0.22 ? 0 : 0.22);
+//                RightWristServo.setPosition(RightWristServo.getPosition() == 0.22 ? 0 : 0.22);
+//            }
 
-            if (gamepad2.right_bumper) {
-                HangLeftForearmServo.setPosition(0);
-                HangRightForearmServo.setPosition(0);
-            } else {
-                HangLeftForearmServo.setPosition(1);
-                HangRightForearmServo.setPosition(1);
-            }
-
-            boolean circlePressed = gamepad2.circle;
-            if (circlePressed && !oldCirclePressed) {
-                LeftElbowServo.setPosition(LeftElbowServo.getPosition() == .93 ? .2 : .93);
-                RightElbowServo.setPosition(RightElbowServo.getPosition() == .93 ? .2 : .93);
-            }
-
-            boolean trianglePressed = gamepad2.triangle;
-            if (trianglePressed && !oldTrianglePressed) {
-                LeftWristServo.setPosition(LeftWristServo.getPosition() == 0.22 ? 0 : 0.22);
-                RightWristServo.setPosition(RightWristServo.getPosition() == 0.22 ? 0 : 0.22);
+            boolean crossPressed = gamepad2.cross;
+            if (crossPressed && !oldCrossPressed) {
+                LeftElbowServo.setPosition(LEServoPositions[index]);
+                RightElbowServo.setPosition(REServoPositions[index]);
+                LeftWristServo.setPosition(LWServoPositions[index]);
+                RightWristServo.setPosition(RWServoPositions[index]);
+                index++;
+                index = index % LEServoPositions.length;
             }
 
             // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
-            boolean crossPressed = gamepad2.cross;
-            if (crossPressed && !oldCrossPressed) {
-                Grabber.setPosition(Grabber.getPosition() == 0.5 ? 0.57 : 0.5);
+            Grabber.setPosition(Grabber.getPosition());
+
+            boolean leftTriggerPressed = gamepad2.left_bumper;
+            if (leftTriggerPressed && !oldLeftTriggerPressed) {
+                Grabber.setPosition(Grabber.getPosition() + 0.05);
+            }
+
+            boolean rightTriggerPressed = gamepad2.right_bumper;
+            if (rightTriggerPressed && !oldRightTriggerPressed) {
+                Grabber.setPosition(Grabber.getPosition() - 0.05);
             }
 
             // Show the elapsed game time and wheel power.
@@ -244,12 +258,20 @@ public class KongTeleopTest extends LinearOpMode {
             telemetry.addData("Bumpers", "(%b), (%b)", gamepad1.left_bumper, gamepad1.right_bumper);
             telemetry.addData("Intake", gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
             telemetry.addData("Slides", gamepad2.left_stick_y);
-            telemetry.addData("GrabberPressed", "(%b), (%b)", gamepad2.cross, oldCrossPressed);
-            telemetry.addData("Claw", clawIsClosed);
+//            telemetry.addData("GrabberPressed", "(%b), (%b)", gamepad2.cross, oldCrossPressed);
+//            telemetry.addData("Claw", clawIsClosed);
+            telemetry.addData("LeftElbowServoPosition", LeftElbowServo.getPosition());
+            telemetry.addData("RightElbowServoPosition", RightElbowServo.getPosition());
+            telemetry.addData("LeftWristServoPosition", LeftWristServo.getPosition());
+            telemetry.addData("RightWristServoPosition", RightWristServo.getPosition());
+            telemetry.addData("Index", index);
+            telemetry.addData("Grabber", Grabber.getPosition());
             telemetry.update();
+//            oldTrianglePressed = trianglePressed;
+//            oldCirclePressed = circlePressed;
             oldCrossPressed = crossPressed;
-            oldTrianglePressed = trianglePressed;
-            oldCirclePressed = circlePressed;
+            oldLeftTriggerPressed = leftTriggerPressed;
+            oldRightTriggerPressed = rightTriggerPressed;
         }
     }
 }
