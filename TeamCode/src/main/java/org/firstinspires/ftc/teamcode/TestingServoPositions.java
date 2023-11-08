@@ -49,19 +49,22 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="OhNo", group="Robot")
-public class PositionsForGrabber extends LinearOpMode {
+@TeleOp(name="TestingServoPositions", group="Robot")
+public class TestingServoPositions extends LinearOpMode {
     private Servo LeftElbowServo = null;
     private Servo RightElbowServo = null;
     private Servo LeftWristServo = null;
     private Servo RightWristServo = null;
+    private Servo Grabber = null;
+    private boolean oldLeftTriggerPressed = false;
+    private boolean oldRightTriggerPressed = false;
     private boolean oldCrossPressed = false;
     private int index = 0;
-    private double[] LEServoPositions = {0.15};
-    private double[] REServoPositions = {0.15};
-    private double[] LWServoPositions = {0.22};
-    private double[] RWServoPositions = {0.22};
-//    private boolean oldTrianglePressed = false;
+    private double[] LEServoPositions = {0.28, 0.28, 0.23, 0.23, 0.20, 0.20, 0.18, 0.18, 0.20, 0.20, 0.21, 0.21, 0.22, 0.23, 0.25, 0.25, 0.40};
+    private double[] REServoPositions = {0.28, 0.28, 0.23, 0.23, 0.20, 0.20, 0.18, 0.18, 0.20, 0.20, 0.21, 0.21, 0.22, 0.23, 0.25, 0.25, 0.40};
+    private double[] LWServoPositions = {0.50, 0.30, 0.30, 0.26, 0.26, 0.20, 0.20, 0.19, 0.21, 0.36, 0.36, 0.38, 0.39, 0.41, 0.41, 0.44, 0.44};
+    private double[] RWServoPositions = {0.50, 0.30, 0.30, 0.26, 0.26, 0.20, 0.20, 0.19, 0.21, 0.36, 0.36, 0.38, 0.39, 0.41, 0.41, 0.44, 0.44};
+    //    private boolean oldTrianglePressed = false;
 //    private boolean oldDPAD_UPPressed = false;
 //    private boolean oldDPAD_DOWNPressed = false;
     private ElapsedTime runtime = new ElapsedTime();
@@ -72,32 +75,46 @@ public class PositionsForGrabber extends LinearOpMode {
         RightElbowServo = hardwareMap.get(Servo.class, "RE");
         LeftWristServo = hardwareMap.get(Servo.class, "LW");
         RightWristServo = hardwareMap.get(Servo.class, "RW");
+        Grabber = hardwareMap.get(Servo.class, "G");
 
         LeftElbowServo.setDirection(Servo.Direction.FORWARD);
         RightElbowServo.setDirection(Servo.Direction.REVERSE);
         LeftWristServo.setDirection(Servo.Direction.FORWARD);
         RightWristServo.setDirection(Servo.Direction.REVERSE);
 
+        LeftElbowServo.setPosition(0.5);
+        RightElbowServo.setPosition(0.5);
+        LeftWristServo.setPosition(0.5);
+        RightWristServo.setPosition(0.5);
+        Grabber.setPosition(.5);
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
-        LeftElbowServo.setPosition(0);
-        RightElbowServo.setPosition(0);
-        LeftWristServo.setPosition(0);
-        RightWristServo.setPosition(0);
-
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            Grabber.setPosition(Grabber.getPosition());
+
+            boolean leftTriggerPressed = gamepad2.left_bumper;
+            if (leftTriggerPressed && !oldLeftTriggerPressed) {
+                Grabber.setPosition(Grabber.getPosition() + 0.01);
+            }
+
+            boolean rightTriggerPressed = gamepad2.right_bumper;
+            if (rightTriggerPressed && !oldRightTriggerPressed) {
+                Grabber.setPosition(Grabber.getPosition() - 0.01);
+            }
 
             // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
             boolean crossPressed = gamepad2.cross;
             if (crossPressed && !oldCrossPressed) {
-                LeftElbowServo.setPosition(index);
-                RightElbowServo.setPosition(index);
-                LeftWristServo.setPosition(index);
-                RightWristServo.setPosition(index);
+                LeftElbowServo.setPosition(LEServoPositions[index]);
+                RightElbowServo.setPosition(REServoPositions[index]);
+                LeftWristServo.setPosition(LWServoPositions[index]);
+                RightWristServo.setPosition(RWServoPositions[index]);
                 index++;
+                index = index % LEServoPositions.length;
             }
 
             // Show the elapsed game time and wheel power.
@@ -106,9 +123,13 @@ public class PositionsForGrabber extends LinearOpMode {
             telemetry.addData("LeftWristServoPosition", LeftWristServo.getPosition());
             telemetry.addData("RightWristServoPosition", RightWristServo.getPosition());
             telemetry.addData("Index", index);
+            telemetry.addData("Grabber", Grabber.getPosition());
 
             telemetry.update();
             oldCrossPressed = crossPressed;
+            oldLeftTriggerPressed = leftTriggerPressed;
+            oldRightTriggerPressed = rightTriggerPressed;
+
         }
     }
 }

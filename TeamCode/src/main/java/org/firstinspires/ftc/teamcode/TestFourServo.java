@@ -31,7 +31,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -51,15 +50,18 @@ import com.qualcomm.robotcore.util.Range;
  */
 
 @TeleOp(name="TestFourServo", group="Robot")
-public class AAAAA extends LinearOpMode {
+public class TestFourServo extends LinearOpMode {
     private Servo LeftElbowServo = null;
     private Servo RightElbowServo = null;
     private Servo LeftWristServo = null;
     private Servo RightWristServo = null;
+    private Servo Grabber = null;
     private boolean oldCrossPressed = false;
     private boolean oldTrianglePressed = false;
     private boolean oldDPAD_UPPressed = false;
     private boolean oldDPAD_DOWNPressed = false;
+    private boolean oldLeftTriggerPressed = false;
+    private boolean oldRightTriggerPressed = false;
     private ElapsedTime runtime = new ElapsedTime();
 
     @Override
@@ -68,6 +70,7 @@ public class AAAAA extends LinearOpMode {
         RightElbowServo = hardwareMap.get(Servo.class, "RE");
         LeftWristServo = hardwareMap.get(Servo.class, "LW");
         RightWristServo = hardwareMap.get(Servo.class, "RW");
+        Grabber = hardwareMap.get(Servo.class, "G");
 
         LeftElbowServo.setDirection(Servo.Direction.FORWARD);
         RightElbowServo.setDirection(Servo.Direction.REVERSE);
@@ -82,10 +85,26 @@ public class AAAAA extends LinearOpMode {
         RightElbowServo.setPosition(.5);
         LeftWristServo.setPosition(.5);
         RightWristServo.setPosition(.5);
+        Grabber.setPosition(.5);
 
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            LeftElbowServo.setPosition(LeftElbowServo.getPosition());
+            RightElbowServo.setPosition(RightElbowServo.getPosition());
+            LeftWristServo.setPosition(LeftWristServo.getPosition());
+            RightWristServo.setPosition(RightWristServo.getPosition());
+            Grabber.setPosition(Grabber.getPosition());
+
+            boolean leftTriggerPressed = gamepad2.left_bumper;
+            if (leftTriggerPressed && !oldLeftTriggerPressed) {
+                Grabber.setPosition(Grabber.getPosition() + 0.01);
+            }
+
+            boolean rightTriggerPressed = gamepad2.right_bumper;
+            if (rightTriggerPressed && !oldRightTriggerPressed) {
+                Grabber.setPosition(Grabber.getPosition() - 0.01);
+            }
 
             // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
             boolean crossPressed = gamepad2.cross;
@@ -117,12 +136,15 @@ public class AAAAA extends LinearOpMode {
             telemetry.addData("RightElbowServoPosition", RightElbowServo.getPosition());
             telemetry.addData("LeftWristServoPosition", LeftWristServo.getPosition());
             telemetry.addData("RightWristServoPosition", RightWristServo.getPosition());
+            telemetry.addData("Grabber", Grabber.getPosition());
 
             telemetry.update();
             oldCrossPressed = crossPressed;
             oldTrianglePressed = trianglePressed;
             oldDPAD_UPPressed = dpad_up;
             oldDPAD_DOWNPressed = dpad_down;
+            oldLeftTriggerPressed = leftTriggerPressed;
+            oldRightTriggerPressed = rightTriggerPressed;
         }
     }
 }
