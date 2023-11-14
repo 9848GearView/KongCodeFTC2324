@@ -66,11 +66,12 @@ public class KongTeleop extends LinearOpMode {
     private Servo RightElbowServo = null;
     private Servo LeftWristServo = null;
     private Servo RightWristServo = null;
-    private Servo HangLeftForearmServo = null;
-    private Servo HangLeftElbowServo = null;
-    private Servo HangRightForearmServo = null;
-    private Servo HangRightElbowServo = null;
+//    private Servo HangLeftForearmServo = null;
+//    private Servo HangLeftElbowServo = null;
+//    private Servo HangRightForearmServo = null;
+//    private Servo HangRightElbowServo = null;
     private Servo Grabber = null;
+    private Servo PlaneLauncher = null;
     private boolean oldCrossPressed = true;
     private boolean oldTrianglePressed = true;
     private boolean oldCirclePressed = true;
@@ -95,11 +96,12 @@ public class KongTeleop extends LinearOpMode {
         RightElbowServo = hardwareMap.get(Servo.class, "RE");
         LeftWristServo = hardwareMap.get(Servo.class, "LW");
         RightWristServo = hardwareMap.get(Servo.class, "RW");
-        HangLeftForearmServo = hardwareMap.get(Servo.class, "HLA");
-        HangLeftElbowServo = hardwareMap.get(Servo.class, "HLE");
-        HangRightForearmServo = hardwareMap.get(Servo.class, "HRA");
-        HangRightElbowServo = hardwareMap.get(Servo.class, "HRE");
+//        HangLeftForearmServo = hardwareMap.get(Servo.class, "HLA");
+//        HangLeftElbowServo = hardwareMap.get(Servo.class, "HLE");
+//        HangRightForearmServo = hardwareMap.get(Servo.class, "HRA");
+//        HangRightElbowServo = hardwareMap.get(Servo.class, "HRE");
         Grabber = hardwareMap.get(Servo.class, "G");
+        PlaneLauncher = hardwareMap.get(Servo.class, "PL");
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         FRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -123,11 +125,12 @@ public class KongTeleop extends LinearOpMode {
         RightElbowServo.setDirection(Servo.Direction.REVERSE);
         LeftWristServo.setDirection(Servo.Direction.FORWARD);
         RightWristServo.setDirection(Servo.Direction.REVERSE);
-        HangLeftForearmServo.setDirection(Servo.Direction.FORWARD);
-        HangLeftElbowServo.setDirection(Servo.Direction.FORWARD);
-        HangRightForearmServo.setDirection(Servo.Direction.FORWARD);
-        HangRightElbowServo.setDirection(Servo.Direction.REVERSE);
+//        HangLeftForearmServo.setDirection(Servo.Direction.FORWARD);
+//        HangLeftElbowServo.setDirection(Servo.Direction.FORWARD);
+//        HangRightForearmServo.setDirection(Servo.Direction.FORWARD);
+//        HangRightElbowServo.setDirection(Servo.Direction.REVERSE);
         Grabber.setDirection(Servo.Direction.FORWARD);
+        PlaneLauncher.setDirection(Servo.Direction.FORWARD);
 
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         FRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -204,21 +207,23 @@ public class KongTeleop extends LinearOpMode {
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
 
-            if (gamepad2.left_bumper) {
-                HangLeftElbowServo.setPosition(0);
-                HangRightElbowServo.setPosition(0);
-            } else {
-                HangLeftElbowServo.setPosition(.42);
-                HangRightElbowServo.setPosition(.42);
+            if (gamepad2.left_bumper && runtime.milliseconds() > 90_000) {
+                PlaneLauncher.setPosition(0.5);
             }
+//                HangLeftElbowServo.setPosition(0);
+//                HangRightElbowServo.setPosition(0);
+//            } else {
+//                HangLeftElbowServo.setPosition(.42);
+//                HangRightElbowServo.setPosition(.42);
+//            }
 
-            if (gamepad2.right_bumper) {
-                HangLeftForearmServo.setPosition(0);
-                HangRightForearmServo.setPosition(0);
-            } else {
-                HangLeftForearmServo.setPosition(1);
-                HangRightForearmServo.setPosition(1);
-            }
+//            if (gamepad2.right_bumper) {
+//                HangLeftForearmServo.setPosition(0);
+//                HangRightForearmServo.setPosition(0);
+//            } else {
+//                HangLeftForearmServo.setPosition(1);
+//                HangRightForearmServo.setPosition(1);
+//            }
 
             boolean circlePressed = gamepad2.circle;
             if (circlePressed && !oldCirclePressed) {
@@ -241,11 +246,14 @@ public class KongTeleop extends LinearOpMode {
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+            telemetry.addData("Sticks", "left (%.2f), right (%.2f)", gamepad1.left_stick_y, gamepad1.right_stick_x);
+            telemetry.addData("StrafeModifier", gamepad1.right_stick_y);
             telemetry.addData("Bumpers", "(%b), (%b)", gamepad1.left_bumper, gamepad1.right_bumper);
             telemetry.addData("Intake", gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
             telemetry.addData("Slides", gamepad2.left_stick_y);
-            telemetry.addData("GrabberPressed", "(%b), (%b)", gamepad2.cross, oldCrossPressed);
-            telemetry.addData("Claw", clawIsClosed);
+            telemetry.addData("GrabberPressed", "(%b), (%b)", crossPressed, oldCrossPressed);
+            telemetry.addData("ElbowServoPressed", "(%b), (%b)", circlePressed, oldCirclePressed);
+            telemetry.addData("WristServoPressed", "(%b), (%b)", trianglePressed, oldTrianglePressed);
             telemetry.update();
             oldCrossPressed = crossPressed;
             oldTrianglePressed = trianglePressed;

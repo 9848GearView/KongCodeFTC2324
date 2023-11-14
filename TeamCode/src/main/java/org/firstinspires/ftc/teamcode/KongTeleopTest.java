@@ -66,10 +66,10 @@ public class KongTeleopTest extends LinearOpMode {
     private Servo RightElbowServo = null;
     private Servo LeftWristServo = null;
     private Servo RightWristServo = null;
-    private Servo HangLeftForearmServo = null;
-    private Servo HangLeftElbowServo = null;
-    private Servo HangRightForearmServo = null;
-    private Servo HangRightElbowServo = null;
+//    private Servo HangLeftForearmServo = null;
+//    private Servo HangLeftElbowServo = null;
+//    private Servo HangRightForearmServo = null;
+//    private Servo HangRightElbowServo = null;
     private Servo Grabber = null;
     private boolean oldCrossPressed = true;
     private boolean oldTrianglePressed = true;
@@ -78,10 +78,10 @@ public class KongTeleopTest extends LinearOpMode {
     private boolean oldRightTriggerPressed = false;
     private boolean clawIsClosed = true;
     private int index = 0;
-    private double[] LEServoPositions = {0.28, 0.28, 0.23, 0.23, 0.20, 0.20, 0.18, 0.18, 0.20, 0.20, 0.21, 0.21, 0.22, 0.23, 0.25, 0.25, 0.40, 0.70, 0.92};
-    private double[] REServoPositions = {0.28, 0.28, 0.23, 0.23, 0.20, 0.20, 0.18, 0.18, 0.20, 0.20, 0.21, 0.21, 0.22, 0.23, 0.25, 0.25, 0.40, 0.70, 0.92};
-    private double[] LWServoPositions = {0.50, 0.30, 0.30, 0.26, 0.26, 0.20, 0.20, 0.19, 0.21, 0.36, 0.36, 0.38, 0.39, 0.41, 0.41, 0.44, 0.44, 0.20, 0.0};
-    private double[] RWServoPositions = {0.50, 0.30, 0.30, 0.26, 0.26, 0.20, 0.20, 0.19, 0.21, 0.36, 0.36, 0.38, 0.39, 0.41, 0.41, 0.44, 0.44, 0.20, 0.0};
+    private double[] LEServoPositions = {0.28, 0.23, 0.21, 0.18, 0.21, 0.23, 0.25, 0.40, 0.70, 0.92};
+    private double[] REServoPositions = {0.28, 0.23, 0.21, 0.18, 0.21, 0.23, 0.25, 0.40, 0.70, 0.92};
+    private double[] LWServoPositions = {0.50, 0.30, 0.23, 0.20, 0.36, 0.40, 0.44, 0.44, 0.20, 0.0};
+    private double[] RWServoPositions = {0.50, 0.30, 0.23, 0.20, 0.36, 0.40, 0.44, 0.44, 0.20, 0.0};
 
     @Override
     public void runOpMode() {
@@ -102,10 +102,10 @@ public class KongTeleopTest extends LinearOpMode {
         RightElbowServo = hardwareMap.get(Servo.class, "RE");
         LeftWristServo = hardwareMap.get(Servo.class, "LW");
         RightWristServo = hardwareMap.get(Servo.class, "RW");
-        HangLeftForearmServo = hardwareMap.get(Servo.class, "HLA");
-        HangLeftElbowServo = hardwareMap.get(Servo.class, "HLE");
-        HangRightForearmServo = hardwareMap.get(Servo.class, "HRA");
-        HangRightElbowServo = hardwareMap.get(Servo.class, "HRE");
+//        HangLeftForearmServo = hardwareMap.get(Servo.class, "HLA");
+//        HangLeftElbowServo = hardwareMap.get(Servo.class, "HLE");
+//        HangRightForearmServo = hardwareMap.get(Servo.class, "HRA");
+//        HangRightElbowServo = hardwareMap.get(Servo.class, "HRE");
         Grabber = hardwareMap.get(Servo.class, "G");
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -130,10 +130,10 @@ public class KongTeleopTest extends LinearOpMode {
         RightElbowServo.setDirection(Servo.Direction.REVERSE);
         LeftWristServo.setDirection(Servo.Direction.FORWARD);
         RightWristServo.setDirection(Servo.Direction.REVERSE);
-        HangLeftForearmServo.setDirection(Servo.Direction.FORWARD);
-        HangLeftElbowServo.setDirection(Servo.Direction.FORWARD);
-        HangRightForearmServo.setDirection(Servo.Direction.FORWARD);
-        HangRightElbowServo.setDirection(Servo.Direction.REVERSE);
+//        HangLeftForearmServo.setDirection(Servo.Direction.FORWARD);
+//        HangLeftElbowServo.setDirection(Servo.Direction.FORWARD);
+//        HangRightForearmServo.setDirection(Servo.Direction.FORWARD);
+//        HangRightElbowServo.setDirection(Servo.Direction.REVERSE);
         Grabber.setDirection(Servo.Direction.FORWARD);
 
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
