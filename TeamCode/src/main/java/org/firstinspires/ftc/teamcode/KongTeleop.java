@@ -207,8 +207,11 @@ public class KongTeleop extends LinearOpMode {
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
 
-            if (gamepad2.left_bumper && runtime.milliseconds() > 90_000) {
-                PlaneLauncher.setPosition(0.5);
+            if (gamepad2.left_bumper) {
+                PlaneLauncher.setPosition(0.0);
+            }
+            if (gamepad2.right_bumper) {
+                PlaneLauncher.setPosition(1.0);
             }
 //                HangLeftElbowServo.setPosition(0);
 //                HangRightElbowServo.setPosition(0);

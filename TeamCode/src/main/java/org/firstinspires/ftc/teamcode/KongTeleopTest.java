@@ -78,10 +78,10 @@ public class KongTeleopTest extends LinearOpMode {
     private boolean oldRightTriggerPressed = false;
     private boolean clawIsClosed = true;
     private int index = 0;
-    private double[] LEServoPositions = {0.28, 0.23, 0.21, 0.18, 0.21, 0.23, 0.25, 0.40, 0.70, 0.92};
-    private double[] REServoPositions = {0.28, 0.23, 0.21, 0.18, 0.21, 0.23, 0.25, 0.40, 0.70, 0.92};
-    private double[] LWServoPositions = {0.50, 0.30, 0.23, 0.20, 0.36, 0.40, 0.44, 0.44, 0.20, 0.0};
-    private double[] RWServoPositions = {0.50, 0.30, 0.23, 0.20, 0.36, 0.40, 0.44, 0.44, 0.20, 0.0};
+    private double[] LEServoPositions = {0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
+    private double[] REServoPositions = {0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
+    private double[] LWServoPositions = {0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
+    private double[] RWServoPositions = {0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
 
     @Override
     public void runOpMode() {
@@ -144,11 +144,11 @@ public class KongTeleopTest extends LinearOpMode {
         LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        LeftElbowServo.setPosition(0.5);
-        RightElbowServo.setPosition(0.5);
-        LeftWristServo.setPosition(0.5);
-        RightWristServo.setPosition(0.5);
-        Grabber.setPosition(.5);
+//        LeftElbowServo.setPosition(0.5);
+//        RightElbowServo.setPosition(0.5);
+//        LeftWristServo.setPosition(0.5);
+//        RightWristServo.setPosition(0.5);
+        Grabber.setPosition(.55);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -244,12 +244,12 @@ public class KongTeleopTest extends LinearOpMode {
 
             boolean leftTriggerPressed = gamepad2.left_bumper;
             if (leftTriggerPressed && !oldLeftTriggerPressed) {
-                Grabber.setPosition(Grabber.getPosition() + 0.05);
+                Grabber.setPosition(Grabber.getPosition() + 0.02);
             }
 
             boolean rightTriggerPressed = gamepad2.right_bumper;
             if (rightTriggerPressed && !oldRightTriggerPressed) {
-                Grabber.setPosition(Grabber.getPosition() - 0.05);
+                Grabber.setPosition(Grabber.getPosition() - 0.02);
             }
 
             // Show the elapsed game time and wheel power.
