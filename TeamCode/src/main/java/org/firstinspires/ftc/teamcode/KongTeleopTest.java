@@ -78,6 +78,8 @@ public class KongTeleopTest extends LinearOpMode {
     private boolean oldRightTriggerPressed = false;
     private boolean clawIsClosed = true;
     private int index = 0;
+    private final double CONSTANT = 0.12;
+    private final double CONSTANT2 = 0.03;
     private double[] LEServoPositions = {0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
     private double[] REServoPositions = {0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
     private double[] LWServoPositions = {0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
@@ -143,6 +145,16 @@ public class KongTeleopTest extends LinearOpMode {
         IntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        for (int i = 0; i < LWServoPositions.length; i++) {
+            LWServoPositions[i] -= CONSTANT;
+            RWServoPositions[i] -= CONSTANT;
+        }
+
+        for (int i = 0; i < LWServoPositions.length; i++) {
+            LEServoPositions[i] -= CONSTANT2;
+            REServoPositions[i] -= CONSTANT2;
+        }
 
 //        LeftElbowServo.setPosition(0.5);
 //        RightElbowServo.setPosition(0.5);
