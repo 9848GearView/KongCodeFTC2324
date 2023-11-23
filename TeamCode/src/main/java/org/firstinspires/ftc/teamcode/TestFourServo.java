@@ -81,10 +81,10 @@ public class TestFourServo extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        LeftElbowServo.setPosition(.5);
-        RightElbowServo.setPosition(.5);
-        LeftWristServo.setPosition(.5);
-        RightWristServo.setPosition(.5);
+        LeftElbowServo.setPosition(.4);
+        RightElbowServo.setPosition(.4);
+        LeftWristServo.setPosition(.1);
+        RightWristServo.setPosition(.1);
         Grabber.setPosition(.5);
 
 

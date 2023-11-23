@@ -78,13 +78,17 @@ public class KongTeleopTest extends LinearOpMode {
     private boolean oldRightTriggerPressed = false;
     private boolean clawIsClosed = true;
     private int index = 0;
-    private final double CONSTANT = 0.12;
-    private final double CONSTANT2 = 0.03;
-    private double[] LEServoPositions = {0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
-    private double[] REServoPositions = {0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
-    private double[] LWServoPositions = {0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
-    private double[] RWServoPositions = {0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
-
+    private final double CONSTANT = 0;
+    private final double CONSTANT2 = 0;
+    private double[] LEServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.80, 0.27, 0.23};
+            //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
+    private double[] REServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.80, 0.27, 0.23};
+                    //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
+    private double[] LWServoPositions = {0.13, 0.12, 0.10, 0.08, 0.07, 0.04, 0.04, 0.05, 0.43, 0.00, 0.03};
+                            //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
+    private double[] RWServoPositions = {0.13, 0.12, 0.10, 0.08, 0.07, 0.04, 0.04, 0.05, 0.43, 0.00, 0.03};
+                                    //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
+//grabber close: 0.46
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "sInitialized");

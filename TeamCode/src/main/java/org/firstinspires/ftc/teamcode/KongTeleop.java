@@ -77,11 +77,16 @@ public class KongTeleop extends LinearOpMode {
     private boolean oldCirclePressed = true;
     private boolean clawIsClosed = true;
     private int index = 0;
-    private double[] LEServoPositions = {0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
-    private double[] REServoPositions = {0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
-    private double[] LWServoPositions = {0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
-    private double[] RWServoPositions = {0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
-
+    private double[] LEServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.80, 0.80, 0.27, 0.23};
+    //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
+    private double[] REServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.80, 0.80, 0.27, 0.23};
+    //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
+    private double[] LWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.43, 0.00, 0.00, 0.03};
+    //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
+    private double[] RWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.43, 0.00, 0.00, 0.03};
+    //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
+    private double[] GrabberPositions = {0.44, 0.55};
+    private final int DELAY_BETWEEN_MOVES = 100;
 
     @Override
     public void runOpMode() {
@@ -96,8 +101,19 @@ public class KongTeleop extends LinearOpMode {
                 LeftWristServo.setPosition(LWServoPositions[i]);
                 RightWristServo.setPosition(RWServoPositions[i]);
 
-                telemetry.addData("AAAAA", 3);
-                telemetry.update();
+//                sleep(1000);
+//                telemetry.addData("index", i);
+//                telemetry.update();
+            }
+        }
+
+        class PutGrabberToCertainPosition extends TimerTask {
+            int i;
+            public PutGrabberToCertainPosition(int i) {
+                this.i = i;
+            }
+            public void run() {
+                Grabber.setPosition(GrabberPositions[i]);
             }
         }
 
@@ -153,6 +169,9 @@ public class KongTeleop extends LinearOpMode {
         IntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+//        timer.schedule(new PutGrabberToCertainPosition(0), 0);
+        timer.schedule(new LowerArmToCertainServoPosition(0), 0 * DELAY_BETWEEN_MOVES);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -231,15 +250,23 @@ public class KongTeleop extends LinearOpMode {
             boolean circlePressed = gamepad2.circle;
             if (circlePressed && !oldCirclePressed) {
                 if (index == 0) {
-                    timer.schedule(new LowerArmToCertainServoPosition(0), 0);
-                    timer.schedule(new LowerArmToCertainServoPosition(1), 300);
-                    timer.schedule(new LowerArmToCertainServoPosition(2), 500);
-                    index = 2;
-                } else if (index == 2) {
-                    timer.schedule(new LowerArmToCertainServoPosition(3), 0);
-                    timer.schedule(new LowerArmToCertainServoPosition(4), 200);
-                    timer.schedule(new LowerArmToCertainServoPosition(5), 400);
-                    timer.schedule(new LowerArmToCertainServoPosition(6), 600);
+                    timer.schedule(new PutGrabberToCertainPosition(0), 0);
+                    timer.schedule(new LowerArmToCertainServoPosition(0), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(1), 2 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(2), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(3), 4 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(4), 5 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(5), 6 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(6), 7 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(7), 8 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(8), 9 * DELAY_BETWEEN_MOVES);
+                    index = 8;
+                } else if (index == 8) {
+                    timer.schedule(new PutGrabberToCertainPosition(1), 0);
+                    timer.schedule(new LowerArmToCertainServoPosition(9),  1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(10), 6 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(11), 12 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(0),  15 * DELAY_BETWEEN_MOVES);
                     index = 0;
                 }
             }
