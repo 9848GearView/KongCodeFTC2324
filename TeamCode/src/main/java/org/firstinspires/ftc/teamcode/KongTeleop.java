@@ -90,6 +90,14 @@ public class KongTeleop extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        for (int i = 0; i < REServoPositions.length; i++) {
+            LWServoPositions[i] += 0.02;
+            RWServoPositions[i] += 0.02;
+        }
+        for (int i = 0; i < REServoPositions.length; i++) {
+            LEServoPositions[i] += -0.1;
+            REServoPositions[i] += -0.1;
+        }
         class LowerArmToCertainServoPosition extends TimerTask {
             int i;
             public LowerArmToCertainServoPosition(int i) {
@@ -251,15 +259,15 @@ public class KongTeleop extends LinearOpMode {
             if (circlePressed && !oldCirclePressed) {
                 if (index == 0) {
                     timer.schedule(new PutGrabberToCertainPosition(0), 0);
-                    timer.schedule(new LowerArmToCertainServoPosition(0), 1 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new LowerArmToCertainServoPosition(1), 2 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new LowerArmToCertainServoPosition(2), 3 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new LowerArmToCertainServoPosition(3), 4 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new LowerArmToCertainServoPosition(4), 5 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new LowerArmToCertainServoPosition(5), 6 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new LowerArmToCertainServoPosition(6), 7 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new LowerArmToCertainServoPosition(7), 8 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new LowerArmToCertainServoPosition(8), 9 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(1), 4 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(2), 5 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(3), 6 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(4), 7 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(5), 8 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(6), 9 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(7), 10 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(8), 11 * DELAY_BETWEEN_MOVES);
                     index = 8;
                 } else if (index == 8) {
                     timer.schedule(new PutGrabberToCertainPosition(1), 0);

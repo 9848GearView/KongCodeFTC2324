@@ -21,6 +21,14 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import androidx.annotation.NonNull;
+
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Rotation2d;
+import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -40,6 +48,9 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /*
@@ -74,6 +85,7 @@ public class KongRedBackdrop extends LinearOpMode
         TRES
     }
     private ElapsedTime runtime = new ElapsedTime();
+    private Timer timer = new Timer();
     private DcMotor FLMotor = null;
     private DcMotor FRMotor = null;
     private DcMotor BLMotor = null;
@@ -85,16 +97,54 @@ public class KongRedBackdrop extends LinearOpMode
     private Servo RightElbowServo = null;
     private Servo LeftWristServo = null;
     private Servo RightWristServo = null;
-    private Servo HangArmServo = null;
-    private Servo HangElbowServo = null;
     private Servo Grabber = null;
     private ElapsedTime eTime = new ElapsedTime();
 
 
-    static final double     FORWARD_SPEED = 0.5;
-    static final double     TURN_SPEED    = 0.5;
+//    static final double     FORWARD_SPEED = 0.5;
+//    static final double     TURN_SPEED    = 0.5;
+    private int index = 0;
+    private double[] LEServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.80, 0.80, 0.27, 0.23, 0.80};
+    //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
+    private double[] REServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.80, 0.80, 0.27, 0.23, 0.80};
+    //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
+    private double[] LWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.43, 0.00, 0.00, 0.5};
+    //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
+    private double[] RWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.43, 0.00, 0.00, 0.5};
+    //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
+    private double[] GrabberPositions = {0.55, 0.55};
+    private final int DELAY_BETWEEN_MOVES = 100;
+    public class LowerArmToCertainServoPosition extends TimerTask {
+        int i;
+        public LowerArmToCertainServoPosition(int i) {
+            this.i = i;
+        }
+        public void run() {
+            LeftElbowServo.setPosition(LEServoPositions[i]);
+            RightElbowServo.setPosition(REServoPositions[i]);
+            LeftWristServo.setPosition(LWServoPositions[i]);
+            RightWristServo.setPosition(RWServoPositions[i]);
+
+//                sleep(1000);
+//                telemetry.addData("index", i);
+//                telemetry.update();
+        }
+    }
+
+    public class PutGrabberToCertainPosition extends TimerTask {
+        int i;
+        public PutGrabberToCertainPosition(int i) {
+            this.i = i;
+        }
+        public void run() {
+            Grabber.setPosition(GrabberPositions[i]);
+        }
+    }
+
+
     OpenCvWebcam webcam;
     TeamElementDeterminationPipeline pipeline;
+    StartingPositionEnum sideOfFieldToStartOn = StartingPositionEnum.RIGHT;
 
     @Override
     public void runOpMode()
@@ -105,6 +155,8 @@ public class KongRedBackdrop extends LinearOpMode
          * you should take a look at {@link InternalCamera1Example} or its
          * webcam counterpart, {@link WebcamExample} first.
          */
+
+
         telemetry.addData("Status", "sInitialized");
         telemetry.update();
 
@@ -122,8 +174,6 @@ public class KongRedBackdrop extends LinearOpMode
         RightElbowServo = hardwareMap.get(Servo.class, "RE");
         LeftWristServo = hardwareMap.get(Servo.class, "LW");
         RightWristServo = hardwareMap.get(Servo.class, "RW");
-        HangArmServo = hardwareMap.get(Servo.class, "HA");
-        HangElbowServo = hardwareMap.get(Servo.class, "HE");
         Grabber = hardwareMap.get(Servo.class, "G");
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -148,8 +198,6 @@ public class KongRedBackdrop extends LinearOpMode
         RightElbowServo.setDirection(Servo.Direction.REVERSE);
         LeftWristServo.setDirection(Servo.Direction.FORWARD);
         RightWristServo.setDirection(Servo.Direction.REVERSE);
-        HangArmServo.setDirection(Servo.Direction.FORWARD);
-        HangElbowServo.setDirection(Servo.Direction.FORWARD);
         Grabber.setDirection(Servo.Direction.FORWARD);
 
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -189,16 +237,20 @@ public class KongRedBackdrop extends LinearOpMode
             }
         });
 
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, -63, Math.PI / 2));
+//        timer.schedule(new PutGrabberToCertainPosition(0), 3000);
+
         waitForStart();
 
         while (opModeIsActive())
         {
             telemetry.addData("Analysis", pipeline.getAnalysis());
             telemetry.update();
-            doActions(StartingPositionEnum.RIGHT, pipeline.getAnalysis());
+            doActions(drive, sideOfFieldToStartOn, pipeline.getAnalysis());
 
             // Don't burn CPU cycles busy-looping in this sample
-            sleep(30000);
+            sleep(15000);
+            break;
         }
     }
 
@@ -464,34 +516,74 @@ public class KongRedBackdrop extends LinearOpMode
         }
     }
 
-    private void doActions(StartingPositionEnum position, SpikeMarkPosition smp) {
-        // ps = ParkingSpace.UNO;
-        boolean needInvert = (position != StartingPositionEnum.LEFT);
+    private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
+//        smp = SpikeMarkPosition.UNO;
+        boolean needInvert = (position != StartingPositionEnum.RIGHT);
 
-        drive(DriveDirection.FORWARD, FORWARD_SPEED, 1000);
-        sleep(200);
-        if (smp == SpikeMarkPosition.DOS) {
-            spinIntakeMotor(DriveDirection.BACKWARD, 0.5, 1000);
-            sleep(500);
-//            IntakeMotor.setPower(0);
+//        double heading;
+//        if (smp == SpikeMarkPosition.UNO) {
+//            heading = 0;
+//        } else if (smp == SpikeMarkPosition.DOS) {
+//            heading = Math.PI / 2;
+//        } else {
+//            heading = Math.PI;
+//        }
+
+//        class PlacePixelOnBackDrop implements Action {
+//            @Override
+//            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+//                timer.schedule(new PutGrabberToCertainPosition(0), 0);
+//                timer.schedule(new LowerArmToCertainServoPosition(0), 1 * DELAY_BETWEEN_MOVES);
+//                timer.schedule(new LowerArmToCertainServoPosition(1), 2 * DELAY_BETWEEN_MOVES);
+//                timer.schedule(new LowerArmToCertainServoPosition(2), 3 * DELAY_BETWEEN_MOVES);
+//                timer.schedule(new LowerArmToCertainServoPosition(3), 4 * DELAY_BETWEEN_MOVES);
+//                timer.schedule(new LowerArmToCertainServoPosition(4), 5 * DELAY_BETWEEN_MOVES);
+//                timer.schedule(new LowerArmToCertainServoPosition(5), 6 * DELAY_BETWEEN_MOVES);
+//                timer.schedule(new LowerArmToCertainServoPosition(6), 7 * DELAY_BETWEEN_MOVES);
+//                timer.schedule(new LowerArmToCertainServoPosition(7), 8 * DELAY_BETWEEN_MOVES);
+//                timer.schedule(new LowerArmToCertainServoPosition(8), 9 * DELAY_BETWEEN_MOVES);
+//                return false;
+//            }
+//        }
+//
+        class PlacePixelOnGround implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+//                timer.schedule(new PutGrabberToCertainPosition(0), 0);
+                timer.schedule(new LowerArmToCertainServoPosition(7), 3 * DELAY_BETWEEN_MOVES);
+                timer.schedule(new LowerArmToCertainServoPosition(12), 20 * DELAY_BETWEEN_MOVES);
+//                timer.schedule(new LowerArmToCertainServoPosition(12), 15 * DELAY_BETWEEN_MOVES);
+//                timer.schedule(new PutGrabberToCertainPosition(1), 18 * DELAY_BETWEEN_MOVES);
+                return false;
+            }
         }
-        turn(getCorrectDirection(DriveDirection.RIGHT, needInvert), TURN_SPEED, 750);
-        sleep(200);
-        if (smp == SpikeMarkPosition.UNO) {
-            spinIntakeMotor(DriveDirection.BACKWARD, 0.5, 1000);
-            sleep(500);
-//            IntakeMotor.setPower(0);
-        }
-        drive(DriveDirection.BACKWARD, FORWARD_SPEED, 750);
-        sleep(200);
-        if (smp == SpikeMarkPosition.TRES) {
-            spinIntakeMotor(DriveDirection.BACKWARD, 0.5, 1000);
-            sleep(500);
-//            IntakeMotor.setPower(0);
-        }
-        drive(DriveDirection.BACKWARD, FORWARD_SPEED, 500);
-        sleep(200);
-        strafe(getCorrectDirection(DriveDirection.RIGHT, needInvert), FORWARD_SPEED,750);
+
+//        class GrabPixel implements Action {
+//            @Override
+//            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+//                timer.schedule(new PutGrabberToCertainPosition(1), 0);
+//                timer.schedule(new LowerArmToCertainServoPosition(9),  1 * DELAY_BETWEEN_MOVES);
+//                timer.schedule(new LowerArmToCertainServoPosition(10), 6 * DELAY_BETWEEN_MOVES);
+//                timer.schedule(new LowerArmToCertainServoPosition(11), 12 * DELAY_BETWEEN_MOVES);
+//                timer.schedule(new LowerArmToCertainServoPosition(0),  15 * DELAY_BETWEEN_MOVES);
+//                return false;
+//            }
+//        }
+
+        Actions.runBlocking(
+                drive.actionBuilder(drive.pose)
+//                        .lineToY(-36)
+//                        .turn(-Math.PI/2)
+                        .afterTime(0, new PlacePixelOnGround())
+                        .waitSeconds(10)
+//                        .lineToX(36)
+                        .build());
+//                        .turnTo(Math.PI)
+//                        .lineToXConstantHeading(46)
+//                        .waitSeconds(5)
+//                        .strafeToConstantHeading(new Vector2d(46, -42))
+//                        .strafeToConstantHeading(new Vector2d(46, -10))
+//                        .lineToX(72)
     }
 
     private DriveDirection getCorrectDirection(DriveDirection direction, boolean needInvert) {
@@ -517,120 +609,5 @@ public class KongRedBackdrop extends LinearOpMode
         }
 
         return invertedDirection;
-    }
-
-    private void spinIntakeMotor(DriveDirection direction, double power, double time) {
-        eTime.reset();
-        switch(direction) {
-            case FORWARD:
-                IntakeMotor.setPower(power);
-                break;
-            case BACKWARD:
-                IntakeMotor.setPower(-power);
-            default:
-                return;
-        }
-        while(opModeIsActive() && eTime.milliseconds() < time){
-            telemetry.addData("Time:", eTime);
-            telemetry.update();
-        }
-        IntakeMotor.setPower(0);
-    }
-
-    private void drive(DriveDirection direction, double power, double time) {
-        eTime.reset();
-        switch(direction) {
-            case FORWARD:
-                FLMotor.setPower(power);
-                FRMotor.setPower(power);
-                BLMotor.setPower(power);
-                BRMotor.setPower(power);
-                break;
-            case RIGHT:
-                FLMotor.setPower(-power);
-                FRMotor.setPower(power);
-                BLMotor.setPower(-power);
-                BRMotor.setPower(power);
-                break;
-            case LEFT:
-                FLMotor.setPower(power);
-                FRMotor.setPower(-power);
-                BLMotor.setPower(power);
-                BRMotor.setPower(-power);
-                break;
-            case BACKWARD:
-                FLMotor.setPower(-power);
-                FRMotor.setPower(-power);
-                BLMotor.setPower(-power);
-                BRMotor.setPower(-power);
-        }
-        while(opModeIsActive() && eTime.milliseconds() < time){
-            telemetry.addData("Time:", eTime);
-            telemetry.update();
-        }
-        FLMotor.setPower(0);
-        FRMotor.setPower(0);
-        BLMotor.setPower(0);
-        BRMotor.setPower(0);
-    }
-
-    private void strafe(DriveDirection driveDirection, double power, double time){
-        eTime.reset();
-        switch (driveDirection) {
-            case LEFT:
-                while(opModeIsActive() && eTime.milliseconds() < time){
-                    FLMotor.setPower(-power);
-                    FRMotor.setPower(power);
-                    BLMotor.setPower(power);
-                    BRMotor.setPower(-power);
-                    telemetry.addData("Time:", eTime);
-                    telemetry.update();
-                }
-                break;
-            case RIGHT:
-                while(opModeIsActive() && eTime.milliseconds() < time){
-                    FLMotor.setPower(power);
-                    FRMotor.setPower(-power);
-                    BLMotor.setPower(-power);
-                    BRMotor.setPower(power);
-                    telemetry.addData("Time:", eTime);
-                    telemetry.update();
-                }
-                break;
-        }
-        FLMotor.setPower(0);
-        FRMotor.setPower(0);
-        BLMotor.setPower(0);
-        BRMotor.setPower(0);
-    }
-
-    private void turn(DriveDirection driveDirection, double power, double time){
-        eTime.reset();
-        switch (driveDirection) {
-            case LEFT:
-                while(opModeIsActive() && eTime.milliseconds() < time){
-                    FLMotor.setPower(-power);
-                    FRMotor.setPower(power);
-                    BLMotor.setPower(-power);
-                    BRMotor.setPower(power);
-                    telemetry.addData("Time:", eTime);
-                    telemetry.update();
-                }
-                break;
-            case RIGHT:
-                while(opModeIsActive() && eTime.milliseconds() < time){
-                    FLMotor.setPower(power);
-                    FRMotor.setPower(-power);
-                    BLMotor.setPower(power);
-                    BRMotor.setPower(-power);
-                    telemetry.addData("Time:", eTime);
-                    telemetry.update();
-                }
-                break;
-        }
-        FLMotor.setPower(0);
-        FRMotor.setPower(0);
-        BLMotor.setPower(0);
-        BRMotor.setPower(0);
     }
 }
