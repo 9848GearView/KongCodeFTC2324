@@ -21,6 +21,15 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import androidx.annotation.NonNull;
+
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Rotation2d;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -40,6 +49,9 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /*
@@ -74,6 +86,7 @@ public class KongBlueStacks extends LinearOpMode
         TRES
     }
     private ElapsedTime runtime = new ElapsedTime();
+    private Timer timer = new Timer();
     private DcMotor FLMotor = null;
     private DcMotor FRMotor = null;
     private DcMotor BLMotor = null;
@@ -85,16 +98,54 @@ public class KongBlueStacks extends LinearOpMode
     private Servo RightElbowServo = null;
     private Servo LeftWristServo = null;
     private Servo RightWristServo = null;
-    private Servo HangArmServo = null;
-    private Servo HangElbowServo = null;
     private Servo Grabber = null;
     private ElapsedTime eTime = new ElapsedTime();
 
 
-    static final double     FORWARD_SPEED = 0.5;
-    static final double     TURN_SPEED    = 0.5;
+    //    static final double     FORWARD_SPEED = 0.5;
+//    static final double     TURN_SPEED    = 0.5;
+    private int index = 0;
+    private double[] LEServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.75, 0.60, 0.27, 0.23};
+    //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
+    private double[] REServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.75, 0.60, 0.27, 0.23};
+    //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
+    private double[] LWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.45, 0.00, 0.00, 0.03};
+    //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
+    private double[] RWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.45, 0.00, 0.00, 0.03};
+    //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
+    private double[] GrabberPositions = {0.46, 0.55};
+    private final int DELAY_BETWEEN_MOVES = 100;
+    public class LowerArmToCertainServoPosition extends TimerTask {
+        int i;
+        public LowerArmToCertainServoPosition(int i) {
+            this.i = i;
+        }
+        public void run() {
+            LeftElbowServo.setPosition(LEServoPositions[i]);
+            RightElbowServo.setPosition(REServoPositions[i]);
+            LeftWristServo.setPosition(LWServoPositions[i]);
+            RightWristServo.setPosition(RWServoPositions[i]);
+
+//                sleep(1000);
+//                telemetry.addData("index", i);
+//                telemetry.update();
+        }
+    }
+
+    public class PutGrabberToCertainPosition extends TimerTask {
+        int i;
+        public PutGrabberToCertainPosition(int i) {
+            this.i = i;
+        }
+        public void run() {
+            Grabber.setPosition(GrabberPositions[i]);
+        }
+    }
+
+
     OpenCvWebcam webcam;
     TeamElementDeterminationPipeline pipeline;
+    StartingPositionEnum sideOfFieldToStartOn = StartingPositionEnum.LEFT;
 
     @Override
     public void runOpMode()
@@ -105,8 +156,19 @@ public class KongBlueStacks extends LinearOpMode
          * you should take a look at {@link InternalCamera1Example} or its
          * webcam counterpart, {@link WebcamExample} first.
          */
+
+
         telemetry.addData("Status", "sInitialized");
         telemetry.update();
+
+        for (int i = 0; i < REServoPositions.length; i++) {
+            LWServoPositions[i] += 0.02;
+            RWServoPositions[i] += 0.02;
+        }
+        for (int i = 0; i < REServoPositions.length; i++) {
+            LEServoPositions[i] += -0.1;
+            REServoPositions[i] += -0.1;
+        }
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
@@ -122,8 +184,6 @@ public class KongBlueStacks extends LinearOpMode
         RightElbowServo = hardwareMap.get(Servo.class, "RE");
         LeftWristServo = hardwareMap.get(Servo.class, "LW");
         RightWristServo = hardwareMap.get(Servo.class, "RW");
-        HangArmServo = hardwareMap.get(Servo.class, "HA");
-        HangElbowServo = hardwareMap.get(Servo.class, "HE");
         Grabber = hardwareMap.get(Servo.class, "G");
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -148,8 +208,6 @@ public class KongBlueStacks extends LinearOpMode
         RightElbowServo.setDirection(Servo.Direction.REVERSE);
         LeftWristServo.setDirection(Servo.Direction.FORWARD);
         RightWristServo.setDirection(Servo.Direction.REVERSE);
-        HangArmServo.setDirection(Servo.Direction.FORWARD);
-        HangElbowServo.setDirection(Servo.Direction.FORWARD);
         Grabber.setDirection(Servo.Direction.FORWARD);
 
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -160,7 +218,7 @@ public class KongBlueStacks extends LinearOpMode
         LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-
+        // Wait for the game to start (driver presses PLAY)
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);        pipeline = new TeamElementDeterminationPipeline();
@@ -188,6 +246,8 @@ public class KongBlueStacks extends LinearOpMode
                 telemetry.addData("erroCode", errorCode);
             }
         });
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(-36, 63, -Math.PI / 2));
+//        timer.schedule(new PutGrabberToCertainPosition(0), 3000);
 
         waitForStart();
 
@@ -195,11 +255,11 @@ public class KongBlueStacks extends LinearOpMode
         {
             telemetry.addData("Analysis", pipeline.getAnalysis());
             telemetry.update();
-
-            doActions(StartingPositionEnum.LEFT, pipeline.getAnalysis());
+            doActions(drive, sideOfFieldToStartOn, pipeline.getAnalysis());
 
             // Don't burn CPU cycles busy-looping in this sample
-            sleep(30000);
+            sleep(15000);
+            break;
         }
     }
 
@@ -268,7 +328,7 @@ public class KongBlueStacks extends LinearOpMode
         void inputToCb(Mat input)
         {
             Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
-            Core.extractChannel(YCrCb, Cb, 2);
+            Core.extractChannel(YCrCb, Cb, 1);
         }
 
         @Override
@@ -465,34 +525,116 @@ public class KongBlueStacks extends LinearOpMode
         }
     }
 
-    private void doActions(StartingPositionEnum position, SpikeMarkPosition smp) {
-        // ps = ParkingSpace.UNO;
-        boolean needInvert = (position != StartingPositionEnum.LEFT);
+    public class VomitPixelOnGround implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            IntakeMotor.setPower(0.13);
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    IntakeMotor.setPower(0);
+                }
+            }, 2000);
+            return false;
+        }
+    }
 
-        drive(DriveDirection.FORWARD, FORWARD_SPEED, 1000);
-        sleep(200);
-        if (smp == SpikeMarkPosition.DOS) {
-            spinIntakeMotor(DriveDirection.BACKWARD, 0.5, 1000);
-            sleep(500);
-//            IntakeMotor.setPower(0);
+    public class LeavePixelOnGround implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            IntakeMotor.setPower(-0.13);
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    IntakeMotor.setPower(0);
+                }
+            }, 500);
+            return false;
         }
-        turn(getCorrectDirection(DriveDirection.RIGHT, needInvert), TURN_SPEED, 750);
-        sleep(200);
-        if (smp == SpikeMarkPosition.TRES) {
-            spinIntakeMotor(DriveDirection.BACKWARD, 0.5, 1000);
-            sleep(500);
-//            IntakeMotor.setPower(0);
+    }
+
+    public class PlacePixelOnBackDrop implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            timer.schedule(new PutGrabberToCertainPosition(0), 0);
+            timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(1), 4 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(2), 5 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(3), 6 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(4), 7 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(5), 8 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(6), 9 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(7), 10 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(8), 11 * DELAY_BETWEEN_MOVES);
+            return false;
         }
-        drive(DriveDirection.BACKWARD, FORWARD_SPEED, 750);
-        sleep(200);
+    }
+
+    public class GrabPixel implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            timer.schedule(new PutGrabberToCertainPosition(1), 0);
+            timer.schedule(new LowerArmToCertainServoPosition(9),  1 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(10), 6 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(11), 12 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(0),  15 * DELAY_BETWEEN_MOVES);
+            return false;
+        }
+    }
+    private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
+        smp = SpikeMarkPosition.TRES;
+        boolean needInvert = (position != StartingPositionEnum.RIGHT);
+        double multiplier = 1;
+        if (needInvert) {
+            multiplier = -1;
+        }
+
+        TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
+                .strafeTo(new Vector2d(-44, multiplier * -63))
+                .turn(multiplier * 0.00001)
+                .lineToY(multiplier * -36);
+
         if (smp == SpikeMarkPosition.UNO) {
-            spinIntakeMotor(DriveDirection.BACKWARD, 0.5, 1000);
-            sleep(500);
-//            IntakeMotor.setPower(0);
+            actionBuilder = actionBuilder
+                    .turn(multiplier * Math.PI/2)
+                    .lineToX(-15)
+                    .afterTime(0, new VomitPixelOnGround())
+                    .afterTime(2, new LeavePixelOnGround())
+                    .waitSeconds(2);
+        } else if (smp == SpikeMarkPosition.DOS) {
+            actionBuilder = actionBuilder
+                    .afterTime(0, new VomitPixelOnGround())
+                    .afterTime(2, new LeavePixelOnGround())
+                    .waitSeconds(2)
+                    .lineToY(multiplier * -60)
+                    .turn(multiplier * Math.PI/2);
+        } else {
+            actionBuilder = actionBuilder
+                    .turn(multiplier * Math.PI / 2)
+                    .lineToX(-36)
+                    .afterTime(0, new VomitPixelOnGround())
+                    .afterTime(2, new LeavePixelOnGround())
+                    .waitSeconds(2);
         }
-        drive(DriveDirection.BACKWARD, FORWARD_SPEED, 3200);
-        sleep(200);
-        strafe(getCorrectDirection(DriveDirection.RIGHT, needInvert), FORWARD_SPEED,750);
+
+        double pos = -35;
+        if (smp == SpikeMarkPosition.TRES) {
+            pos = -28;
+        }
+        if (smp == SpikeMarkPosition.UNO) {
+            pos = -46;
+        }
+        actionBuilder = actionBuilder
+                .lineToX(46.5)
+                .strafeToConstantHeading(new Vector2d(47.5, multiplier * pos))
+                .afterTime(0, new PlacePixelOnBackDrop())
+                .afterTime(3, new GrabPixel())
+                .waitSeconds(4)
+                .strafeToConstantHeading(new Vector2d(46, multiplier * -12))
+                .turn(multiplier * 0.00001)
+                .lineToX(60);
+
+        Actions.runBlocking(actionBuilder.build());
     }
 
     private DriveDirection getCorrectDirection(DriveDirection direction, boolean needInvert) {
@@ -518,120 +660,5 @@ public class KongBlueStacks extends LinearOpMode
         }
 
         return invertedDirection;
-    }
-
-    private void spinIntakeMotor(DriveDirection direction, double power, double time) {
-        eTime.reset();
-        switch(direction) {
-            case FORWARD:
-                IntakeMotor.setPower(power);
-                break;
-            case BACKWARD:
-                IntakeMotor.setPower(-power);
-            default:
-                return;
-        }
-        while(opModeIsActive() && eTime.milliseconds() < time){
-            telemetry.addData("Time:", eTime);
-            telemetry.update();
-        }
-        IntakeMotor.setPower(0);
-    }
-
-    private void drive(DriveDirection direction, double power, double time) {
-        eTime.reset();
-        switch(direction) {
-            case FORWARD:
-                FLMotor.setPower(power);
-                FRMotor.setPower(power);
-                BLMotor.setPower(power);
-                BRMotor.setPower(power);
-                break;
-            case RIGHT:
-                FLMotor.setPower(-power);
-                FRMotor.setPower(power);
-                BLMotor.setPower(-power);
-                BRMotor.setPower(power);
-                break;
-            case LEFT:
-                FLMotor.setPower(power);
-                FRMotor.setPower(-power);
-                BLMotor.setPower(power);
-                BRMotor.setPower(-power);
-                break;
-            case BACKWARD:
-                FLMotor.setPower(-power);
-                FRMotor.setPower(-power);
-                BLMotor.setPower(-power);
-                BRMotor.setPower(-power);
-        }
-        while(opModeIsActive() && eTime.milliseconds() < time){
-            telemetry.addData("Time:", eTime);
-            telemetry.update();
-        }
-        FLMotor.setPower(0);
-        FRMotor.setPower(0);
-        BLMotor.setPower(0);
-        BRMotor.setPower(0);
-    }
-
-    private void strafe(DriveDirection driveDirection, double power, double time){
-        eTime.reset();
-        switch (driveDirection) {
-            case LEFT:
-                while(opModeIsActive() && eTime.milliseconds() < time){
-                    FLMotor.setPower(-power);
-                    FRMotor.setPower(power);
-                    BLMotor.setPower(power);
-                    BRMotor.setPower(-power);
-                    telemetry.addData("Time:", eTime);
-                    telemetry.update();
-                }
-                break;
-            case RIGHT:
-                while(opModeIsActive() && eTime.milliseconds() < time){
-                    FLMotor.setPower(power);
-                    FRMotor.setPower(-power);
-                    BLMotor.setPower(-power);
-                    BRMotor.setPower(power);
-                    telemetry.addData("Time:", eTime);
-                    telemetry.update();
-                }
-                break;
-        }
-        FLMotor.setPower(0);
-        FRMotor.setPower(0);
-        BLMotor.setPower(0);
-        BRMotor.setPower(0);
-    }
-
-    private void turn(DriveDirection driveDirection, double power, double time){
-        eTime.reset();
-        switch (driveDirection) {
-            case LEFT:
-                while(opModeIsActive() && eTime.milliseconds() < time){
-                    FLMotor.setPower(-power);
-                    FRMotor.setPower(power);
-                    BLMotor.setPower(-power);
-                    BRMotor.setPower(power);
-                    telemetry.addData("Time:", eTime);
-                    telemetry.update();
-                }
-                break;
-            case RIGHT:
-                while(opModeIsActive() && eTime.milliseconds() < time){
-                    FLMotor.setPower(power);
-                    FRMotor.setPower(-power);
-                    BLMotor.setPower(power);
-                    BRMotor.setPower(-power);
-                    telemetry.addData("Time:", eTime);
-                    telemetry.update();
-                }
-                break;
-        }
-        FLMotor.setPower(0);
-        FRMotor.setPower(0);
-        BLMotor.setPower(0);
-        BRMotor.setPower(0);
     }
 }

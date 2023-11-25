@@ -145,7 +145,7 @@ public class KongBlueBackdrop extends LinearOpMode
 
     OpenCvWebcam webcam;
     TeamElementDeterminationPipeline pipeline;
-    StartingPositionEnum sideOfFieldToStartOn = StartingPositionEnum.RIGHT;
+    StartingPositionEnum sideOfFieldToStartOn = StartingPositionEnum.LEFT;
 
     @Override
     public void runOpMode()
@@ -247,7 +247,7 @@ public class KongBlueBackdrop extends LinearOpMode
             }
         });
 
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, -63, Math.PI / 2));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, 63, -Math.PI / 2));
 //        timer.schedule(new PutGrabberToCertainPosition(0), 3000);
 
         waitForStart();
@@ -529,7 +529,7 @@ public class KongBlueBackdrop extends LinearOpMode
     public class VomitPixelOnGround implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            IntakeMotor.setPower(0.15);
+            IntakeMotor.setPower(0.13);
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -543,7 +543,7 @@ public class KongBlueBackdrop extends LinearOpMode
     public class LeavePixelOnGround implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            IntakeMotor.setPower(-0.15);
+            IntakeMotor.setPower(-0.2);
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -583,52 +583,57 @@ public class KongBlueBackdrop extends LinearOpMode
         }
     }
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-        smp = SpikeMarkPosition.UNO;
+        smp = SpikeMarkPosition.TRES;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
+        double multiplier = 1;
+        if (needInvert) {
+            multiplier = -1;
+        }
 
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
-                .strafeTo(new Vector2d(21, -63))
-                .turn(0.00001)
-                .lineToY(-36);
+                .strafeTo(new Vector2d(19, multiplier * -63))
+                .turn(multiplier * 0.00001)
+                .lineToY(multiplier * -36);
 
-        if (smp == SpikeMarkPosition.UNO) {
+        if (smp == SpikeMarkPosition.TRES) {
             actionBuilder = actionBuilder
-                    .turn(Math.PI/2)
+                    .turn(multiplier * Math.PI/2)
                     .lineToX(11)
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(2, new LeavePixelOnGround())
                     .waitSeconds(2);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
+                    .strafeTo(new Vector2d(16, multiplier * -36))
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(2, new LeavePixelOnGround())
                     .waitSeconds(2)
-                    .lineToY(-48)
-                    .turn(Math.PI/2);
+                    .lineToY(multiplier * -50)
+                    .turn(multiplier * Math.PI/2);
         } else {
             actionBuilder = actionBuilder
-                    .turn(Math.PI / 2)
-                    .lineToX(33)
+                    .turn(multiplier * Math.PI / 2)
+                    .lineToX(34)
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(2, new LeavePixelOnGround())
                     .waitSeconds(2);
         }
 
         double pos = -37;
-        if (smp == SpikeMarkPosition.UNO) {
+        if (smp == SpikeMarkPosition.TRES) {
             pos = -28;
         }
-        if (smp == SpikeMarkPosition.TRES) {
+        if (smp == SpikeMarkPosition.UNO) {
             pos = -46;
         }
         actionBuilder = actionBuilder
                 .lineToX(47)
-                .strafeToConstantHeading(new Vector2d(47.6, pos))
+                .strafeToConstantHeading(new Vector2d(47.8, multiplier * pos))
                 .afterTime(0, new PlacePixelOnBackDrop())
                 .afterTime(3, new GrabPixel())
                 .waitSeconds(4)
-                .strafeToConstantHeading(new Vector2d(46, -12))
-                .turn(0.00001)
+                .strafeToConstantHeading(new Vector2d(46, multiplier * -12))
+                .turn(multiplier * 0.00001)
                 .lineToX(60);
 
         Actions.runBlocking(actionBuilder.build());
