@@ -288,8 +288,8 @@ public class KongRedBackdrop extends LinearOpMode
          */
         static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(0,80);
         static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(160,80);
-        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(480,80);
-        static final Point REGION1_BOTTOMRIGHT_ANCHOR_POINT = new Point(80,320);
+        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(560,80);
+        static final Point REGION1_BOTTOMRIGHT_ANCHOR_POINT = new Point(160,320);
         static final Point REGION2_BOTTOMRIGHT_ANCHOR_POINT = new Point(480,160);
         static final Point REGION3_BOTTOMRIGHT_ANCHOR_POINT = new Point(640,320);
 
@@ -583,7 +583,7 @@ public class KongRedBackdrop extends LinearOpMode
         }
     }
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-        smp = SpikeMarkPosition.UNO;
+//        smp = SpikeMarkPosition.UNO;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
 
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
