@@ -27,6 +27,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Rotation2d;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -104,15 +105,15 @@ public class KongRedBackdrop extends LinearOpMode
 //    static final double     FORWARD_SPEED = 0.5;
 //    static final double     TURN_SPEED    = 0.5;
     private int index = 0;
-    private double[] LEServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.80, 0.80, 0.27, 0.23, 0.80};
+    private double[] LEServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.75, 0.60, 0.27, 0.23};
     //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
-    private double[] REServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.80, 0.80, 0.27, 0.23, 0.80};
+    private double[] REServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.75, 0.60, 0.27, 0.23};
     //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
-    private double[] LWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.43, 0.00, 0.00, 0.5};
+    private double[] LWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.45, 0.00, 0.00, 0.03};
     //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
-    private double[] RWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.43, 0.00, 0.00, 0.5};
+    private double[] RWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.45, 0.00, 0.00, 0.03};
     //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
-    private double[] GrabberPositions = {0.55, 0.55};
+    private double[] GrabberPositions = {0.46, 0.55};
     private final int DELAY_BETWEEN_MOVES = 100;
     public class LowerArmToCertainServoPosition extends TimerTask {
         int i;
@@ -159,6 +160,15 @@ public class KongRedBackdrop extends LinearOpMode
 
         telemetry.addData("Status", "sInitialized");
         telemetry.update();
+
+        for (int i = 0; i < REServoPositions.length; i++) {
+            LWServoPositions[i] += 0.02;
+            RWServoPositions[i] += 0.02;
+        }
+        for (int i = 0; i < REServoPositions.length; i++) {
+            LEServoPositions[i] += -0.1;
+            REServoPositions[i] += -0.1;
+        }
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
@@ -516,74 +526,95 @@ public class KongRedBackdrop extends LinearOpMode
         }
     }
 
+    public class VomitPixelOnGround implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            IntakeMotor.setPower(0.1);
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    IntakeMotor.setPower(0);
+                }
+            }, 2500);
+            return false;
+        }
+    }
+
+    public class PlacePixelOnBackDrop implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            timer.schedule(new PutGrabberToCertainPosition(0), 0);
+            timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(1), 4 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(2), 5 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(3), 6 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(4), 7 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(5), 8 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(6), 9 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(7), 10 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(8), 11 * DELAY_BETWEEN_MOVES);
+            return false;
+        }
+    }
+
+    public class GrabPixel implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            timer.schedule(new PutGrabberToCertainPosition(1), 0);
+            timer.schedule(new LowerArmToCertainServoPosition(9),  1 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(10), 6 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(11), 12 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(0),  15 * DELAY_BETWEEN_MOVES);
+            return false;
+        }
+    }
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-//        smp = SpikeMarkPosition.UNO;
+        smp = SpikeMarkPosition.TRES;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
 
-//        double heading;
-//        if (smp == SpikeMarkPosition.UNO) {
-//            heading = 0;
-//        } else if (smp == SpikeMarkPosition.DOS) {
-//            heading = Math.PI / 2;
-//        } else {
-//            heading = Math.PI;
-//        }
+        TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
+                .strafeTo(new Vector2d(21, -63))
+                .turn(0.00001)
+                .lineToY(-36);
 
-//        class PlacePixelOnBackDrop implements Action {
-//            @Override
-//            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-//                timer.schedule(new PutGrabberToCertainPosition(0), 0);
-//                timer.schedule(new LowerArmToCertainServoPosition(0), 1 * DELAY_BETWEEN_MOVES);
-//                timer.schedule(new LowerArmToCertainServoPosition(1), 2 * DELAY_BETWEEN_MOVES);
-//                timer.schedule(new LowerArmToCertainServoPosition(2), 3 * DELAY_BETWEEN_MOVES);
-//                timer.schedule(new LowerArmToCertainServoPosition(3), 4 * DELAY_BETWEEN_MOVES);
-//                timer.schedule(new LowerArmToCertainServoPosition(4), 5 * DELAY_BETWEEN_MOVES);
-//                timer.schedule(new LowerArmToCertainServoPosition(5), 6 * DELAY_BETWEEN_MOVES);
-//                timer.schedule(new LowerArmToCertainServoPosition(6), 7 * DELAY_BETWEEN_MOVES);
-//                timer.schedule(new LowerArmToCertainServoPosition(7), 8 * DELAY_BETWEEN_MOVES);
-//                timer.schedule(new LowerArmToCertainServoPosition(8), 9 * DELAY_BETWEEN_MOVES);
-//                return false;
-//            }
-//        }
-//
-        class PlacePixelOnGround implements Action {
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-//                timer.schedule(new PutGrabberToCertainPosition(0), 0);
-                timer.schedule(new LowerArmToCertainServoPosition(7), 3 * DELAY_BETWEEN_MOVES);
-                timer.schedule(new LowerArmToCertainServoPosition(12), 20 * DELAY_BETWEEN_MOVES);
-//                timer.schedule(new LowerArmToCertainServoPosition(12), 15 * DELAY_BETWEEN_MOVES);
-//                timer.schedule(new PutGrabberToCertainPosition(1), 18 * DELAY_BETWEEN_MOVES);
-                return false;
-            }
+        if (smp == SpikeMarkPosition.UNO) {
+            actionBuilder = actionBuilder
+                    .turn(Math.PI/2)
+                    .lineToX(11)
+                    .afterTime(0, new VomitPixelOnGround())
+                    .waitSeconds(2);
+        } else if (smp == SpikeMarkPosition.DOS) {
+            actionBuilder = actionBuilder
+                    .afterTime(0, new VomitPixelOnGround())
+                    .waitSeconds(2)
+                    .lineToY(-48)
+                    .turn(Math.PI/2);
+        } else {
+            actionBuilder = actionBuilder
+                    .turn(Math.PI / 2)
+                    .lineToX(34)
+                    .afterTime(0, new VomitPixelOnGround())
+                    .waitSeconds(2);
         }
 
-//        class GrabPixel implements Action {
-//            @Override
-//            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-//                timer.schedule(new PutGrabberToCertainPosition(1), 0);
-//                timer.schedule(new LowerArmToCertainServoPosition(9),  1 * DELAY_BETWEEN_MOVES);
-//                timer.schedule(new LowerArmToCertainServoPosition(10), 6 * DELAY_BETWEEN_MOVES);
-//                timer.schedule(new LowerArmToCertainServoPosition(11), 12 * DELAY_BETWEEN_MOVES);
-//                timer.schedule(new LowerArmToCertainServoPosition(0),  15 * DELAY_BETWEEN_MOVES);
-//                return false;
-//            }
-//        }
+        double pos = -37;
+        if (smp == SpikeMarkPosition.UNO) {
+            pos = -30;
+        }
+        if (smp == SpikeMarkPosition.TRES) {
+            pos = -43;
+        }
+        actionBuilder = actionBuilder
+                .lineToX(47)
+                .strafeToConstantHeading(new Vector2d(47.5, pos))
+                .afterTime(0, new PlacePixelOnBackDrop())
+                .afterTime(3, new GrabPixel())
+                .waitSeconds(4)
+                .strafeToConstantHeading(new Vector2d(46, -12))
+                .turn(0.00001)
+                .lineToX(60);
 
-        Actions.runBlocking(
-                drive.actionBuilder(drive.pose)
-//                        .lineToY(-36)
-//                        .turn(-Math.PI/2)
-                        .afterTime(0, new PlacePixelOnGround())
-                        .waitSeconds(10)
-//                        .lineToX(36)
-                        .build());
-//                        .turnTo(Math.PI)
-//                        .lineToXConstantHeading(46)
-//                        .waitSeconds(5)
-//                        .strafeToConstantHeading(new Vector2d(46, -42))
-//                        .strafeToConstantHeading(new Vector2d(46, -10))
-//                        .lineToX(72)
+        Actions.runBlocking(actionBuilder.build());
     }
 
     private DriveDirection getCorrectDirection(DriveDirection direction, boolean needInvert) {
