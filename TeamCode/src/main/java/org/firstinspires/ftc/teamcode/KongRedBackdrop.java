@@ -529,13 +529,13 @@ public class KongRedBackdrop extends LinearOpMode
     public class VomitPixelOnGround implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            IntakeMotor.setPower(0.1);
+            IntakeMotor.setPower(0.15);
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
                     IntakeMotor.setPower(0);
                 }
-            }, 2500);
+            }, 2000);
             return false;
         }
     }
@@ -543,7 +543,7 @@ public class KongRedBackdrop extends LinearOpMode
     public class LeavePixelOnGround implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            IntakeMotor.setPower(-0.1);
+            IntakeMotor.setPower(-0.15);
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -596,10 +596,12 @@ public class KongRedBackdrop extends LinearOpMode
                     .turn(Math.PI/2)
                     .lineToX(11)
                     .afterTime(0, new VomitPixelOnGround())
+                    .afterTime(2, new LeavePixelOnGround())
                     .waitSeconds(2);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .afterTime(0, new VomitPixelOnGround())
+                    .afterTime(2, new LeavePixelOnGround())
                     .waitSeconds(2)
                     .lineToY(-48)
                     .turn(Math.PI/2);
