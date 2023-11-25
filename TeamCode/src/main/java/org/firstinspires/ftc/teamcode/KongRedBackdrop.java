@@ -540,6 +540,20 @@ public class KongRedBackdrop extends LinearOpMode
         }
     }
 
+    public class LeavePixelOnGround implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            IntakeMotor.setPower(-0.1);
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    IntakeMotor.setPower(0);
+                }
+            }, 500);
+            return false;
+        }
+    }
+
     public class PlacePixelOnBackDrop implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -569,7 +583,7 @@ public class KongRedBackdrop extends LinearOpMode
         }
     }
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-        smp = SpikeMarkPosition.TRES;
+        smp = SpikeMarkPosition.UNO;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
 
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
@@ -592,21 +606,22 @@ public class KongRedBackdrop extends LinearOpMode
         } else {
             actionBuilder = actionBuilder
                     .turn(Math.PI / 2)
-                    .lineToX(34)
+                    .lineToX(33)
                     .afterTime(0, new VomitPixelOnGround())
+                    .afterTime(2, new LeavePixelOnGround())
                     .waitSeconds(2);
         }
 
         double pos = -37;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -30;
+            pos = -28;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -43;
+            pos = -46;
         }
         actionBuilder = actionBuilder
                 .lineToX(47)
-                .strafeToConstantHeading(new Vector2d(47.5, pos))
+                .strafeToConstantHeading(new Vector2d(47.6, pos))
                 .afterTime(0, new PlacePixelOnBackDrop())
                 .afterTime(3, new GrabPixel())
                 .waitSeconds(4)
