@@ -582,7 +582,7 @@ public class KongBlueStacks extends LinearOpMode
         }
     }
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-//        smp = SpikeMarkPosition.TRES;
+        smp = SpikeMarkPosition.TRES;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
         double multiplier = 1;
         if (needInvert) {
@@ -596,11 +596,13 @@ public class KongBlueStacks extends LinearOpMode
 
         if (smp == SpikeMarkPosition.UNO) {
             actionBuilder = actionBuilder
-                    .turn(multiplier * Math.PI/2)
-                    .lineToX(-15)
+                    .turn(Math.PI/2)
+                    .lineToX(-34)
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(2, new LeavePixelOnGround())
-                    .waitSeconds(2);
+                    .waitSeconds(2)
+                    .strafeTo(new Vector2d(-37, multiplier * -59))
+                    .turn(multiplier * Math.PI - 0.00001);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .afterTime(0, new VomitPixelOnGround())
@@ -614,7 +616,9 @@ public class KongBlueStacks extends LinearOpMode
                     .lineToX(-36)
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(2, new LeavePixelOnGround())
-                    .waitSeconds(2);
+                    .waitSeconds(2)
+                    .strafeTo(new Vector2d(-37, multiplier * -60))
+                    .turnTo(multiplier * Math.PI);
         }
 
         double pos = -35;
@@ -622,10 +626,10 @@ public class KongBlueStacks extends LinearOpMode
             pos = -28;
         }
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -46;
+            pos = -40;
         }
         actionBuilder = actionBuilder
-                .lineToX(46.5)
+                .lineToX(36)
                 .strafeToConstantHeading(new Vector2d(47.5, multiplier * pos))
                 .afterTime(0, new PlacePixelOnBackDrop())
                 .afterTime(3, new GrabPixel())
