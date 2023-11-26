@@ -77,15 +77,15 @@ public class KongTeleop extends LinearOpMode {
     private boolean oldCirclePressed = true;
     private boolean clawIsClosed = true;
     private int index = 0;
-    private double[] LEServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.80, 0.80, 0.27, 0.23};
+    private double[] LEServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.75, 0.60, 0.27, 0.23};
     //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
-    private double[] REServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.80, 0.80, 0.27, 0.23};
+    private double[] REServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.75, 0.60, 0.27, 0.23};
     //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
-    private double[] LWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.43, 0.00, 0.00, 0.03};
+    private double[] LWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.45, 0.00, 0.00, 0.03};
     //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
-    private double[] RWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.43, 0.00, 0.00, 0.03};
+    private double[] RWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.45, 0.00, 0.00, 0.03};
     //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
-    private double[] GrabberPositions = {0.44, 0.55};
+    private double[] GrabberPositions = {0.46, 0.55};
     private final int DELAY_BETWEEN_MOVES = 100;
 
     @Override
@@ -293,6 +293,8 @@ public class KongTeleop extends LinearOpMode {
             telemetry.addData("Bumpers", "(%b), (%b)", gamepad1.left_bumper, gamepad1.right_bumper);
             telemetry.addData("Intake", gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
             telemetry.addData("Slides", gamepad2.left_stick_y);
+            telemetry.addData("Plane Launcher", gamepad2.left_bumper);
+            telemetry.addData("Plane Launcher", gamepad2.right_bumper);
             telemetry.addData("GrabberPressed", "(%b), (%b)", crossPressed, oldCrossPressed);
             telemetry.addData("ElbowServoPressed", "(%b), (%b)", circlePressed, oldCirclePressed);
 //            telemetry.addData("WristServoPressed", "(%b), (%b)", trianglePressed, oldTrianglePressed);
