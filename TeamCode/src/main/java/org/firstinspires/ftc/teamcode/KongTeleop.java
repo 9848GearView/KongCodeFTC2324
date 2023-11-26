@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -55,7 +56,7 @@ import java.util.TimerTask;
 
 @TeleOp(name="KongTeleop", group="Robot")
 public class KongTeleop extends LinearOpMode {
-
+    public static boolean isArmMoving = false;
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private Timer timer = new Timer();
@@ -90,6 +91,15 @@ public class KongTeleop extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        class setIsArmMoving extends TimerTask {
+            boolean val;
+            public setIsArmMoving(boolean v) {
+                this.val = v;
+            }
+            public void run() {
+                isArmMoving = val;
+            }
+        }
         for (int i = 0; i < REServoPositions.length; i++) {
             LWServoPositions[i] += 0.02;
             RWServoPositions[i] += 0.02;
@@ -256,7 +266,8 @@ public class KongTeleop extends LinearOpMode {
             }
 
             boolean circlePressed = gamepad2.circle;
-            if (circlePressed && !oldCirclePressed) {
+            if (circlePressed && !oldCirclePressed && !isArmMoving) {
+                timer.schedule(new setIsArmMoving(true), 0);
                 if (index == 0) {
                     timer.schedule(new PutGrabberToCertainPosition(0), 0);
                     timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
@@ -268,6 +279,7 @@ public class KongTeleop extends LinearOpMode {
                     timer.schedule(new LowerArmToCertainServoPosition(6), 9 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(7), 10 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(8), 11 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 11 * DELAY_BETWEEN_MOVES);
                     index = 8;
                 } else if (index == 8) {
                     timer.schedule(new PutGrabberToCertainPosition(1), 0);
@@ -275,6 +287,7 @@ public class KongTeleop extends LinearOpMode {
                     timer.schedule(new LowerArmToCertainServoPosition(10), 6 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(11), 12 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(0),  15 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 15 * DELAY_BETWEEN_MOVES);
                     index = 0;
                 }
             }

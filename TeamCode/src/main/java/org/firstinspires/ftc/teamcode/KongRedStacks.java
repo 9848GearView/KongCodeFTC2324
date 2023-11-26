@@ -534,7 +534,7 @@ public class KongRedStacks extends LinearOpMode
                 public void run() {
                     IntakeMotor.setPower(0);
                 }
-            }, 2000);
+            }, 1400);
             return false;
         }
     }
@@ -542,13 +542,13 @@ public class KongRedStacks extends LinearOpMode
     public class LeavePixelOnGround implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            IntakeMotor.setPower(-0.13);
+            IntakeMotor.setPower(-0.2);
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
                     IntakeMotor.setPower(0);
                 }
-            }, 500);
+            }, 1000);
             return false;
         }
     }
@@ -582,7 +582,7 @@ public class KongRedStacks extends LinearOpMode
         }
     }
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-//        smp = SpikeMarkPosition.TRES;
+        smp = SpikeMarkPosition.UNO;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
 
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
@@ -592,15 +592,17 @@ public class KongRedStacks extends LinearOpMode
 
         if (smp == SpikeMarkPosition.TRES) {
             actionBuilder = actionBuilder
-                    .turn(Math.PI/2)
-                    .lineToX(-15)
+                    .turn(-Math.PI/2)
+                    .lineToX(-36)
                     .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(2, new LeavePixelOnGround())
-                    .waitSeconds(2);
+                    .afterTime(1.7, new LeavePixelOnGround())
+                    .waitSeconds(2)
+                    .strafeTo(new Vector2d(-37, -60))
+                    .turn(Math.PI + 0.00001);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(2, new LeavePixelOnGround())
+                    .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
                     .lineToY(-60)
                     .turn(Math.PI/2);
@@ -609,8 +611,10 @@ public class KongRedStacks extends LinearOpMode
                     .turn(Math.PI / 2)
                     .lineToX(-36)
                     .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(2, new LeavePixelOnGround())
-                    .waitSeconds(2);
+                    .afterTime(1.7, new LeavePixelOnGround())
+                    .waitSeconds(2)
+                    .strafeTo(new Vector2d(-37, -60))
+                    .turnTo(Math.PI);
         }
 
         double pos = -35;
@@ -618,7 +622,7 @@ public class KongRedStacks extends LinearOpMode
             pos = -28;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -46;
+            pos = -40;
         }
         actionBuilder = actionBuilder
                 .lineToX(46.5)
