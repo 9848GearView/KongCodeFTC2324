@@ -105,8 +105,8 @@ public class KongTeleop extends LinearOpMode {
             RWServoPositions[i] += 0.02;
         }
         for (int i = 0; i < REServoPositions.length; i++) {
-            LEServoPositions[i] += -0.1;
-            REServoPositions[i] += -0.1;
+            LEServoPositions[i] += -0.08;
+            REServoPositions[i] += -0.08;
         }
         class LowerArmToCertainServoPosition extends TimerTask {
             int i;

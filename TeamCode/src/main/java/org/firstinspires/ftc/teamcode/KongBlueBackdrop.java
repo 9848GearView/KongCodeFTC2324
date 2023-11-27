@@ -166,8 +166,8 @@ public class KongBlueBackdrop extends LinearOpMode
             RWServoPositions[i] += 0.02;
         }
         for (int i = 0; i < REServoPositions.length; i++) {
-            LEServoPositions[i] += -0.1;
-            REServoPositions[i] += -0.1;
+            LEServoPositions[i] += -0.08;
+            REServoPositions[i] += -0.08;
         }
 
         // Initialize the hardware variables. Note that the strings used here as parameters
@@ -529,13 +529,13 @@ public class KongBlueBackdrop extends LinearOpMode
     public class VomitPixelOnGround implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            IntakeMotor.setPower(0.13);
+            IntakeMotor.setPower(0.15);
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
                     IntakeMotor.setPower(0);
                 }
-            }, 2000);
+            }, 1400);
             return false;
         }
     }
@@ -549,7 +549,7 @@ public class KongBlueBackdrop extends LinearOpMode
                 public void run() {
                     IntakeMotor.setPower(0);
                 }
-            }, 500);
+            }, 1000);
             return false;
         }
     }
@@ -600,13 +600,13 @@ public class KongBlueBackdrop extends LinearOpMode
                     .turn(multiplier * Math.PI/2)
                     .lineToX(11)
                     .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(2, new LeavePixelOnGround())
+                    .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .strafeTo(new Vector2d(16, multiplier * -36))
                     .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(2, new LeavePixelOnGround())
+                    .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
                     .lineToY(multiplier * -50)
                     .turn(multiplier * Math.PI/2);
@@ -615,7 +615,7 @@ public class KongBlueBackdrop extends LinearOpMode
                     .turn(multiplier * Math.PI / 2)
                     .lineToX(34)
                     .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(2, new LeavePixelOnGround())
+                    .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2);
         }
 

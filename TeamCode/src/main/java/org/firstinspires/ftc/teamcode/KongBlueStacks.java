@@ -166,8 +166,8 @@ public class KongBlueStacks extends LinearOpMode
             RWServoPositions[i] += 0.02;
         }
         for (int i = 0; i < REServoPositions.length; i++) {
-            LEServoPositions[i] += -0.1;
-            REServoPositions[i] += -0.1;
+            LEServoPositions[i] += -0.08;
+            REServoPositions[i] += -0.08;
         }
 
         // Initialize the hardware variables. Note that the strings used here as parameters
@@ -528,13 +528,13 @@ public class KongBlueStacks extends LinearOpMode
     public class VomitPixelOnGround implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            IntakeMotor.setPower(0.13);
+            IntakeMotor.setPower(0.15);
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
                     IntakeMotor.setPower(0);
                 }
-            }, 2000);
+            }, 1400);
             return false;
         }
     }
@@ -542,13 +542,13 @@ public class KongBlueStacks extends LinearOpMode
     public class LeavePixelOnGround implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            IntakeMotor.setPower(-0.13);
+            IntakeMotor.setPower(-0.2);
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
                     IntakeMotor.setPower(0);
                 }
-            }, 500);
+            }, 1000);
             return false;
         }
     }
@@ -582,7 +582,7 @@ public class KongBlueStacks extends LinearOpMode
         }
     }
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-        smp = SpikeMarkPosition.TRES;
+//        smp = SpikeMarkPosition.TRES;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
         double multiplier = 1;
         if (needInvert) {
@@ -599,14 +599,14 @@ public class KongBlueStacks extends LinearOpMode
                     .turn(Math.PI/2)
                     .lineToX(-34)
                     .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(2, new LeavePixelOnGround())
+                    .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
                     .strafeTo(new Vector2d(-37, multiplier * -59))
                     .turn(multiplier * Math.PI - 0.00001);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(2, new LeavePixelOnGround())
+                    .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
                     .lineToY(multiplier * -60)
                     .turn(multiplier * Math.PI/2);
@@ -615,7 +615,7 @@ public class KongBlueStacks extends LinearOpMode
                     .turn(multiplier * Math.PI / 2)
                     .lineToX(-36)
                     .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(2, new LeavePixelOnGround())
+                    .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
                     .strafeTo(new Vector2d(-37, multiplier * -60))
                     .turnTo(multiplier * Math.PI);

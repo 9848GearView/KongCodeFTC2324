@@ -166,8 +166,8 @@ public class KongRedBackdrop extends LinearOpMode
             RWServoPositions[i] += 0.02;
         }
         for (int i = 0; i < REServoPositions.length; i++) {
-            LEServoPositions[i] += -0.1;
-            REServoPositions[i] += -0.1;
+            LEServoPositions[i] += -0.08;
+            REServoPositions[i] += -0.08;
         }
 
         // Initialize the hardware variables. Note that the strings used here as parameters
@@ -254,6 +254,7 @@ public class KongRedBackdrop extends LinearOpMode
 
         while (opModeIsActive())
         {
+            sleep(1000);
             telemetry.addData("Analysis", pipeline.getAnalysis());
             telemetry.update();
             doActions(drive, sideOfFieldToStartOn, pipeline.getAnalysis());
@@ -529,13 +530,13 @@ public class KongRedBackdrop extends LinearOpMode
     public class VomitPixelOnGround implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            IntakeMotor.setPower(0.13);
+            IntakeMotor.setPower(0.15);
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
                     IntakeMotor.setPower(0);
                 }
-            }, 2000);
+            }, 1400);
             return false;
         }
     }
@@ -543,13 +544,13 @@ public class KongRedBackdrop extends LinearOpMode
     public class LeavePixelOnGround implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            IntakeMotor.setPower(-0.13);
+            IntakeMotor.setPower(-0.2);
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
                     IntakeMotor.setPower(0);
                 }
-            }, 500);
+            }, 1000);
             return false;
         }
     }
@@ -587,43 +588,43 @@ public class KongRedBackdrop extends LinearOpMode
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
 
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
-                .strafeTo(new Vector2d(21, -63))
+                .strafeTo(new Vector2d(17, -63))
                 .turn(0.00001)
                 .lineToY(-36);
 
         if (smp == SpikeMarkPosition.UNO) {
             actionBuilder = actionBuilder
                     .turn(Math.PI/2)
-                    .lineToX(11)
+                    .lineToX(9)
                     .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(2, new LeavePixelOnGround())
+                    .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(2, new LeavePixelOnGround())
+                    .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
                     .lineToY(-48)
                     .turn(Math.PI/2);
         } else {
             actionBuilder = actionBuilder
                     .turn(Math.PI / 2)
-                    .lineToX(33)
+                    .lineToX(34)
                     .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(2, new LeavePixelOnGround())
+                    .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2);
         }
 
-        double pos = -37;
+        double pos = -34;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -28;
+            pos = -26;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -46;
+            pos = -44;
         }
         actionBuilder = actionBuilder
                 .lineToX(47)
-                .strafeToConstantHeading(new Vector2d(47.6, pos))
+                .strafeToConstantHeading(new Vector2d(47.8, pos))
                 .afterTime(0, new PlacePixelOnBackDrop())
                 .afterTime(3, new GrabPixel())
                 .waitSeconds(4)

@@ -166,8 +166,8 @@ public class KongRedStacks extends LinearOpMode
             RWServoPositions[i] += 0.02;
         }
         for (int i = 0; i < REServoPositions.length; i++) {
-            LEServoPositions[i] += -0.1;
-            REServoPositions[i] += -0.1;
+            LEServoPositions[i] += -0.08;
+            REServoPositions[i] += -0.08;
         }
 
         // Initialize the hardware variables. Note that the strings used here as parameters
@@ -528,7 +528,7 @@ public class KongRedStacks extends LinearOpMode
     public class VomitPixelOnGround implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            IntakeMotor.setPower(0.13);
+            IntakeMotor.setPower(0.15);
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
