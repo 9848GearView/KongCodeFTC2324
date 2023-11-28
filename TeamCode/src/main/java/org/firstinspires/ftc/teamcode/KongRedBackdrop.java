@@ -601,6 +601,7 @@ public class KongRedBackdrop extends LinearOpMode
                     .waitSeconds(2);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
+                    .strafeTo(new Vector2d(15.5, -36))
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)

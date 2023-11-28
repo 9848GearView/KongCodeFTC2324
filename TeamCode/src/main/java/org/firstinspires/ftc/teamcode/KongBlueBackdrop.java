@@ -605,10 +605,11 @@ public class KongBlueBackdrop extends LinearOpMode
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .strafeTo(new Vector2d(16, multiplier * -36))
+                    .waitSeconds(1)
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
-                    .lineToY(multiplier * -50)
+                    .lineToY(multiplier * -48)
                     .turn(multiplier * Math.PI/2);
         } else {
             actionBuilder = actionBuilder
@@ -619,16 +620,16 @@ public class KongBlueBackdrop extends LinearOpMode
                     .waitSeconds(2);
         }
 
-        double pos = -37;
+        double pos = -34;
         if (smp == SpikeMarkPosition.TRES) {
             pos = -28;
         }
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -46;
+            pos = -44;
         }
         actionBuilder = actionBuilder
                 .lineToX(47)
-                .strafeToConstantHeading(new Vector2d(47.8, multiplier * pos))
+                .strafeToConstantHeading(new Vector2d(48.6, multiplier * pos))
                 .afterTime(0, new PlacePixelOnBackDrop())
                 .afterTime(3, new GrabPixel())
                 .waitSeconds(4)
