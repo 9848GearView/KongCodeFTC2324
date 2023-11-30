@@ -87,7 +87,9 @@ public class KongTeleopTest extends LinearOpMode {
     private double[] LWServoPositions = {0.13, 0.12, 0.10, 0.08, 0.07, 0.04, 0.04, 0.05, 0.43, 0.00, 0.03};
                             //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
     private double[] RWServoPositions = {0.13, 0.12, 0.10, 0.08, 0.07, 0.04, 0.04, 0.05, 0.43, 0.00, 0.03};
-                                    //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
+    private Servo PlaneLauncher = null;
+
+    //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
 //grabber close: 0.46
     @Override
     public void runOpMode() {
@@ -113,6 +115,8 @@ public class KongTeleopTest extends LinearOpMode {
 //        HangRightForearmServo = hardwareMap.get(Servo.class, "HRA");
 //        HangRightElbowServo = hardwareMap.get(Servo.class, "HRE");
         Grabber = hardwareMap.get(Servo.class, "G");
+        PlaneLauncher = hardwareMap.get(Servo.class, "PL");
+
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         FRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -165,6 +169,7 @@ public class KongTeleopTest extends LinearOpMode {
 //        LeftWristServo.setPosition(0.5);
 //        RightWristServo.setPosition(0.5);
         Grabber.setPosition(.55);
+
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -232,6 +237,13 @@ public class KongTeleopTest extends LinearOpMode {
             IntakeMotor.setPower(gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
+
+            if (gamepad2.left_bumper) {
+                PlaneLauncher.setPosition(0.0);
+            }
+            if (gamepad2.right_bumper) {
+                PlaneLauncher.setPosition(1.0);
+            }
 
 //            boolean circlePressed = gamepad2.circle;
 //            if (circlePressed && !oldCirclePressed) {

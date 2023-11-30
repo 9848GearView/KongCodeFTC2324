@@ -86,7 +86,7 @@ public class KongTeleop extends LinearOpMode {
     //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
     private double[] RWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.45, 0.00, 0.00, 0.03};
     //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
-    private double[] GrabberPositions = {0.46, 0.55};
+    private double[] GrabberPositions = {0.46, 0.57};
     private final int DELAY_BETWEEN_MOVES = 100;
 
     @Override
@@ -258,10 +258,10 @@ public class KongTeleop extends LinearOpMode {
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
 
-            if (gamepad2.left_bumper) {
+            if (gamepad2.left_bumper && runtime.seconds() > 90) {
                 PlaneLauncher.setPosition(0.0);
             }
-            if (gamepad2.right_bumper) {
+            if (gamepad2.right_bumper && runtime.seconds() > 90) {
                 PlaneLauncher.setPosition(1.0);
             }
 
@@ -295,7 +295,7 @@ public class KongTeleop extends LinearOpMode {
             // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
             boolean crossPressed = gamepad2.cross;
             if (crossPressed && !oldCrossPressed) {
-                Grabber.setPosition(Grabber.getPosition() == 0.55 ? 0.41 : 0.55);
+                Grabber.setPosition(Grabber.getPosition() == 0.57 ? 0.46 : 0.57);
             }
 
             // Show the elapsed game time and wheel power.
