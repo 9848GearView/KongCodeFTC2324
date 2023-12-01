@@ -78,15 +78,15 @@ public class KongTeleop extends LinearOpMode {
     private boolean oldCirclePressed = true;
     private boolean clawIsClosed = true;
     private int index = 0;
-    private double[] LEServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.75, 0.60, 0.27, 0.23};
+    private double[] LEServoPositions = {0.14, 0.23, 0.29, 0.35, 0.35, 0.35, 0.35, 0.50, 0.81, 0.60, 0.23, 0.14};
     //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
-    private double[] REServoPositions = {0.17, 0.18, 0.19, 0.20, 0.21, 0.24, 0.27, 0.50, 0.75, 0.60, 0.27, 0.23};
+    private double[] REServoPositions = {0.14, 0.23, 0.29, 0.35, 0.35, 0.35, 0.35, 0.50, 0.81, 0.60, 0.23, 0.14};
     //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
-    private double[] LWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.45, 0.00, 0.00, 0.03};
+    private double[] LWServoPositions = {0.13, 0.13, 0.115, 0.03, 0.02, 0.02, 0.02, 0.05, 0.45, 0.0, 0.0, 0.13};
     //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
-    private double[] RWServoPositions = {0.13, 0.119, 0.102, 0.084, 0.07, 0.04, 0.04, 0.05, 0.45, 0.00, 0.00, 0.03};
+    private double[] RWServoPositions = {0.13, 0.13, 0.115, 0.03, 0.02, 0.02, 0.02, 0.05, 0.45, 0.0, 0.0, 0.13};
     //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
-    private double[] GrabberPositions = {0.46, 0.57};
+    private double[] GrabberPositions = {0.37, 0.50};
     private final int DELAY_BETWEEN_MOVES = 100;
 
     @Override
@@ -101,12 +101,12 @@ public class KongTeleop extends LinearOpMode {
             }
         }
         for (int i = 0; i < REServoPositions.length; i++) {
-            LWServoPositions[i] += 0.02;
-            RWServoPositions[i] += 0.02;
+            LWServoPositions[i] += 0.005;
+            RWServoPositions[i] += 0.005;
         }
         for (int i = 0; i < REServoPositions.length; i++) {
-            LEServoPositions[i] += -0.08;
-            REServoPositions[i] += -0.08;
+            LEServoPositions[i] += -0.04;
+            REServoPositions[i] += -0.04;
         }
         class LowerArmToCertainServoPosition extends TimerTask {
             int i;
@@ -189,7 +189,7 @@ public class KongTeleop extends LinearOpMode {
         RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 //        timer.schedule(new PutGrabberToCertainPosition(0), 0);
-        timer.schedule(new LowerArmToCertainServoPosition(0), 0 * DELAY_BETWEEN_MOVES);
+        timer.schedule(new LowerArmToCertainServoPosition(0), 0);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
