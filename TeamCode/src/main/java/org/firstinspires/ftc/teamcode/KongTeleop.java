@@ -82,11 +82,11 @@ public class KongTeleop extends LinearOpMode {
     //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
     private double[] REServoPositions = {0.14, 0.23, 0.29, 0.35, 0.35, 0.35, 0.35, 0.50, 0.81, 0.60, 0.23, 0.14};
     //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
-    private double[] LWServoPositions = {0.13, 0.13, 0.115, 0.03, 0.02, 0.02, 0.02, 0.05, 0.45, 0.0, 0.0, 0.13};
+    private double[] LWServoPositions = {0.13, 0.13, 0.115, 0, 0.02, 0.02, 0.02, 0.05, 0.45, 0.0, 0.0, 0.13};
     //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
-    private double[] RWServoPositions = {0.13, 0.13, 0.115, 0.03, 0.02, 0.02, 0.02, 0.05, 0.45, 0.0, 0.0, 0.13};
+    private double[] RWServoPositions = {0.13, 0.13, 0.115, 0, 0.02, 0.02, 0.02, 0.05, 0.45, 0.0, 0.0, 0.13};
     //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
-    private double[] GrabberPositions = {0.37, 0.50};
+    private double[] GrabberPositions = {0.42, 0.53};
     private final int DELAY_BETWEEN_MOVES = 100;
 
     @Override
@@ -101,8 +101,8 @@ public class KongTeleop extends LinearOpMode {
             }
         }
         for (int i = 0; i < REServoPositions.length; i++) {
-            LWServoPositions[i] += 0.005;
-            RWServoPositions[i] += 0.005;
+            LWServoPositions[i] += 0.02;
+            RWServoPositions[i] += 0.02;
         }
         for (int i = 0; i < REServoPositions.length; i++) {
             LEServoPositions[i] += -0.04;
@@ -282,7 +282,7 @@ public class KongTeleop extends LinearOpMode {
                     timer.schedule(new setIsArmMoving(false), 11 * DELAY_BETWEEN_MOVES);
                     index = 8;
                 } else if (index == 8) {
-                    timer.schedule(new PutGrabberToCertainPosition(1), 0);
+                    Grabber.setPosition(GrabberPositions[1]);
                     timer.schedule(new LowerArmToCertainServoPosition(9),  1 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(10), 6 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(11), 12 * DELAY_BETWEEN_MOVES);

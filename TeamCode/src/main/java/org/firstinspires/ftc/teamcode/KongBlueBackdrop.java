@@ -109,11 +109,11 @@ public class KongBlueBackdrop extends LinearOpMode
     //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
     private double[] REServoPositions = {0.14, 0.23, 0.29, 0.35, 0.35, 0.35, 0.35, 0.50, 0.81, 0.60, 0.23, 0.14};
     //{0.23, 0.21, 0.18, 0.21, 0.40, 0.70, 0.92};
-    private double[] LWServoPositions = {0.13, 0.13, 0.115, 0.03, 0.02, 0.02, 0.02, 0.05, 0.45, 0.0, 0.0, 0.13};
+    private double[] LWServoPositions = {0.13, 0.13, 0.115, 0, 0.02, 0.02, 0.02, 0.05, 0.45, 0.0, 0.0, 0.13};
     //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
-    private double[] RWServoPositions = {0.13, 0.13, 0.115, 0.03, 0.02, 0.02, 0.02, 0.05, 0.45, 0.0, 0.0, 0.13};
+    private double[] RWServoPositions = {0.13, 0.13, 0.115, 0, 0.02, 0.02, 0.02, 0.05, 0.45, 0.0, 0.0, 0.13};
     //{0.40, 0.23, 0.20, 0.36, 0.47, 0.20, 0.0};
-    private double[] GrabberPositions = {0.37, 0.50};
+    private double[] GrabberPositions = {0.42, 0.53};
     private final int DELAY_BETWEEN_MOVES = 100;
     public class LowerArmToCertainServoPosition extends TimerTask {
         int i;
@@ -162,8 +162,8 @@ public class KongBlueBackdrop extends LinearOpMode
         telemetry.update();
 
         for (int i = 0; i < REServoPositions.length; i++) {
-            LWServoPositions[i] += 0.005;
-            RWServoPositions[i] += 0.005;
+            LWServoPositions[i] += 0.02;
+            RWServoPositions[i] += 0.02;
         }
         for (int i = 0; i < REServoPositions.length; i++) {
             LEServoPositions[i] += -0.04;
@@ -604,7 +604,7 @@ public class KongBlueBackdrop extends LinearOpMode
                     .waitSeconds(2);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
-                    .strafeTo(new Vector2d(16, multiplier * -36))
+                    .strafeTo(new Vector2d(15, multiplier * -36))
                     .waitSeconds(1)
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
