@@ -29,132 +29,268 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
+import java.lang.Math;
+import java.util.Timer;
+import java.util.TimerTask;
+
 
 /*
- * This file contains an example of an iterative (Non-Linear) "OpMode".
- * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
- * The names of OpModes appear on the menu of the FTC Driver Station.
- * When a selection is made from the menu, the corresponding OpMode
+ * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
+ * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
+ * of the FTC Driver Station. When a selection is made from the menu, the corresponding OpMode
  * class is instantiated on the Robot Controller and executed.
  *
  * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all iterative OpModes contain.
+ * It includes all the skeletal structure that all linear OpModes contain.
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="ShaneGrabberTest", group="Iterative OpMode")
-
-public class ShaneGrabberTest extends OpMode
-{
+@TeleOp(name="ShaneGrabberTest", group="Robot")
+public class ShaneGrabberTest extends LinearOpMode {
+    public static boolean isArmMoving = false;
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private Servo ElbowServo = null;
-    private Servo WristServo = null;
-    private Servo LinearServo = null;
-    public int num = 1;
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
+    private Timer timer = new Timer();
+    private DcMotor FLMotor = null;
+    private DcMotor FRMotor = null;
+    private DcMotor BLMotor = null;
+    private DcMotor BRMotor = null;
+    private DcMotor IntakeMotor = null;
+    private DcMotor LeftSlide = null;
+    private DcMotor RightSlide = null;
+    private Servo LeftElbowServo = null;
+    private Servo RightElbowServo = null;
+    private Servo LeftWristServo = null;
+    private Servo RightWristServo = null;
+    private Servo Grabber = null;
+    private Servo PlaneLauncher = null;
+    private boolean oldCrossPressed = true;
+    private boolean oldTrianglePressed = true;
+    private boolean oldCirclePressed = true;
+    private boolean clawIsClosed = true;
+    private int index = 0;
+    private double[] LEServoPositions = TestServoConstants.LEServoPositions;
+    private double[] REServoPositions = TestServoConstants.REServoPositions;
+    private double[] LWServoPositions = TestServoConstants.LWServoPositions;
+    private double[] RWServoPositions = TestServoConstants.RWServoPositions;
+    private double[] GrabberPositions = TestServoConstants.GrabberPositions;
+
+    private final int DELAY_BETWEEN_MOVES = 2000;
+
     @Override
-    public void init() {
-        telemetry.addData("Status", "Initialized");
+    public void runOpMode() {
+        class setIsArmMoving extends TimerTask {
+            boolean val;
+            public setIsArmMoving(boolean v) {
+                this.val = v;
+            }
+            public void run() {
+                isArmMoving = val;
+            }
+        }
+        for (int i = 0; i < REServoPositions.length; i++) {
+            LWServoPositions[i] += 0.02;
+            RWServoPositions[i] += 0.02;
+        }
+        for (int i = 0; i < REServoPositions.length; i++) {
+            LEServoPositions[i] += -0.04;
+            REServoPositions[i] += -0.04;
+        }
+        class LowerArmToCertainServoPosition extends TimerTask {
+            int i;
+            public LowerArmToCertainServoPosition(int i) {
+                this.i = i;
+            }
+            public void run() {
+                LeftElbowServo.setPosition(LEServoPositions[i]);
+                RightElbowServo.setPosition(REServoPositions[i]);
+                LeftWristServo.setPosition(LWServoPositions[i]);
+                RightWristServo.setPosition(RWServoPositions[i]);
+
+                telemetry.addData("index", i);
+                telemetry.update();
+//                sleep(1000);
+            }
+        }
+
+        class PutGrabberToCertainPosition extends TimerTask {
+            int i;
+            public PutGrabberToCertainPosition(int i) {
+                this.i = i;
+            }
+            public void run() {
+                Grabber.setPosition(GrabberPositions[i]);
+            }
+        }
+
+        telemetry.addData("Status", "sInitialized");
+        telemetry.update();
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        ElbowServo = hardwareMap.get(Servo.class, "LE");
-        WristServo = hardwareMap.get(Servo.class, "LW");
-        LinearServo = hardwareMap.get(Servo.class, "G");
+        FLMotor = hardwareMap.get(DcMotor.class, "FL");
+        FRMotor = hardwareMap.get(DcMotor.class, "FR");
+        BLMotor = hardwareMap.get(DcMotor.class, "BL");
+        BRMotor = hardwareMap.get(DcMotor.class, "BR");
+        IntakeMotor = hardwareMap.get(DcMotor.class, "IN");
+        LeftSlide = hardwareMap.get(DcMotor.class, "LS");
+        RightSlide = hardwareMap.get(DcMotor.class, "RS");
+        LeftElbowServo = hardwareMap.get(Servo.class, "LE");
+        RightElbowServo = hardwareMap.get(Servo.class, "RE");
+        LeftWristServo = hardwareMap.get(Servo.class, "LW");
+        RightWristServo = hardwareMap.get(Servo.class, "RW");
+        Grabber = hardwareMap.get(Servo.class, "G");
+        PlaneLauncher = hardwareMap.get(Servo.class, "PL");
+
+        FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        FRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        IntakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        LeftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        RightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        //leftDrive.setDirection(DcMotor.Direction.REVERSE);
-        //rightDrive.setDirection(DcMotor.Direction.FORWARD);
-        ElbowServo.setDirection(Servo.Direction.REVERSE);
+        FLMotor.setDirection(DcMotor.Direction.REVERSE);
+        FRMotor.setDirection(DcMotor.Direction.FORWARD);
+        BLMotor.setDirection(DcMotor.Direction.REVERSE);
+        BRMotor.setDirection(DcMotor.Direction.FORWARD);
+        IntakeMotor.setDirection(DcMotor.Direction.FORWARD);
+        LeftSlide.setDirection(DcMotor.Direction.REVERSE);
+        RightSlide.setDirection(DcMotor.Direction.FORWARD);
+        LeftElbowServo.setDirection(Servo.Direction.FORWARD);
+        RightElbowServo.setDirection(Servo.Direction.REVERSE);
+        LeftWristServo.setDirection(Servo.Direction.FORWARD);
+        RightWristServo.setDirection(Servo.Direction.REVERSE);
+        Grabber.setDirection(Servo.Direction.FORWARD);
+        PlaneLauncher.setDirection(Servo.Direction.FORWARD);
 
-        // Tell the driver that initialization is complete.
-        telemetry.addData("Status", "Initialized");
-    }
+        FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        FRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        IntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-    /*
-     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
-     */
-    @Override
-    public void init_loop() {
-    }
+//        timer.schedule(new PutGrabberToCertainPosition(0), 0);
+        timer.schedule(new LowerArmToCertainServoPosition(0), 0);
 
-    /*
-     * Code to run ONCE when the driver hits PLAY
-     */
-    @Override
-    public void start() {
+        // Wait for the game to start (driver presses PLAY)
+        waitForStart();
         runtime.reset();
-    }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
-     */
-    @Override
-    public void loop() {
+        int armIndex = 0;
 
-        int pos = 0;
+        // run until the end of the match (driver presses STOP)
+        while (opModeIsActive()) {
 
-        // place
-        if (gamepad1.y){
-            ElbowServo.setPosition(0.15);
-        }
-        // poised
-        if (gamepad1.a){
-            ElbowServo.setPosition(0.75);
-            WristServo.setPosition(1);
-        }
-        // in
-        if (gamepad1.b){
-            ElbowServo.setPosition(1);
-            WristServo.setPosition(0.77);
-        }
+            double leftPower;
+            double rightPower;
 
-        if (gamepad1.dpad_up){
-            LinearServo.setPosition(0.65);
-        }
-        if (gamepad1.dpad_right){
-            LinearServo.setPosition(0.47);
-        }
-        if (gamepad1.dpad_down){
-            LinearServo.setPosition(0);
-        }
-        if (gamepad1.x){
-            if (num==1){
-                WristServo.setPosition(0.1);
-                num = 0;
+            double drive = -gamepad1.left_stick_y;
+            double turn  =  gamepad1.right_stick_x;
+            leftPower    = Range.clip(drive + turn, -1.0, 1.0);
+            rightPower   = Range.clip(drive - turn, -1.0, 1.0);
+
+            // Send calculated power to wheels
+            // KYLE CODE
+            double r = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
+            double robotAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
+            double rightX = gamepad1.right_stick_x;
+            final double FLPower = r * Math.cos(robotAngle) + rightX;
+            final double FRPower = r * Math.sin(robotAngle) - rightX;
+            final double BLPower = r * Math.sin(robotAngle) + rightX;
+            final double BRPower = r * Math.cos(robotAngle) - rightX;
+
+            // Send calculated power to wheels
+            if (gamepad1.right_bumper || gamepad1.left_bumper) {
+                if (gamepad1.right_stick_x == 0 && gamepad1.right_stick_y == 0) {
+                    if (gamepad1.right_bumper) {
+                        FLMotor.setPower(1);
+                        FRMotor.setPower(-1);
+                        BLMotor.setPower(-1);
+                        BRMotor.setPower(1);
+                    } else {
+                        FLMotor.setPower(-1);
+                        FRMotor.setPower(1);
+                        BLMotor.setPower(1);
+                        BRMotor.setPower(-1);
+                    }
+                } else {
+                    if (-gamepad1.right_stick_y > 0) {
+                        if (gamepad1.right_bumper) {
+                            FLMotor.setPower(1);
+                            FRMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
+                            BLMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
+                            BRMotor.setPower(1);
+                        } else {
+                            FLMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
+                            FRMotor.setPower(1);
+                            BLMotor.setPower(1);
+                            BRMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
+                        }
+                    } else {
+                        if (gamepad1.right_bumper) {
+                            FLMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
+                            FRMotor.setPower(-1);
+                            BLMotor.setPower(-1);
+                            BRMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
+                        } else {
+                            FLMotor.setPower(-1);
+                            FRMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
+                            BLMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
+                            BRMotor.setPower(-1);
+                        }
+                    }
+                }
+            } else {
+                FLMotor.setPower(FLPower);
+                FRMotor.setPower(FRPower);
+                BLMotor.setPower(BLPower);
+                BRMotor.setPower(BRPower);
             }
-            else if (num ==0){
-                WristServo.setPosition(1.1);
-                num =1;
+
+            IntakeMotor.setPower(gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
+            LeftSlide.setPower(gamepad2.left_stick_y);
+            RightSlide.setPower(gamepad2.left_stick_y);
+
+            if (gamepad2.left_bumper) {
+                PlaneLauncher.setPosition(0.0);
+            }
+            if (gamepad2.right_bumper) {
+                PlaneLauncher.setPosition(1.0);
             }
 
+            boolean circlePressed = gamepad2.circle;
+            if (circlePressed && !oldCirclePressed) {
+                new LowerArmToCertainServoPosition(++index % 8).run();
+            }
+
+            // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
+            boolean crossPressed = gamepad2.cross;
+            if (crossPressed && !oldCrossPressed) {
+                Grabber.setPosition(GrabberPositions[++armIndex % 3]);
+            }
+
+            // Show the elapsed game time and wheel power.
+            telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addData("INDEX", index % 8);
+            telemetry.update();
+            oldCrossPressed = crossPressed;
+            oldCirclePressed = circlePressed;
         }
-
-        if (gamepad1.right_bumper){
-            WristServo.setPosition(0.74);
-        }
-
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
-    }
-
-    /*
-     * Code to run ONCE after the driver hits STOP
-     */
-    @Override
-    public void stop() {
     }
 }
-
-
