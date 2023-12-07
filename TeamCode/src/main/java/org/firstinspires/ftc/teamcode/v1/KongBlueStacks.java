@@ -19,14 +19,13 @@
  * SOFTWARE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.v1;
 
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
@@ -38,6 +37,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.constants.AutoServoConstants;
+import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -60,8 +61,8 @@ import java.util.TimerTask;
  * the sample regions over the first 3 stones.
  */
 @Autonomous
-//@Disabled
-public class KongRedStacks extends LinearOpMode
+@Disabled
+public class KongBlueStacks extends LinearOpMode
 {
     enum DriveDirection {
         FORWARD,
@@ -141,7 +142,7 @@ public class KongRedStacks extends LinearOpMode
 
     OpenCvWebcam webcam;
     TeamElementDeterminationPipeline pipeline;
-    StartingPositionEnum sideOfFieldToStartOn = StartingPositionEnum.RIGHT;
+    StartingPositionEnum sideOfFieldToStartOn = StartingPositionEnum.LEFT;
 
     @Override
     public void runOpMode()
@@ -242,7 +243,7 @@ public class KongRedStacks extends LinearOpMode
                 telemetry.addData("erroCode", errorCode);
             }
         });
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(-36, -63, Math.PI / 2));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(-36, 63, -Math.PI / 2));
 //        timer.schedule(new PutGrabberToCertainPosition(0), 3000);
 
         waitForStart();
@@ -324,7 +325,7 @@ public class KongRedStacks extends LinearOpMode
         void inputToCb(Mat input)
         {
             Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
-            Core.extractChannel(YCrCb, Cb, 1);
+            Core.extractChannel(YCrCb, Cb, 2);
         }
 
         @Override
@@ -578,56 +579,60 @@ public class KongRedStacks extends LinearOpMode
         }
     }
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-//        smp = SpikeMarkPosition.UNO;
+//        smp = SpikeMarkPosition.TRES;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
+        double multiplier = 1;
+        if (needInvert) {
+            multiplier = -1;
+        }
 
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
-                .strafeTo(new Vector2d(-42, -63))
-                .turn(0.00001)
-                .lineToY(-35);
+                .strafeTo(new Vector2d(-44, multiplier * -63))
+                .turn(multiplier * 0.00001)
+                .lineToY(multiplier * -36);
 
-        if (smp == SpikeMarkPosition.TRES) {
+        if (smp == SpikeMarkPosition.UNO) {
             actionBuilder = actionBuilder
-                    .turn(-Math.PI/2)
-                    .lineToX(-36)
+                    .turn(Math.PI/2)
+                    .lineToX(-34)
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
-                    .strafeTo(new Vector2d(-37, -60))
-                    .turn(Math.PI + 0.00001);
+                    .strafeTo(new Vector2d(-39, multiplier * -60))
+                    .turn(multiplier * Math.PI - 0.00001);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
-                    .lineToY(-60)
-                    .turn(Math.PI/2);
+                    .lineToY(multiplier * -60)
+                    .turn(multiplier * Math.PI/2);
         } else {
             actionBuilder = actionBuilder
-                    .turn(Math.PI / 2)
-                    .lineToX(-36)
+                    .turn(multiplier * Math.PI / 2)
+                    .lineToX(-34)
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
-                    .strafeTo(new Vector2d(-37, -60))
-                    .turnTo(Math.PI);
+                    .strafeTo(new Vector2d(-39, multiplier * -60))
+                    .turnTo(multiplier * Math.PI);
         }
 
         double pos = -35;
-        if (smp == SpikeMarkPosition.UNO) {
-            pos = -28;
-        }
         if (smp == SpikeMarkPosition.TRES) {
+            pos = -30;
+        }
+        if (smp == SpikeMarkPosition.UNO) {
             pos = -40;
         }
         actionBuilder = actionBuilder
-                .lineToX(46.5)
-                .strafeToConstantHeading(new Vector2d(47.5, pos))
+                .lineToX(36)
+                .strafeToConstantHeading(new Vector2d(48, multiplier * pos))
                 .afterTime(0, new PlacePixelOnBackDrop())
                 .afterTime(3, new GrabPixel())
                 .waitSeconds(4)
-                .strafeToConstantHeading(new Vector2d(46, -12))
-                .turn(0.00001)
+                .strafeToConstantHeading(new Vector2d(46, multiplier * -12))
+                .turn(multiplier * 0.00001)
                 .lineToX(60);
 
         Actions.runBlocking(actionBuilder.build());

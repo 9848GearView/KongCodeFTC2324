@@ -27,15 +27,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.v1;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.teamcode.constants.TeleopServoConstants;
+
 import java.lang.Math;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -54,8 +57,9 @@ import java.util.TimerTask;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="ShaneGrabberTest", group="Robot")
-public class ShaneGrabberTest extends LinearOpMode {
+@TeleOp(name="KongTeleop", group="Robot")
+@Disabled
+public class KongTeleop extends LinearOpMode {
     public static boolean isArmMoving = false;
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -78,13 +82,12 @@ public class ShaneGrabberTest extends LinearOpMode {
     private boolean oldCirclePressed = true;
     private boolean clawIsClosed = true;
     private int index = 0;
-    private double[] LEServoPositions = TestServoConstants.LEServoPositions;
-    private double[] REServoPositions = TestServoConstants.REServoPositions;
-    private double[] LWServoPositions = TestServoConstants.LWServoPositions;
-    private double[] RWServoPositions = TestServoConstants.RWServoPositions;
-    private double[] GrabberPositions = TestServoConstants.GrabberPositions;
-
-    private final int DELAY_BETWEEN_MOVES = 2000;
+    private double[] LEServoPositions = TeleopServoConstants.LEServoPositions;
+    private double[] REServoPositions = TeleopServoConstants.REServoPositions;
+    private double[] LWServoPositions = TeleopServoConstants.LWServoPositions;
+    private double[] RWServoPositions = TeleopServoConstants.RWServoPositions;
+    private double[] GrabberPositions = TeleopServoConstants.GrabberPositions;
+    private final int DELAY_BETWEEN_MOVES = 100;
 
     @Override
     public void runOpMode() {
@@ -116,9 +119,9 @@ public class ShaneGrabberTest extends LinearOpMode {
                 LeftWristServo.setPosition(LWServoPositions[i]);
                 RightWristServo.setPosition(RWServoPositions[i]);
 
-                telemetry.addData("index", i);
-                telemetry.update();
 //                sleep(1000);
+//                telemetry.addData("index", i);
+//                telemetry.update();
             }
         }
 
@@ -192,8 +195,6 @@ public class ShaneGrabberTest extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        int armIndex = 0;
-
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
@@ -204,16 +205,6 @@ public class ShaneGrabberTest extends LinearOpMode {
             double turn  =  gamepad1.right_stick_x;
             leftPower    = Range.clip(drive + turn, -1.0, 1.0);
             rightPower   = Range.clip(drive - turn, -1.0, 1.0);
-
-            // Send calculated power to wheels
-            // KYLE CODE
-            double r = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
-            double robotAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
-            double rightX = gamepad1.right_stick_x;
-            final double FLPower = r * Math.cos(robotAngle) + rightX;
-            final double FRPower = r * Math.sin(robotAngle) - rightX;
-            final double BLPower = r * Math.sin(robotAngle) + rightX;
-            final double BRPower = r * Math.cos(robotAngle) - rightX;
 
             // Send calculated power to wheels
             if (gamepad1.right_bumper || gamepad1.left_bumper) {
@@ -257,39 +248,72 @@ public class ShaneGrabberTest extends LinearOpMode {
                     }
                 }
             } else {
-                FLMotor.setPower(FLPower);
-                FRMotor.setPower(FRPower);
-                BLMotor.setPower(BLPower);
-                BRMotor.setPower(BRPower);
+                FLMotor.setPower(leftPower);
+                FRMotor.setPower(rightPower);
+                BLMotor.setPower(leftPower);
+                BRMotor.setPower(rightPower);
             }
 
             IntakeMotor.setPower(gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
 
-            if (gamepad2.left_bumper) {
+            if (gamepad2.left_bumper && runtime.seconds() > 90) {
                 PlaneLauncher.setPosition(0.0);
             }
-            if (gamepad2.right_bumper) {
+            if (gamepad2.right_bumper && runtime.seconds() > 90) {
                 PlaneLauncher.setPosition(1.0);
             }
 
             boolean circlePressed = gamepad2.circle;
-            if (circlePressed && !oldCirclePressed) {
-                new LowerArmToCertainServoPosition(++index % 8).run();
+            if (circlePressed && !oldCirclePressed && !isArmMoving) {
+                timer.schedule(new setIsArmMoving(true), 0);
+                if (index == 0) {
+                    timer.schedule(new PutGrabberToCertainPosition(0), 0);
+                    timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(1), 4 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(2), 5 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(3), 6 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(4), 7 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(5), 8 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(6), 9 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(7), 10 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(8), 11 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 11 * DELAY_BETWEEN_MOVES);
+                    index = 8;
+                } else if (index == 8) {
+                    Grabber.setPosition(GrabberPositions[1]);
+                    timer.schedule(new LowerArmToCertainServoPosition(9),  1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(10), 6 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(11), 12 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(0),  15 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 15 * DELAY_BETWEEN_MOVES);
+                    index = 0;
+                }
             }
 
             // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
             boolean crossPressed = gamepad2.cross;
             if (crossPressed && !oldCrossPressed) {
-                Grabber.setPosition(GrabberPositions[++armIndex % 3]);
+                Grabber.setPosition(Grabber.getPosition() == 0.57 ? 0.46 : 0.57);
             }
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("INDEX", index % 8);
+            telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+            telemetry.addData("Sticks", "left (%.2f), right (%.2f)", gamepad1.left_stick_y, gamepad1.right_stick_x);
+            telemetry.addData("StrafeModifier", gamepad1.right_stick_y);
+            telemetry.addData("Bumpers", "(%b), (%b)", gamepad1.left_bumper, gamepad1.right_bumper);
+            telemetry.addData("Intake", gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
+            telemetry.addData("Slides", gamepad2.left_stick_y);
+            telemetry.addData("Plane Launcher", gamepad2.left_bumper);
+            telemetry.addData("Plane Launcher", gamepad2.right_bumper);
+            telemetry.addData("GrabberPressed", "(%b), (%b)", crossPressed, oldCrossPressed);
+            telemetry.addData("ElbowServoPressed", "(%b), (%b)", circlePressed, oldCirclePressed);
+//            telemetry.addData("WristServoPressed", "(%b), (%b)", trianglePressed, oldTrianglePressed);
             telemetry.update();
             oldCrossPressed = crossPressed;
+//            oldTrianglePressed = trianglePressed;
             oldCirclePressed = circlePressed;
         }
     }

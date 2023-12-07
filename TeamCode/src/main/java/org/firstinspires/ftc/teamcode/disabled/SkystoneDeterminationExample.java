@@ -19,9 +19,10 @@
  * SOFTWARE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.disabled;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -34,21 +35,20 @@ import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvInternalCamera;
 import org.openftc.easyopencv.OpenCvPipeline;
-import org.openftc.easyopencv.OpenCvWebcam;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-
 
 /*
  * This sample demonstrates a basic (but battle-tested and essentially
- * 100% accurate) method of detecting the TeamElement when lined up with
+ * 100% accurate) method of detecting the skystone when lined up with
  * the sample regions over the first 3 stones.
  */
+@Disabled
 @Autonomous
-public class KongVisionTestRed extends LinearOpMode
+public class SkystoneDeterminationExample extends LinearOpMode
 {
-    OpenCvWebcam webcam;
-    TeamElementDeterminationPipeline pipeline;
+    OpenCvInternalCamera phoneCam;
+    SkystoneDeterminationPipeline pipeline;
 
     @Override
     public void runOpMode()
@@ -61,20 +61,21 @@ public class KongVisionTestRed extends LinearOpMode
          */
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);        pipeline = new TeamElementDeterminationPipeline();
-        webcam.setPipeline(pipeline);
+        phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
+        pipeline = new SkystoneDeterminationPipeline();
+        phoneCam.setPipeline(pipeline);
 
         // We set the viewport policy to optimized view so the preview doesn't appear 90 deg
         // out when the RC activity is in portrait. We do our actual image processing assuming
         // landscape orientation, though.
-//        webcam.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
-        webcam.setMillisecondsPermissionTimeout(2500);
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        phoneCam.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
+
+        phoneCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
             @Override
             public void onOpened()
             {
-                webcam.startStreaming(640,480, OpenCvCameraRotation.UPRIGHT);
+                phoneCam.startStreaming(320,240, OpenCvCameraRotation.SIDEWAYS_LEFT);
             }
 
             @Override
@@ -83,7 +84,6 @@ public class KongVisionTestRed extends LinearOpMode
                 /*
                  * This will be called if the camera could not be opened
                  */
-                telemetry.addData("erroCode", errorCode);
             }
         });
 
@@ -99,12 +99,12 @@ public class KongVisionTestRed extends LinearOpMode
         }
     }
 
-    public static class TeamElementDeterminationPipeline extends OpenCvPipeline
+    public static class SkystoneDeterminationPipeline extends OpenCvPipeline
     {
         /*
-         * An enum to define the TeamElement position
+         * An enum to define the skystone position
          */
-        public enum TeamElementPosition
+        public enum SkystonePosition
         {
             LEFT,
             CENTER,
@@ -116,17 +116,15 @@ public class KongVisionTestRed extends LinearOpMode
          */
         static final Scalar BLUE = new Scalar(0, 0, 255);
         static final Scalar GREEN = new Scalar(0, 255, 0);
-        static final Scalar RED = new Scalar(255, 0, 0);
 
         /*
          * The core values which define the location and size of the sample regions
          */
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(0,80);
-        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(160,80);
-        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(480,80);
-        static final Point REGION1_BOTTOMRIGHT_ANCHOR_POINT = new Point(80,320);
-        static final Point REGION2_BOTTOMRIGHT_ANCHOR_POINT = new Point(480,160);
-        static final Point REGION3_BOTTOMRIGHT_ANCHOR_POINT = new Point(640,320);
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(109,98);
+        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(181,98);
+        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(253,98);
+        static final int REGION_WIDTH = 20;
+        static final int REGION_HEIGHT = 20;
 
         /*
          * Points which actually define the sample region rectangles, derived from above values
@@ -145,6 +143,24 @@ public class KongVisionTestRed extends LinearOpMode
          *   ------------------------------------
          *
          */
+        Point region1_pointA = new Point(
+                REGION1_TOPLEFT_ANCHOR_POINT.x,
+                REGION1_TOPLEFT_ANCHOR_POINT.y);
+        Point region1_pointB = new Point(
+                REGION1_TOPLEFT_ANCHOR_POINT.x + REGION_WIDTH,
+                REGION1_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
+        Point region2_pointA = new Point(
+                REGION2_TOPLEFT_ANCHOR_POINT.x,
+                REGION2_TOPLEFT_ANCHOR_POINT.y);
+        Point region2_pointB = new Point(
+                REGION2_TOPLEFT_ANCHOR_POINT.x + REGION_WIDTH,
+                REGION2_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
+        Point region3_pointA = new Point(
+                REGION3_TOPLEFT_ANCHOR_POINT.x,
+                REGION3_TOPLEFT_ANCHOR_POINT.y);
+        Point region3_pointB = new Point(
+                REGION3_TOPLEFT_ANCHOR_POINT.x + REGION_WIDTH,
+                REGION3_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
 
         /*
          * Working variables
@@ -155,7 +171,7 @@ public class KongVisionTestRed extends LinearOpMode
         int avg1, avg2, avg3;
 
         // Volatile since accessed by OpMode thread w/o synchronization
-        private volatile TeamElementPosition position = TeamElementPosition.LEFT;
+        private volatile SkystonePosition position = SkystonePosition.LEFT;
 
         /*
          * This function takes the RGB frame, converts to YCrCb,
@@ -164,7 +180,7 @@ public class KongVisionTestRed extends LinearOpMode
         void inputToCb(Mat input)
         {
             Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
-            Core.extractChannel(YCrCb, Cb, 1);
+            Core.extractChannel(YCrCb, Cb, 2);
         }
 
         @Override
@@ -186,9 +202,9 @@ public class KongVisionTestRed extends LinearOpMode
              * buffer. Any changes to the child affect the parent, and the
              * reverse also holds true.
              */
-            region1_Cb = Cb.submat(new Rect(REGION1_TOPLEFT_ANCHOR_POINT, REGION1_BOTTOMRIGHT_ANCHOR_POINT));
-            region2_Cb = Cb.submat(new Rect(REGION2_TOPLEFT_ANCHOR_POINT, REGION2_BOTTOMRIGHT_ANCHOR_POINT));
-            region3_Cb = Cb.submat(new Rect(REGION3_TOPLEFT_ANCHOR_POINT, REGION3_BOTTOMRIGHT_ANCHOR_POINT));
+            region1_Cb = Cb.submat(new Rect(region1_pointA, region1_pointB));
+            region2_Cb = Cb.submat(new Rect(region2_pointA, region2_pointB));
+            region3_Cb = Cb.submat(new Rect(region3_pointA, region3_pointB));
         }
 
         @Override
@@ -211,17 +227,17 @@ public class KongVisionTestRed extends LinearOpMode
              *
              * After we've converted to YCrCb, we extract just the 2nd channel, the
              * Cb channel. We do this because stones are bright yellow and contrast
-             * STRONGLY on the Cb channel against everything else, including TeamElements
-             * (because TeamElements have a black label).
+             * STRONGLY on the Cb channel against everything else, including SkyStones
+             * (because SkyStones have a black label).
              *
              * We then take the average pixel value of 3 different regions on that Cb
              * channel, one positioned over each stone. The brightest of the 3 regions
-             * is where we assume the TeamElement to be, since the normal stones show up
+             * is where we assume the SkyStone to be, since the normal stones show up
              * extremely darkly.
              *
              * We also draw rectangles on the screen showing where the sample regions
              * are, as well as drawing a solid rectangle over top the sample region
-             * we believe is on top of the TeamElement.
+             * we believe is on top of the SkyStone.
              *
              * In order for this whole process to work correctly, each sample region
              * should be positioned in the center of each of the first 3 stones, and
@@ -251,8 +267,8 @@ public class KongVisionTestRed extends LinearOpMode
              */
             Imgproc.rectangle(
                     input, // Buffer to draw on
-                    REGION1_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
-                    REGION1_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle
+                    region1_pointA, // First point which defines the rectangle
+                    region1_pointB, // Second point which defines the rectangle
                     BLUE, // The color the rectangle is drawn in
                     2); // Thickness of the rectangle lines
 
@@ -262,8 +278,8 @@ public class KongVisionTestRed extends LinearOpMode
              */
             Imgproc.rectangle(
                     input, // Buffer to draw on
-                    REGION2_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
-                    REGION2_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle
+                    region2_pointA, // First point which defines the rectangle
+                    region2_pointB, // Second point which defines the rectangle
                     BLUE, // The color the rectangle is drawn in
                     2); // Thickness of the rectangle lines
 
@@ -273,8 +289,8 @@ public class KongVisionTestRed extends LinearOpMode
              */
             Imgproc.rectangle(
                     input, // Buffer to draw on
-                    REGION3_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
-                    REGION3_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle
+                    region3_pointA, // First point which defines the rectangle
+                    region3_pointB, // Second point which defines the rectangle
                     BLUE, // The color the rectangle is drawn in
                     2); // Thickness of the rectangle lines
 
@@ -291,7 +307,7 @@ public class KongVisionTestRed extends LinearOpMode
              */
             if(max == avg1) // Was it from region 1?
             {
-                position = TeamElementPosition.LEFT; // Record our analysis
+                position = SkystonePosition.LEFT; // Record our analysis
 
                 /*
                  * Draw a solid rectangle on top of the chosen region.
@@ -299,14 +315,14 @@ public class KongVisionTestRed extends LinearOpMode
                  */
                 Imgproc.rectangle(
                         input, // Buffer to draw on
-                        REGION1_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
-                        REGION1_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle
+                        region1_pointA, // First point which defines the rectangle
+                        region1_pointB, // Second point which defines the rectangle
                         GREEN, // The color the rectangle is drawn in
                         -1); // Negative thickness means solid fill
             }
             else if(max == avg2) // Was it from region 2?
             {
-                position = TeamElementPosition.CENTER; // Record our analysis
+                position = SkystonePosition.CENTER; // Record our analysis
 
                 /*
                  * Draw a solid rectangle on top of the chosen region.
@@ -314,14 +330,14 @@ public class KongVisionTestRed extends LinearOpMode
                  */
                 Imgproc.rectangle(
                         input, // Buffer to draw on
-                        REGION2_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
-                        REGION2_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle
+                        region2_pointA, // First point which defines the rectangle
+                        region2_pointB, // Second point which defines the rectangle
                         GREEN, // The color the rectangle is drawn in
                         -1); // Negative thickness means solid fill
             }
             else if(max == avg3) // Was it from region 3?
             {
-                position = TeamElementPosition.RIGHT; // Record our analysis
+                position = SkystonePosition.RIGHT; // Record our analysis
 
                 /*
                  * Draw a solid rectangle on top of the chosen region.
@@ -329,8 +345,8 @@ public class KongVisionTestRed extends LinearOpMode
                  */
                 Imgproc.rectangle(
                         input, // Buffer to draw on
-                        REGION3_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
-                        REGION3_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle,
+                        region3_pointA, // First point which defines the rectangle
+                        region3_pointB, // Second point which defines the rectangle
                         GREEN, // The color the rectangle is drawn in
                         -1); // Negative thickness means solid fill
             }
@@ -346,7 +362,7 @@ public class KongVisionTestRed extends LinearOpMode
         /*
          * Call this from the OpMode thread to obtain the latest analysis
          */
-        public TeamElementPosition getAnalysis()
+        public SkystonePosition getAnalysis()
         {
             return position;
         }

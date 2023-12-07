@@ -19,14 +19,13 @@
  * SOFTWARE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.v1;
 
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
@@ -38,6 +37,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.constants.AutoServoConstants;
+import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -60,8 +61,8 @@ import java.util.TimerTask;
  * the sample regions over the first 3 stones.
  */
 @Autonomous
-//@Disabled
-public class KongBlueBackdrop extends LinearOpMode
+@Disabled
+public class KongRedBackdrop extends LinearOpMode
 {
     enum DriveDirection {
         FORWARD,
@@ -102,7 +103,7 @@ public class KongBlueBackdrop extends LinearOpMode
     private ElapsedTime eTime = new ElapsedTime();
 
 
-    //    static final double     FORWARD_SPEED = 0.5;
+//    static final double     FORWARD_SPEED = 0.5;
 //    static final double     TURN_SPEED    = 0.5;
     private int index = 0;
     private double[] LEServoPositions = AutoServoConstants.LEServoPositions;
@@ -110,7 +111,6 @@ public class KongBlueBackdrop extends LinearOpMode
     private double[] LWServoPositions = AutoServoConstants.LWServoPositions;
     private double[] RWServoPositions = AutoServoConstants.RWServoPositions;
     private double[] GrabberPositions = AutoServoConstants.GrabberPositions;
-
     private final int DELAY_BETWEEN_MOVES = 100;
     public class LowerArmToCertainServoPosition extends TimerTask {
         int i;
@@ -142,7 +142,7 @@ public class KongBlueBackdrop extends LinearOpMode
 
     OpenCvWebcam webcam;
     TeamElementDeterminationPipeline pipeline;
-    StartingPositionEnum sideOfFieldToStartOn = StartingPositionEnum.LEFT;
+    StartingPositionEnum sideOfFieldToStartOn = StartingPositionEnum.RIGHT;
 
     @Override
     public void runOpMode()
@@ -244,13 +244,14 @@ public class KongBlueBackdrop extends LinearOpMode
             }
         });
 
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, 63, -Math.PI / 2));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, -63, Math.PI / 2));
 //        timer.schedule(new PutGrabberToCertainPosition(0), 3000);
 
         waitForStart();
 
         while (opModeIsActive())
         {
+            sleep(1000);
             telemetry.addData("Analysis", pipeline.getAnalysis());
             telemetry.update();
             doActions(drive, sideOfFieldToStartOn, pipeline.getAnalysis());
@@ -326,7 +327,7 @@ public class KongBlueBackdrop extends LinearOpMode
         void inputToCb(Mat input)
         {
             Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
-            Core.extractChannel(YCrCb, Cb, 2);
+            Core.extractChannel(YCrCb, Cb, 1);
         }
 
         @Override
@@ -580,37 +581,32 @@ public class KongBlueBackdrop extends LinearOpMode
         }
     }
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-//        smp = SpikeMarkPosition.TRES;
+//        smp = SpikeMarkPosition.UNO;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
-        double multiplier = 1;
-        if (needInvert) {
-            multiplier = -1;
-        }
 
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
-                .strafeTo(new Vector2d(19, multiplier * -63))
-                .turn(multiplier * 0.00001)
-                .lineToY(multiplier * -36);
+                .strafeTo(new Vector2d(17, -63))
+                .turn(0.00001)
+                .lineToY(-36);
 
-        if (smp == SpikeMarkPosition.TRES) {
+        if (smp == SpikeMarkPosition.UNO) {
             actionBuilder = actionBuilder
-                    .turn(multiplier * Math.PI/2)
+                    .turn(Math.PI/2)
                     .lineToX(11)
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
-                    .strafeTo(new Vector2d(15, multiplier * -36))
-                    .waitSeconds(1)
+                    .strafeTo(new Vector2d(15, -36))
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
-                    .lineToY(multiplier * -48)
-                    .turn(multiplier * Math.PI/2);
+                    .lineToY(-48)
+                    .turn(Math.PI/2);
         } else {
             actionBuilder = actionBuilder
-                    .turn(multiplier * Math.PI / 2)
+                    .turn(Math.PI / 2)
                     .lineToX(34)
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
@@ -618,20 +614,20 @@ public class KongBlueBackdrop extends LinearOpMode
         }
 
         double pos = -34;
-        if (smp == SpikeMarkPosition.TRES) {
-            pos = -28;
-        }
         if (smp == SpikeMarkPosition.UNO) {
+            pos = -26;
+        }
+        if (smp == SpikeMarkPosition.TRES) {
             pos = -44;
         }
         actionBuilder = actionBuilder
                 .lineToX(47)
-                .strafeToConstantHeading(new Vector2d(48.6, multiplier * pos))
+                .strafeToConstantHeading(new Vector2d(47.8, pos))
                 .afterTime(0, new PlacePixelOnBackDrop())
                 .afterTime(3, new GrabPixel())
                 .waitSeconds(4)
-                .strafeToConstantHeading(new Vector2d(46, multiplier * -12))
-                .turn(multiplier * 0.00001)
+                .strafeToConstantHeading(new Vector2d(46, -12))
+                .turn(0.00001)
                 .lineToX(60);
 
         Actions.runBlocking(actionBuilder.build());

@@ -27,15 +27,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.teamcode.constants.TeleopServoConstants;
+
 import java.lang.Math;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -54,8 +56,8 @@ import java.util.TimerTask;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="KongTeleop", group="Robot")
-public class KongTeleop extends LinearOpMode {
+@TeleOp(name="KongTeleopTest", group="Test")
+public class KongTeleopTest extends LinearOpMode {
     public static boolean isArmMoving = false;
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -83,6 +85,7 @@ public class KongTeleop extends LinearOpMode {
     private double[] LWServoPositions = TeleopServoConstants.LWServoPositions;
     private double[] RWServoPositions = TeleopServoConstants.RWServoPositions;
     private double[] GrabberPositions = TeleopServoConstants.GrabberPositions;
+
     private final int DELAY_BETWEEN_MOVES = 100;
 
     @Override
@@ -203,6 +206,16 @@ public class KongTeleop extends LinearOpMode {
             rightPower   = Range.clip(drive - turn, -1.0, 1.0);
 
             // Send calculated power to wheels
+            // KYLE CODE
+            double r = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
+            double robotAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
+            double rightX = gamepad1.right_stick_x;
+            final double FLPower = r * Math.cos(robotAngle) + rightX;
+            final double FRPower = r * Math.sin(robotAngle) - rightX;
+            final double BLPower = r * Math.sin(robotAngle) + rightX;
+            final double BRPower = r * Math.cos(robotAngle) - rightX;
+
+            // Send calculated power to wheels
             if (gamepad1.right_bumper || gamepad1.left_bumper) {
                 if (gamepad1.right_stick_x == 0 && gamepad1.right_stick_y == 0) {
                     if (gamepad1.right_bumper) {
@@ -244,20 +257,20 @@ public class KongTeleop extends LinearOpMode {
                     }
                 }
             } else {
-                FLMotor.setPower(leftPower);
-                FRMotor.setPower(rightPower);
-                BLMotor.setPower(leftPower);
-                BRMotor.setPower(rightPower);
+                FLMotor.setPower(FLPower);
+                FRMotor.setPower(FRPower);
+                BLMotor.setPower(BLPower);
+                BRMotor.setPower(BRPower);
             }
 
             IntakeMotor.setPower(gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
 
-            if (gamepad2.left_bumper && runtime.seconds() > 90) {
+            if (gamepad2.left_bumper) {
                 PlaneLauncher.setPosition(0.0);
             }
-            if (gamepad2.right_bumper && runtime.seconds() > 90) {
+            if (gamepad2.right_bumper) {
                 PlaneLauncher.setPosition(1.0);
             }
 
