@@ -59,13 +59,31 @@ import java.util.TimerTask;
  * 100% accurate) method of detecting the TeamElement when lined up with
  * the sample regions over the first 3 stones.
  */
-@Autonomous(name="NewKongRedStacks")
+@Autonomous
 //@Disabled
 public class NewKongRedStacks extends LinearOpMode
 {
+    enum DriveDirection {
+        FORWARD,
+        LEFT,
+        RIGHT,
+        BACKWARD
+    }
+
     enum StartingPositionEnum {
         LEFT,
         RIGHT
+    }
+
+    enum SlidePackDirection {
+        UP,
+        DOWN
+    }
+
+    enum SpikeMarkPosition {
+        UNO,
+        DOS,
+        TRES
     }
     private ElapsedTime runtime = new ElapsedTime();
     private Timer timer = new Timer();
@@ -78,14 +96,20 @@ public class NewKongRedStacks extends LinearOpMode
     private DcMotor RightSlide = null;
     private Servo LeftElbowServo = null;
     private Servo RightElbowServo = null;
-    private Servo LeftWristServo = null;
+    private Servo Poker = null;
     private Servo RightWristServo = null;
-    private Servo Grabber = null;
+    private Servo Ringer = null;
+    private ElapsedTime eTime = new ElapsedTime();
+
+
+    //    static final double     FORWARD_SPEED = 0.5;
+//    static final double     TURN_SPEED    = 0.5;
+    private int index = 0;
     private double[] LEServoPositions = AutoServoConstants.LEServoPositions;
     private double[] REServoPositions = AutoServoConstants.REServoPositions;
-    private double[] LWServoPositions = AutoServoConstants.LWServoPositions;
+    private double[] PokerPositions = AutoServoConstants.PokerPositions;
     private double[] RWServoPositions = AutoServoConstants.RWServoPositions;
-    private double[] GrabberPositions = AutoServoConstants.GrabberPositions;
+    private double[] RingerPositions = AutoServoConstants.RingerPositions;
     private final int DELAY_BETWEEN_MOVES = 100;
     public class LowerArmToCertainServoPosition extends TimerTask {
         int i;
@@ -95,25 +119,37 @@ public class NewKongRedStacks extends LinearOpMode
         public void run() {
             LeftElbowServo.setPosition(LEServoPositions[i]);
             RightElbowServo.setPosition(REServoPositions[i]);
-            LeftWristServo.setPosition(LWServoPositions[i]);
+//            LeftWristServo.setPosition(LWServoPositions[i]);
             RightWristServo.setPosition(RWServoPositions[i]);
 
+//                sleep(1000);
+//                telemetry.addData("index", i);
+//                telemetry.update();
         }
     }
 
-    public class PutGrabberToCertainPosition extends TimerTask {
+    public class PutRingerToCertainPosition extends TimerTask {
         int i;
-        public PutGrabberToCertainPosition(int i) {
+        public PutRingerToCertainPosition(int i) {
             this.i = i;
         }
         public void run() {
-            Grabber.setPosition(GrabberPositions[i]);
+            Ringer.setPosition(RingerPositions[i]);
         }
     }
 
+    public class PutPokerToCertainPosition extends TimerTask {
+        int i;
+        public PutPokerToCertainPosition(int i) {
+            this.i = i;
+        }
+        public void run() {
+            Poker.setPosition(PokerPositions[i]);
+        }
+    }
 
     OpenCvWebcam webcam;
-    RedTeamElementDeterminationPipeline pipeline;
+    TeamElementDeterminationPipeline pipeline;
     StartingPositionEnum sideOfFieldToStartOn = StartingPositionEnum.RIGHT;
 
     @Override
@@ -131,12 +167,11 @@ public class NewKongRedStacks extends LinearOpMode
         telemetry.update();
 
         for (int i = 0; i < REServoPositions.length; i++) {
-            LWServoPositions[i] += 0.02;
-            RWServoPositions[i] += 0.02;
+            LEServoPositions[i] += -0.074;
+            REServoPositions[i] += -0.074;
         }
         for (int i = 0; i < REServoPositions.length; i++) {
-            LEServoPositions[i] += -0.04;
-            REServoPositions[i] += -0.04;
+            RWServoPositions[i] += 0.00;
         }
 
         // Initialize the hardware variables. Note that the strings used here as parameters
@@ -151,9 +186,10 @@ public class NewKongRedStacks extends LinearOpMode
         RightSlide = hardwareMap.get(DcMotor.class, "RS");
         LeftElbowServo = hardwareMap.get(Servo.class, "LE");
         RightElbowServo = hardwareMap.get(Servo.class, "RE");
-        LeftWristServo = hardwareMap.get(Servo.class, "LW");
+        Poker = hardwareMap.get(Servo.class, "P");
         RightWristServo = hardwareMap.get(Servo.class, "RW");
-        Grabber = hardwareMap.get(Servo.class, "G");
+        Ringer = hardwareMap.get(Servo.class, "R");
+
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         FRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -175,9 +211,9 @@ public class NewKongRedStacks extends LinearOpMode
         RightSlide.setDirection(DcMotor.Direction.REVERSE);
         LeftElbowServo.setDirection(Servo.Direction.FORWARD);
         RightElbowServo.setDirection(Servo.Direction.REVERSE);
-        LeftWristServo.setDirection(Servo.Direction.FORWARD);
+        Poker.setDirection(Servo.Direction.FORWARD);
         RightWristServo.setDirection(Servo.Direction.REVERSE);
-        Grabber.setDirection(Servo.Direction.FORWARD);
+        Ringer.setDirection(Servo.Direction.FORWARD);
 
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         FRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -190,10 +226,12 @@ public class NewKongRedStacks extends LinearOpMode
         // Wait for the game to start (driver presses PLAY)
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        pipeline = new RedTeamElementDeterminationPipeline();
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);        pipeline = new TeamElementDeterminationPipeline();
         webcam.setPipeline(pipeline);
 
+        // We set the viewport policy to optimized view so the preview doesn't appear 90 deg
+        // out when the RC activity is in portrait. We do our actual image processing assuming
+        // landscape orientation, though.
 //        webcam.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
         webcam.setMillisecondsPermissionTimeout(2500);
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
@@ -214,6 +252,7 @@ public class NewKongRedStacks extends LinearOpMode
             }
         });
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(-36, -63, Math.PI / 2));
+//        timer.schedule(new PutGrabberToCertainPosition(0), 3000);
 
         waitForStart();
 
@@ -226,6 +265,268 @@ public class NewKongRedStacks extends LinearOpMode
             // Don't burn CPU cycles busy-looping in this sample
             sleep(15000);
             break;
+        }
+    }
+
+    public static class TeamElementDeterminationPipeline extends OpenCvPipeline
+    {
+        /*
+         * An enum to define the TeamElement position
+         */
+        public enum TeamElementPosition
+        {
+            LEFT,
+            CENTER,
+            RIGHT
+        }
+
+        /*
+         * Some color constants
+         */
+        static final Scalar BLUE = new Scalar(0, 0, 255);
+        static final Scalar GREEN = new Scalar(0, 255, 0);
+        static final Scalar RED = new Scalar(255, 0, 0);
+
+        /*
+         * The core values which define the location and size of the sample regions
+         */
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(0,80);
+        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(160,80);
+        static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(560,80);
+        static final Point REGION1_BOTTOMRIGHT_ANCHOR_POINT = new Point(160,320);
+        static final Point REGION2_BOTTOMRIGHT_ANCHOR_POINT = new Point(480,160);
+        static final Point REGION3_BOTTOMRIGHT_ANCHOR_POINT = new Point(640,320);
+
+        /*
+         * Points which actually define the sample region rectangles, derived from above values
+         *
+         * Example of how points A and B work to define a rectangle
+         *
+         *   ------------------------------------
+         *   | (0,0) Point A                    |
+         *   |                                  |
+         *   |                                  |
+         *   |                                  |
+         *   |                                  |
+         *   |                                  |
+         *   |                                  |
+         *   |                  Point B (70,50) |
+         *   ------------------------------------
+         *
+         */
+
+        /*
+         * Working variables
+         */
+        Mat region1_Cb, region2_Cb, region3_Cb;
+        Mat YCrCb = new Mat();
+        Mat Cb = new Mat();
+        int avg1, avg2, avg3;
+
+        // Volatile since accessed by OpMode thread w/o synchronization
+        private volatile TeamElementPosition position = TeamElementPosition.LEFT;
+
+        /*
+         * This function takes the RGB frame, converts to YCrCb,
+         * and extracts the Cb channel to the 'Cb' variable
+         */
+        void inputToCb(Mat input)
+        {
+            Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
+            Core.extractChannel(YCrCb, Cb, 1);
+        }
+
+        @Override
+        public void init(Mat firstFrame)
+        {
+            /*
+             * We need to call this in order to make sure the 'Cb'
+             * object is initialized, so that the submats we make
+             * will still be linked to it on subsequent frames. (If
+             * the object were to only be initialized in processFrame,
+             * then the submats would become delinked because the backing
+             * buffer would be re-allocated the first time a real frame
+             * was crunched)
+             */
+            inputToCb(firstFrame);
+
+            /*
+             * Submats are a persistent reference to a region of the parent
+             * buffer. Any changes to the child affect the parent, and the
+             * reverse also holds true.
+             */
+            region1_Cb = Cb.submat(new Rect(REGION1_TOPLEFT_ANCHOR_POINT, REGION1_BOTTOMRIGHT_ANCHOR_POINT));
+            region2_Cb = Cb.submat(new Rect(REGION2_TOPLEFT_ANCHOR_POINT, REGION2_BOTTOMRIGHT_ANCHOR_POINT));
+            region3_Cb = Cb.submat(new Rect(REGION3_TOPLEFT_ANCHOR_POINT, REGION3_BOTTOMRIGHT_ANCHOR_POINT));
+        }
+
+        @Override
+        public Mat processFrame(Mat input)
+        {
+            /*
+             * Overview of what we're doing:
+             *
+             * We first convert to YCrCb color space, from RGB color space.
+             * Why do we do this? Well, in the RGB color space, chroma and
+             * luma are intertwined. In YCrCb, chroma and luma are separated.
+             * YCrCb is a 3-channel color space, just like RGB. YCrCb's 3 channels
+             * are Y, the luma channel (which essentially just a B&W image), the
+             * Cr channel, which records the difference from red, and the Cb channel,
+             * which records the difference from blue. Because chroma and luma are
+             * not related in YCrCb, vision code written to look for certain values
+             * in the Cr/Cb channels will not be severely affected by differing
+             * light intensity, since that difference would most likely just be
+             * reflected in the Y channel.
+             *
+             * After we've converted to YCrCb, we extract just the 2nd channel, the
+             * Cb channel. We do this because stones are bright yellow and contrast
+             * STRONGLY on the Cb channel against everything else, including TeamElements
+             * (because TeamElements have a black label).
+             *
+             * We then take the average pixel value of 3 different regions on that Cb
+             * channel, one positioned over each stone. The brightest of the 3 regions
+             * is where we assume the TeamElement to be, since the normal stones show up
+             * extremely darkly.
+             *
+             * We also draw rectangles on the screen showing where the sample regions
+             * are, as well as drawing a solid rectangle over top the sample region
+             * we believe is on top of the TeamElement.
+             *
+             * In order for this whole process to work correctly, each sample region
+             * should be positioned in the center of each of the first 3 stones, and
+             * be small enough such that only the stone is sampled, and not any of the
+             * surroundings.
+             */
+
+            /*
+             * Get the Cb channel of the input frame after conversion to YCrCb
+             */
+            inputToCb(input);
+
+            /*
+             * Compute the average pixel value of each submat region. We're
+             * taking the average of a single channel buffer, so the value
+             * we need is at index 0. We could have also taken the average
+             * pixel value of the 3-channel image, and referenced the value
+             * at index 2 here.
+             */
+            avg1 = (int) Core.mean(region1_Cb).val[0];
+            avg2 = (int) Core.mean(region2_Cb).val[0];
+            avg3 = (int) Core.mean(region3_Cb).val[0];
+
+            /*
+             * Draw a rectangle showing sample region 1 on the screen.
+             * Simply a visual aid. Serves no functional purpose.
+             */
+            Imgproc.rectangle(
+                    input, // Buffer to draw on
+                    REGION1_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
+                    REGION1_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle
+                    BLUE, // The color the rectangle is drawn in
+                    2); // Thickness of the rectangle lines
+
+            /*
+             * Draw a rectangle showing sample region 2 on the screen.
+             * Simply a visual aid. Serves no functional purpose.
+             */
+            Imgproc.rectangle(
+                    input, // Buffer to draw on
+                    REGION2_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
+                    REGION2_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle
+                    BLUE, // The color the rectangle is drawn in
+                    2); // Thickness of the rectangle lines
+
+            /*
+             * Draw a rectangle showing sample region 3 on the screen.
+             * Simply a visual aid. Serves no functional purpose.
+             */
+            Imgproc.rectangle(
+                    input, // Buffer to draw on
+                    REGION3_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
+                    REGION3_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle
+                    BLUE, // The color the rectangle is drawn in
+                    2); // Thickness of the rectangle lines
+
+
+            /*
+             * Find the max of the 3 averages
+             */
+            int maxOneTwo = Math.max(avg1, avg2);
+            int max = Math.max(maxOneTwo, avg3);
+
+            /*
+             * Now that we found the max, we actually need to go and
+             * figure out which sample region that value was from
+             */
+            if(max == avg1) // Was it from region 1?
+            {
+                position = TeamElementPosition.LEFT; // Record our analysis
+
+                /*
+                 * Draw a solid rectangle on top of the chosen region.
+                 * Simply a visual aid. Serves no functional purpose.
+                 */
+                Imgproc.rectangle(
+                        input, // Buffer to draw on
+                        REGION1_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
+                        REGION1_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle
+                        GREEN, // The color the rectangle is drawn in
+                        -1); // Negative thickness means solid fill
+            }
+            else if(max == avg2) // Was it from region 2?
+            {
+                position = TeamElementPosition.CENTER; // Record our analysis
+
+                /*
+                 * Draw a solid rectangle on top of the chosen region.
+                 * Simply a visual aid. Serves no functional purpose.
+                 */
+                Imgproc.rectangle(
+                        input, // Buffer to draw on
+                        REGION2_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
+                        REGION2_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle
+                        GREEN, // The color the rectangle is drawn in
+                        -1); // Negative thickness means solid fill
+            }
+            else if(max == avg3) // Was it from region 3?
+            {
+                position = TeamElementPosition.RIGHT; // Record our analysis
+
+                /*
+                 * Draw a solid rectangle on top of the chosen region.
+                 * Simply a visual aid. Serves no functional purpose.
+                 */
+                Imgproc.rectangle(
+                        input, // Buffer to draw on
+                        REGION3_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
+                        REGION3_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle,
+                        GREEN, // The color the rectangle is drawn in
+                        -1); // Negative thickness means solid fill
+            }
+
+            /*
+             * Render the 'input' buffer to the viewport. But note this is not
+             * simply rendering the raw camera feed, because we called functions
+             * to add some annotations to this buffer earlier up.
+             */
+            return input;
+        }
+
+        /*
+         * Call this from the OpMode thread to obtain the latest analysis
+         */
+        public SpikeMarkPosition getAnalysis()
+        {
+            switch (position) {
+                case LEFT:
+                    return SpikeMarkPosition.UNO;
+                case CENTER:
+                    return SpikeMarkPosition.DOS;
+                case RIGHT:
+                    return SpikeMarkPosition.TRES;
+                default:
+                    return SpikeMarkPosition.UNO;
+            }
         }
     }
 
@@ -260,16 +561,16 @@ public class NewKongRedStacks extends LinearOpMode
     public class PlacePixelOnBackDrop implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            timer.schedule(new PutGrabberToCertainPosition(0), 0);
-            timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(1), 4 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new PutRingerToCertainPosition(0), 0);
+//            timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
+//            timer.schedule(new LowerArmToCertainServoPosition(1), 4 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(2), 5 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(3), 6 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(4), 7 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(5), 8 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(6), 9 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(7), 10 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(8), 11 * DELAY_BETWEEN_MOVES);
+//            timer.schedule(new LowerArmToCertainServoPosition(4), 7 * DELAY_BETWEEN_MOVES);
+//            timer.schedule(new LowerArmToCertainServoPosition(5), 8 * DELAY_BETWEEN_MOVES);
+//            timer.schedule(new LowerArmToCertainServoPosition(6), 9 * DELAY_BETWEEN_MOVES);
+//            timer.schedule(new LowerArmToCertainServoPosition(7), 10 * DELAY_BETWEEN_MOVES);
+//            timer.schedule(new LowerArmToCertainServoPosition(8), 11 * DELAY_BETWEEN_MOVES);
             return false;
         }
     }
@@ -277,10 +578,10 @@ public class NewKongRedStacks extends LinearOpMode
     public class GrabPixel implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            timer.schedule(new PutGrabberToCertainPosition(1), 0);
-            timer.schedule(new LowerArmToCertainServoPosition(9),  1 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(10), 6 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(11), 12 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new PutRingerToCertainPosition(1), 0);
+            timer.schedule(new LowerArmToCertainServoPosition(4),  1 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(5), 6 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(6), 12 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(0),  15 * DELAY_BETWEEN_MOVES);
             return false;
         }
@@ -330,7 +631,7 @@ public class NewKongRedStacks extends LinearOpMode
         }
         actionBuilder = actionBuilder
                 .lineToX(46.5)
-                .strafeToConstantHeading(new Vector2d(47.5, pos))
+                .strafeToConstantHeading(new Vector2d(44, pos))
                 .afterTime(0, new PlacePixelOnBackDrop())
                 .afterTime(3, new GrabPixel())
                 .waitSeconds(4)
@@ -341,4 +642,28 @@ public class NewKongRedStacks extends LinearOpMode
         Actions.runBlocking(actionBuilder.build());
     }
 
+    private DriveDirection getCorrectDirection(DriveDirection direction, boolean needInvert) {
+        if (!needInvert)
+            return direction;
+
+        DriveDirection invertedDirection = direction;
+        switch (direction) {
+            case LEFT:
+                invertedDirection = DriveDirection.RIGHT;
+                break;
+            case RIGHT:
+                invertedDirection = DriveDirection.LEFT;
+                break;
+            case FORWARD:
+                invertedDirection = DriveDirection.BACKWARD;
+                break;
+            case BACKWARD:
+                invertedDirection = DriveDirection.FORWARD;
+                break;
+            default:
+                break;
+        }
+
+        return invertedDirection;
+    }
 }

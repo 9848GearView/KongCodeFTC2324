@@ -36,7 +36,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.constants.TestServoConstants;
+import org.firstinspires.ftc.teamcode.constants.TeleopServoConstants;
 
 import java.lang.Math;
 import java.util.Timer;
@@ -71,20 +71,20 @@ public class NewKongTeleop extends LinearOpMode {
     private DcMotor RightSlide = null;
     private Servo LeftElbowServo = null;
     private Servo RightElbowServo = null;
-    private Servo LeftWristServo = null;
+    private Servo Poker = null;
     private Servo RightWristServo = null;
-    private Servo Grabber = null;
+    private Servo Ringer = null;
     private Servo PlaneLauncher = null;
     private boolean oldCrossPressed = true;
     private boolean oldTrianglePressed = true;
     private boolean oldCirclePressed = true;
     private boolean clawIsClosed = true;
     private int index = 0;
-    private double[] LEServoPositions = TestServoConstants.LEServoPositions;
-    private double[] REServoPositions = TestServoConstants.REServoPositions;
-    private double[] LWServoPositions = TestServoConstants.LWServoPositions;
-    private double[] RWServoPositions = TestServoConstants.RWServoPositions;
-    private double[] GrabberPositions = TestServoConstants.GrabberPositions;
+    private double[] LEServoPositions = TeleopServoConstants.LEServoPositions;
+    private double[] REServoPositions = TeleopServoConstants.REServoPositions;
+    private double[] PokerPositions = TeleopServoConstants.PokerPositions;
+    private double[] RWServoPositions = TeleopServoConstants.RWServoPositions;
+    private double[] RingerPositions = TeleopServoConstants.RingerPositions;
 
     private final int DELAY_BETWEEN_MOVES = 2000;
 
@@ -99,13 +99,13 @@ public class NewKongTeleop extends LinearOpMode {
                 isArmMoving = val;
             }
         }
+
         for (int i = 0; i < REServoPositions.length; i++) {
-            LWServoPositions[i] += 0.02;
-            RWServoPositions[i] += 0.02;
+            LEServoPositions[i] += -0.074;
+            REServoPositions[i] += -0.074;
         }
         for (int i = 0; i < REServoPositions.length; i++) {
-            LEServoPositions[i] += -0.04;
-            REServoPositions[i] += -0.04;
+            RWServoPositions[i] += 0.00;
         }
         class LowerArmToCertainServoPosition extends TimerTask {
             int i;
@@ -115,7 +115,6 @@ public class NewKongTeleop extends LinearOpMode {
             public void run() {
                 LeftElbowServo.setPosition(LEServoPositions[i]);
                 RightElbowServo.setPosition(REServoPositions[i]);
-                LeftWristServo.setPosition(LWServoPositions[i]);
                 RightWristServo.setPosition(RWServoPositions[i]);
 
                 telemetry.addData("index", i);
@@ -130,7 +129,7 @@ public class NewKongTeleop extends LinearOpMode {
                 this.i = i;
             }
             public void run() {
-                Grabber.setPosition(GrabberPositions[i]);
+                Ringer.setPosition(RingerPositions[i]);
             }
         }
 
@@ -149,9 +148,9 @@ public class NewKongTeleop extends LinearOpMode {
         RightSlide = hardwareMap.get(DcMotor.class, "RS");
         LeftElbowServo = hardwareMap.get(Servo.class, "LE");
         RightElbowServo = hardwareMap.get(Servo.class, "RE");
-        LeftWristServo = hardwareMap.get(Servo.class, "LW");
+        Poker = hardwareMap.get(Servo.class, "P");
         RightWristServo = hardwareMap.get(Servo.class, "RW");
-        Grabber = hardwareMap.get(Servo.class, "G");
+        Ringer = hardwareMap.get(Servo.class, "R");
         PlaneLauncher = hardwareMap.get(Servo.class, "PL");
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -174,9 +173,9 @@ public class NewKongTeleop extends LinearOpMode {
         RightSlide.setDirection(DcMotor.Direction.FORWARD);
         LeftElbowServo.setDirection(Servo.Direction.FORWARD);
         RightElbowServo.setDirection(Servo.Direction.REVERSE);
-        LeftWristServo.setDirection(Servo.Direction.FORWARD);
+        Poker.setDirection(Servo.Direction.FORWARD);
         RightWristServo.setDirection(Servo.Direction.REVERSE);
-        Grabber.setDirection(Servo.Direction.FORWARD);
+        Ringer.setDirection(Servo.Direction.FORWARD);
         PlaneLauncher.setDirection(Servo.Direction.FORWARD);
 
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -273,23 +272,27 @@ public class NewKongTeleop extends LinearOpMode {
                 PlaneLauncher.setPosition(0.0);
             }
             if (gamepad2.right_bumper) {
-                PlaneLauncher.setPosition(1.0);
+                PlaneLauncher.setPosition(0.57);
             }
 
             boolean circlePressed = gamepad2.circle;
             if (circlePressed && !oldCirclePressed) {
-                new LowerArmToCertainServoPosition(++index % 8).run();
+                new LowerArmToCertainServoPosition(++index % LEServoPositions.length).run();
             }
 
             // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
             boolean crossPressed = gamepad2.cross;
             if (crossPressed && !oldCrossPressed) {
-                Grabber.setPosition(GrabberPositions[++armIndex % 3]);
+                Poker.setPosition(PokerPositions[++armIndex % PokerPositions.length]);
+                Ringer.setPosition(RingerPositions[++armIndex % RingerPositions.length]);
             }
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("INDEX", index % 8);
+            telemetry.addData("INDEX", index % LEServoPositions.length);
+//            telemetry.addData("", LEServoPositions[index]);
+//            telemetry.addData("", REServoPositions[index]);
+//            telemetry.addData("", RWServoPositions[index]);
             telemetry.update();
             oldCrossPressed = crossPressed;
             oldCirclePressed = circlePressed;
