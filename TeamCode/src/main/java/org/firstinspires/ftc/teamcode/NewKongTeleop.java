@@ -78,6 +78,7 @@ public class NewKongTeleop extends LinearOpMode {
     private boolean oldCrossPressed = true;
     private boolean oldTrianglePressed = true;
     private boolean oldCirclePressed = true;
+    private boolean oldSquarePressed = true;
     private boolean clawIsClosed = true;
     private int index = 0;
     private double[] LEServoPositions = TeleopServoConstants.LEServoPositions;
@@ -86,7 +87,7 @@ public class NewKongTeleop extends LinearOpMode {
     private double[] RWServoPositions = TeleopServoConstants.RWServoPositions;
     private double[] RingerPositions = TeleopServoConstants.RingerPositions;
 
-    private final int DELAY_BETWEEN_MOVES = 2000;
+    private final int DELAY_BETWEEN_MOVES = 100;
 
     @Override
     public void runOpMode() {
@@ -100,13 +101,6 @@ public class NewKongTeleop extends LinearOpMode {
             }
         }
 
-        for (int i = 0; i < REServoPositions.length; i++) {
-            LEServoPositions[i] += -0.074;
-            REServoPositions[i] += -0.074;
-        }
-        for (int i = 0; i < REServoPositions.length; i++) {
-            RWServoPositions[i] += 0.00;
-        }
         class LowerArmToCertainServoPosition extends TimerTask {
             int i;
             public LowerArmToCertainServoPosition(int i) {
@@ -123,9 +117,9 @@ public class NewKongTeleop extends LinearOpMode {
             }
         }
 
-        class PutGrabberToCertainPosition extends TimerTask {
+        class PutRingerToCertainPosition extends TimerTask {
             int i;
-            public PutGrabberToCertainPosition(int i) {
+            public PutRingerToCertainPosition(int i) {
                 this.i = i;
             }
             public void run() {
@@ -194,6 +188,7 @@ public class NewKongTeleop extends LinearOpMode {
         runtime.reset();
 
         int armIndex = 0;
+        int ringerIndex = 0;
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -202,9 +197,9 @@ public class NewKongTeleop extends LinearOpMode {
             double rightPower;
 
             double drive = -gamepad1.left_stick_y;
-            double turn  =  gamepad1.right_stick_x;
-            leftPower    = Range.clip(drive + turn, -1.0, 1.0);
-            rightPower   = Range.clip(drive - turn, -1.0, 1.0);
+            double turn = gamepad1.right_stick_x;
+            leftPower = Range.clip(drive + turn, -1.0, 1.0);
+            rightPower = Range.clip(drive - turn, -1.0, 1.0);
 
             // Send calculated power to wheels
             // KYLE CODE
@@ -268,25 +263,61 @@ public class NewKongTeleop extends LinearOpMode {
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
 
-            if (gamepad2.left_bumper) {
+            if (gamepad2.right_trigger > 0 && runtime.milliseconds() > 90_000) {
                 PlaneLauncher.setPosition(0.0);
             }
-            if (gamepad2.right_bumper) {
+            if (gamepad2.left_trigger > 0) {
                 PlaneLauncher.setPosition(0.57);
             }
 
             boolean circlePressed = gamepad2.circle;
-            if (circlePressed && !oldCirclePressed) {
-                new LowerArmToCertainServoPosition(++index % LEServoPositions.length).run();
+            boolean trianglePressed = gamepad2.triangle;
+            if (index == 0) {
+                if (circlePressed && !oldCirclePressed && !isArmMoving) {
+                    new setIsArmMoving(true).run();
+//                    timer.schedule(new LowerArmToCertainServoPosition(0), 0);
+                    timer.schedule(new LowerArmToCertainServoPosition(1), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(2), 1 * DELAY_BETWEEN_MOVES);
+//                    timer.schedule(new LowerArmToCertainServoPosition(3), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 1 * DELAY_BETWEEN_MOVES);
+                    index = 2;
+                }
+            } else if (index == 2) {
+                if (circlePressed && !oldCirclePressed && !isArmMoving) {
+                    new setIsArmMoving(true).run();
+                    timer.schedule(new LowerArmToCertainServoPosition(1), 0);
+                    timer.schedule(new LowerArmToCertainServoPosition(0), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 1 * DELAY_BETWEEN_MOVES);
+                    index = 0;
+                } else if (trianglePressed && !oldTrianglePressed && !isArmMoving) {
+                    new setIsArmMoving(true).run();
+                    timer.schedule(new LowerArmToCertainServoPosition(3), 0);
+                    timer.schedule(new setIsArmMoving(false), 0);
+                    index = 3;
+                }
+            } else if (index == 3) {
+                if (circlePressed && !oldCirclePressed && !isArmMoving) {
+                    new setIsArmMoving(true).run();
+//                    timer.schedule(new LowerArmToCertainServoPosition(3), 0);
+                    timer.schedule(new LowerArmToCertainServoPosition(4), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(5), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
+                    index = 0;
+                }
             }
 
             // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
             boolean crossPressed = gamepad2.cross;
             if (crossPressed && !oldCrossPressed) {
                 Poker.setPosition(PokerPositions[++armIndex % PokerPositions.length]);
-                Ringer.setPosition(RingerPositions[++armIndex % RingerPositions.length]);
+
             }
 
+            boolean squarePressed = gamepad2.square;
+            if (squarePressed && !oldSquarePressed) {
+                Ringer.setPosition(RingerPositions[++ringerIndex % RingerPositions.length]);
+            }
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("INDEX", index % LEServoPositions.length);
@@ -296,6 +327,8 @@ public class NewKongTeleop extends LinearOpMode {
             telemetry.update();
             oldCrossPressed = crossPressed;
             oldCirclePressed = circlePressed;
+            oldSquarePressed = squarePressed;
+            oldTrianglePressed = trianglePressed;
         }
     }
 }

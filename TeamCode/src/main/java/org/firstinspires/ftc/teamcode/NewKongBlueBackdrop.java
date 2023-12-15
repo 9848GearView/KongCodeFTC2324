@@ -111,7 +111,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
     private double[] RWServoPositions = AutoServoConstants.RWServoPositions;
     private double[] RingerPositions = AutoServoConstants.RingerPositions;
 
-    private final int DELAY_BETWEEN_MOVES = 100;
+    private final int DELAY_BETWEEN_MOVES = 300;
     public class LowerArmToCertainServoPosition extends TimerTask {
         int i;
         public LowerArmToCertainServoPosition(int i) {
@@ -165,14 +165,6 @@ public class NewKongBlueBackdrop extends LinearOpMode
 
         telemetry.addData("Status", "sInitialized");
         telemetry.update();
-
-        for (int i = 0; i < REServoPositions.length; i++) {
-            LEServoPositions[i] += -0.074;
-            REServoPositions[i] += -0.074;
-        }
-        for (int i = 0; i < REServoPositions.length; i++) {
-            RWServoPositions[i] += 0.00;
-        }
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
@@ -564,8 +556,9 @@ public class PlacePixelOnBackDrop implements Action {
             timer.schedule(new PutRingerToCertainPosition(0), 0);
 //            timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
 //            timer.schedule(new LowerArmToCertainServoPosition(1), 4 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(2), 5 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(3), 6 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(2), 0 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(3), 3 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new PutRingerToCertainPosition(2), 6 * DELAY_BETWEEN_MOVES);
 //            timer.schedule(new LowerArmToCertainServoPosition(4), 7 * DELAY_BETWEEN_MOVES);
 //            timer.schedule(new LowerArmToCertainServoPosition(5), 8 * DELAY_BETWEEN_MOVES);
 //            timer.schedule(new LowerArmToCertainServoPosition(6), 9 * DELAY_BETWEEN_MOVES);
@@ -578,11 +571,12 @@ public class PlacePixelOnBackDrop implements Action {
     public class GrabPixel implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            timer.schedule(new PutRingerToCertainPosition(1), 0);
+            timer.schedule(new PutRingerToCertainPosition(2), 0);
             timer.schedule(new LowerArmToCertainServoPosition(4),  1 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(5), 6 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(6), 12 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(6), 11 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(0),  15 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new PutRingerToCertainPosition(0), 15 * DELAY_BETWEEN_MOVES);
             return false;
         }
     }
@@ -635,7 +629,7 @@ public class PlacePixelOnBackDrop implements Action {
                 .lineToX(47)
                 .strafeToConstantHeading(new Vector2d(44, multiplier * pos))
                 .afterTime(0, new PlacePixelOnBackDrop())
-                .afterTime(3, new GrabPixel())
+                .afterTime(4, new GrabPixel())
                 .waitSeconds(4)
                 .strafeToConstantHeading(new Vector2d(46, multiplier * -12))
                 .turn(multiplier * 0.00001)
