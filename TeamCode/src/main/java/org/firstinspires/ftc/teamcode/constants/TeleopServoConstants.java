@@ -12,7 +12,7 @@ public class TeleopServoConstants {
     public static final double[] GrabberPositions = {0.30, 0.65, 0.82};
 //    public static final double[] PokerPositions = {0.26, 0.4, 0.62};
     public static final double[] PokerPositions = {0.26, 0.72};
-//    public static final double[] RingerPositions = {0.30, 0.82};
-    public static final double[] RingerPositions = {0.30, 0.65, 0.85};
+//  public static final double[] RingerPositions = {0.30, 0.65, 0.9};
+    public static final double[] RingerPositions = {0.30, 1};
 
 }
