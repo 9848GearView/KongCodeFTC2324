@@ -59,6 +59,7 @@ import java.util.TimerTask;
 @TeleOp(name="NewKongTeleop", group="Robot")
 public class NewKongTeleop extends LinearOpMode {
     public static boolean isArmMoving = false;
+    public static boolean isPokerMoving = false;
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private Timer timer = new Timer();
@@ -101,6 +102,16 @@ public class NewKongTeleop extends LinearOpMode {
             }
         }
 
+        class setIsPokerMoving extends TimerTask {
+            boolean val;
+            public setIsPokerMoving(boolean v) {
+                this.val = v;
+            }
+            public void run() {
+                isPokerMoving = val;
+            }
+        }
+
         class LowerArmToCertainServoPosition extends TimerTask {
             int i;
             public LowerArmToCertainServoPosition(int i) {
@@ -124,6 +135,16 @@ public class NewKongTeleop extends LinearOpMode {
             }
             public void run() {
                 Ringer.setPosition(RingerPositions[i]);
+            }
+        }
+
+        class PutPokerToCertainPosition extends TimerTask {
+            int i;
+            public PutPokerToCertainPosition(int i) {
+                this.i = i;
+            }
+            public void run() {
+                Poker.setPosition(PokerPositions[i]);
             }
         }
 
@@ -274,48 +295,51 @@ public class NewKongTeleop extends LinearOpMode {
             boolean trianglePressed = gamepad2.triangle;
             if (index == 0) {
                 if (circlePressed && !oldCirclePressed && !isArmMoving) {
-                    new setIsArmMoving(true).run();
+                    new setIsPokerMoving(true).run();
 //                    timer.schedule(new LowerArmToCertainServoPosition(0), 0);
                     timer.schedule(new LowerArmToCertainServoPosition(1), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(2), 1 * DELAY_BETWEEN_MOVES);
 //                    timer.schedule(new LowerArmToCertainServoPosition(3), 3 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new setIsArmMoving(false), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsPokerMoving(false), 1 * DELAY_BETWEEN_MOVES);
                     index = 2;
                 }
             } else if (index == 2) {
                 if (circlePressed && !oldCirclePressed && !isArmMoving) {
-                    new setIsArmMoving(true).run();
+                    new setIsPokerMoving(true).run();
                     timer.schedule(new LowerArmToCertainServoPosition(1), 0);
                     timer.schedule(new LowerArmToCertainServoPosition(0), 1 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new setIsArmMoving(false), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsPokerMoving(false), 1 * DELAY_BETWEEN_MOVES);
                     index = 0;
                 } else if (trianglePressed && !oldTrianglePressed && !isArmMoving) {
-                    new setIsArmMoving(true).run();
+                    new setIsPokerMoving(true).run();
                     timer.schedule(new LowerArmToCertainServoPosition(3), 0);
-                    timer.schedule(new setIsArmMoving(false), 0);
+                    timer.schedule(new setIsPokerMoving(false), 0);
                     index = 3;
                 }
             } else if (index == 3) {
                 if (circlePressed && !oldCirclePressed && !isArmMoving) {
-                    new setIsArmMoving(true).run();
+                    new setIsPokerMoving(true).run();
 //                    timer.schedule(new LowerArmToCertainServoPosition(3), 0);
+                    timer.schedule(new PutRingerToCertainPosition(0), 0);
                     timer.schedule(new LowerArmToCertainServoPosition(4), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(5), 1 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsPokerMoving(false), 3 * DELAY_BETWEEN_MOVES);
                     index = 0;
                 }
             }
 
             // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
             boolean crossPressed = gamepad2.cross;
-            if (crossPressed && !oldCrossPressed) {
-                Poker.setPosition(PokerPositions[++armIndex % PokerPositions.length]);
-
+            if (crossPressed && !oldCrossPressed && index == 0 && !isPokerMoving) {
+                new setIsPokerMoving(true).run();
+                timer.schedule(new PutPokerToCertainPosition(1), 0);
+                timer.schedule(new PutPokerToCertainPosition(0), 4000);
+                timer.schedule(new setIsPokerMoving(false), 8000);
             }
 
             boolean squarePressed = gamepad2.square;
-            if (squarePressed && !oldSquarePressed) {
+            if (squarePressed && !oldSquarePressed && index == 3) {
                 Ringer.setPosition(RingerPositions[++ringerIndex % RingerPositions.length]);
             }
             // Show the elapsed game time and wheel power.
