@@ -615,8 +615,13 @@ public class NewKongRedBackdrop extends LinearOpMode
         }
 
         double pos = -34;
+        double pos2 = -12;
         if (smp == SpikeMarkPosition.UNO) {
             pos = -26;
+            pos2 = -61;
+        }
+        if (smp == SpikeMarkPosition.DOS) {
+            pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
             pos = -44;
@@ -627,7 +632,7 @@ public class NewKongRedBackdrop extends LinearOpMode
                 .afterTime(0, new PlacePixelOnBackDrop())
                 .afterTime(4, new GrabPixel())
                 .waitSeconds(4)
-                .strafeToConstantHeading(new Vector2d(46, -12))
+                .strafeToConstantHeading(new Vector2d(46, -61))
                 .turn(0.00001)
                 .lineToX(60);
 

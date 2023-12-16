@@ -11,6 +11,6 @@ public class AutoServoConstants {
     public static final double[] RWServoPositions = {0.81, 0.85, 0.76, 0.35, 0.76, 0.85, 0.81, /*0.00*/};
     public static final double[] GrabberPositions = {0.30, 0.65, 0.82};
     public static final double[] PokerPositions = {0.26, 0.4, 0.56};
-    public static final double[] RingerPositions = {0.30, 0.65, 0.82};
+    public static final double[] RingerPositions = {0.30, 0.65, 1};
 
 }
