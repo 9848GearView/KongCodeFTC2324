@@ -80,6 +80,7 @@ public class NewKongTeleop extends LinearOpMode {
     private boolean oldTrianglePressed = true;
     private boolean oldCirclePressed = true;
     private boolean oldSquarePressed = true;
+    private boolean oldLBumper = true;
     private boolean clawIsClosed = true;
     private int index = 0;
     private double[] LEServoPositions = TeleopServoConstants.LEServoPositions;
@@ -295,36 +296,36 @@ public class NewKongTeleop extends LinearOpMode {
             boolean trianglePressed = gamepad2.triangle;
             if (index == 0) {
                 if (circlePressed && !oldCirclePressed && !isArmMoving) {
-                    new setIsPokerMoving(true).run();
+                    new setIsArmMoving(true).run();
 //                    timer.schedule(new LowerArmToCertainServoPosition(0), 0);
                     timer.schedule(new LowerArmToCertainServoPosition(1), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(2), 1 * DELAY_BETWEEN_MOVES);
 //                    timer.schedule(new LowerArmToCertainServoPosition(3), 3 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new setIsPokerMoving(false), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 1 * DELAY_BETWEEN_MOVES);
                     index = 2;
                 }
             } else if (index == 2) {
                 if (circlePressed && !oldCirclePressed && !isArmMoving) {
-                    new setIsPokerMoving(true).run();
+                    new setIsArmMoving(true).run();
                     timer.schedule(new LowerArmToCertainServoPosition(1), 0);
                     timer.schedule(new LowerArmToCertainServoPosition(0), 1 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new setIsPokerMoving(false), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 1 * DELAY_BETWEEN_MOVES);
                     index = 0;
                 } else if (trianglePressed && !oldTrianglePressed && !isArmMoving) {
-                    new setIsPokerMoving(true).run();
+                    new setIsArmMoving(true).run();
                     timer.schedule(new LowerArmToCertainServoPosition(3), 0);
-                    timer.schedule(new setIsPokerMoving(false), 0);
+                    timer.schedule(new setIsArmMoving(false), 0);
                     index = 3;
                 }
             } else if (index == 3) {
                 if (circlePressed && !oldCirclePressed && !isArmMoving) {
-                    new setIsPokerMoving(true).run();
+                    new setIsArmMoving(true).run();
 //                    timer.schedule(new LowerArmToCertainServoPosition(3), 0);
                     timer.schedule(new PutRingerToCertainPosition(0), 0);
                     timer.schedule(new LowerArmToCertainServoPosition(4), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(5), 1 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new setIsPokerMoving(false), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
                     index = 0;
                 }
             }
@@ -342,6 +343,26 @@ public class NewKongTeleop extends LinearOpMode {
             if (squarePressed && !oldSquarePressed && index == 3) {
                 Ringer.setPosition(RingerPositions[++ringerIndex % RingerPositions.length]);
             }
+
+            boolean LBumper = gamepad2.left_bumper;
+            if (LBumper && !oldLBumper && index == 0) {
+                new setIsArmMoving(true).run();
+                RightWristServo.setPosition(RWServoPositions[0] + 0.05);
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        RightWristServo.setPosition(RWServoPositions[0] - 0.05);
+                    }
+                }, 500);
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        RightWristServo.setPosition(RWServoPositions[0]);
+                    }
+                }, 1000);
+                timer.schedule(new setIsArmMoving(false), 1000);
+            }
+
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("INDEX", index % LEServoPositions.length);
@@ -353,6 +374,7 @@ public class NewKongTeleop extends LinearOpMode {
             oldCirclePressed = circlePressed;
             oldSquarePressed = squarePressed;
             oldTrianglePressed = trianglePressed;
+            oldLBumper = LBumper;
         }
     }
 }
