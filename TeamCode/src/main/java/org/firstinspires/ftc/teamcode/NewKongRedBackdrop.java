@@ -632,7 +632,7 @@ public class NewKongRedBackdrop extends LinearOpMode
                 .afterTime(0, new PlacePixelOnBackDrop())
                 .afterTime(4, new GrabPixel())
                 .waitSeconds(4)
-                .strafeToConstantHeading(new Vector2d(46, -61))
+                .strafeToConstantHeading(new Vector2d(46, pos))
                 .turn(0.00001)
                 .lineToX(60);
 

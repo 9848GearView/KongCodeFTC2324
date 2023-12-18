@@ -619,11 +619,14 @@ public class PlacePixelOnBackDrop implements Action {
         }
 
         double pos = -34;
+        double pos2 = -12;
         if (smp == SpikeMarkPosition.TRES) {
             pos = -28;
+            pos2 = -61;
         }
         if (smp == SpikeMarkPosition.UNO) {
             pos = -44;
+            pos2 = -61;
         }
         actionBuilder = actionBuilder
                 .lineToX(47)
@@ -631,7 +634,7 @@ public class PlacePixelOnBackDrop implements Action {
                 .afterTime(0, new PlacePixelOnBackDrop())
                 .afterTime(4, new GrabPixel())
                 .waitSeconds(4)
-                .strafeToConstantHeading(new Vector2d(46, multiplier * -12))
+                .strafeToConstantHeading(new Vector2d(46, multiplier * pos2))
                 .turn(multiplier * 0.00001)
                 .lineToX(60);
 
