@@ -314,6 +314,22 @@ public class NewKongRedStacks extends LinearOpMode
             return false;
         }
     }
+
+    public class RaiseArm implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            LeftSlide.setPower(0.43);
+            RightSlide.setPower(0.43);
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    LeftSlide.setPower(0); RightSlide.setPower(0);
+                }
+            }, 400);
+            return false;
+        }
+    }
+
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
 //        smp = SpikeMarkPosition.UNO;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
@@ -365,9 +381,10 @@ public class NewKongRedStacks extends LinearOpMode
         actionBuilder = actionBuilder
                 .lineToX(46.5)
                 .strafeToConstantHeading(new Vector2d(44, pos))
-                .afterTime(0, new PlacePixelOnBackDrop())
-                .afterTime(4, new GrabPixel())
-                .waitSeconds(4)
+                .afterTime(0, new RaiseArm())
+                .afterTime(1, new PlacePixelOnBackDrop())
+                .afterTime(5, new GrabPixel())
+                .waitSeconds(5)
                 .strafeToConstantHeading(new Vector2d(46, pos2))
                 .turn(0.00001)
                 .lineToX(60);

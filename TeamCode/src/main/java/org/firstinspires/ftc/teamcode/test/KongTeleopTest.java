@@ -59,6 +59,7 @@ import java.util.TimerTask;
 @TeleOp(name="TestTeleop", group="Robot")
 public class KongTeleopTest extends LinearOpMode {
     public static boolean isArmMoving = false;
+    public static boolean isPokerMoving = false;
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private Timer timer = new Timer();
@@ -79,6 +80,7 @@ public class KongTeleopTest extends LinearOpMode {
     private boolean oldTrianglePressed = true;
     private boolean oldCirclePressed = true;
     private boolean oldSquarePressed = true;
+    private boolean oldLBumper = true;
     private boolean clawIsClosed = true;
     private int index = 0;
     private double[] LEServoPositions = TeleopServoConstants.LEServoPositions;
@@ -98,6 +100,16 @@ public class KongTeleopTest extends LinearOpMode {
             }
             public void run() {
                 isArmMoving = val;
+            }
+        }
+
+        class setIsPokerMoving extends TimerTask {
+            boolean val;
+            public setIsPokerMoving(boolean v) {
+                this.val = v;
+            }
+            public void run() {
+                isPokerMoving = val;
             }
         }
 
@@ -124,6 +136,16 @@ public class KongTeleopTest extends LinearOpMode {
             }
             public void run() {
                 Ringer.setPosition(RingerPositions[i]);
+            }
+        }
+
+        class PutPokerToCertainPosition extends TimerTask {
+            int i;
+            public PutPokerToCertainPosition(int i) {
+                this.i = i;
+            }
+            public void run() {
+                Poker.setPosition(PokerPositions[i]);
             }
         }
 
@@ -263,7 +285,7 @@ public class KongTeleopTest extends LinearOpMode {
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
 
-            if (gamepad2.right_trigger > 0) {
+            if (gamepad2.right_trigger > 0 && runtime.milliseconds() > 90_000) {
                 PlaneLauncher.setPosition(0.0);
             }
             if (gamepad2.left_trigger > 0) {
@@ -292,15 +314,17 @@ public class KongTeleopTest extends LinearOpMode {
                 } else if (trianglePressed && !oldTrianglePressed && !isArmMoving) {
                     new setIsArmMoving(true).run();
                     timer.schedule(new LowerArmToCertainServoPosition(3), 0);
-                    timer.schedule(new setIsArmMoving(false), 0);
+                    timer.schedule(new LowerArmToCertainServoPosition(4), 7 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 7 * DELAY_BETWEEN_MOVES);
                     index = 3;
                 }
             } else if (index == 3) {
                 if (circlePressed && !oldCirclePressed && !isArmMoving) {
                     new setIsArmMoving(true).run();
 //                    timer.schedule(new LowerArmToCertainServoPosition(3), 0);
-                    timer.schedule(new LowerArmToCertainServoPosition(4), 0 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new LowerArmToCertainServoPosition(5), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new PutRingerToCertainPosition(0), 0);
+                    timer.schedule(new LowerArmToCertainServoPosition(5), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(6), 1 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
                     index = 0;
@@ -309,15 +333,37 @@ public class KongTeleopTest extends LinearOpMode {
 
             // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
             boolean crossPressed = gamepad2.cross;
-            if (crossPressed && !oldCrossPressed) {
-                Poker.setPosition(PokerPositions[++armIndex % PokerPositions.length]);
-
+            if (crossPressed && !oldCrossPressed && index == 0 && !isPokerMoving) {
+                new setIsPokerMoving(true).run();
+                timer.schedule(new PutPokerToCertainPosition(1), 0);
+                timer.schedule(new PutPokerToCertainPosition(0), 4000);
+                timer.schedule(new setIsPokerMoving(false), 8000);
             }
 
             boolean squarePressed = gamepad2.square;
-            if (squarePressed && !oldSquarePressed) {
+            if (squarePressed && !oldSquarePressed && index == 3) {
                 Ringer.setPosition(RingerPositions[++ringerIndex % RingerPositions.length]);
             }
+
+            boolean LBumper = gamepad2.left_bumper;
+            if (LBumper && !oldLBumper && index == 0) {
+                new setIsArmMoving(true).run();
+                RightWristServo.setPosition(RWServoPositions[0] + 0.05);
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        RightWristServo.setPosition(RWServoPositions[0] - 0.05);
+                    }
+                }, 500);
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        RightWristServo.setPosition(RWServoPositions[0]);
+                    }
+                }, 1000);
+                timer.schedule(new setIsArmMoving(false), 1000);
+            }
+
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("INDEX", index % LEServoPositions.length);
@@ -329,6 +375,7 @@ public class KongTeleopTest extends LinearOpMode {
             oldCirclePressed = circlePressed;
             oldSquarePressed = squarePressed;
             oldTrianglePressed = trianglePressed;
+            oldLBumper = LBumper;
         }
     }
 }

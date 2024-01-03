@@ -314,7 +314,8 @@ public class NewKongTeleop extends LinearOpMode {
                 } else if (trianglePressed && !oldTrianglePressed && !isArmMoving) {
                     new setIsArmMoving(true).run();
                     timer.schedule(new LowerArmToCertainServoPosition(3), 0);
-                    timer.schedule(new setIsArmMoving(false), 0);
+                    timer.schedule(new LowerArmToCertainServoPosition(4), 7 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 7 * DELAY_BETWEEN_MOVES);
                     index = 3;
                 }
             } else if (index == 3) {
@@ -322,8 +323,8 @@ public class NewKongTeleop extends LinearOpMode {
                     new setIsArmMoving(true).run();
 //                    timer.schedule(new LowerArmToCertainServoPosition(3), 0);
                     timer.schedule(new PutRingerToCertainPosition(0), 0);
-                    timer.schedule(new LowerArmToCertainServoPosition(4), 0 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new LowerArmToCertainServoPosition(5), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(5), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(6), 1 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
                     index = 0;

@@ -285,7 +285,7 @@ public class NewKongBlueStacks extends LinearOpMode
         }
     }
 
-public class PlacePixelOnBackDrop implements Action {
+    public class PlacePixelOnBackDrop implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             timer.schedule(new PutRingerToCertainPosition(0), 0);
@@ -316,6 +316,22 @@ public class PlacePixelOnBackDrop implements Action {
             return false;
         }
     }
+
+    public class RaiseArm implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            LeftSlide.setPower(0.43);
+            RightSlide.setPower(0.43);
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    LeftSlide.setPower(0); RightSlide.setPower(0);
+                }
+            }, 400);
+            return false;
+        }
+    }
+
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
 //        smp = SpikeMarkPosition.TRES;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
@@ -378,9 +394,10 @@ public class PlacePixelOnBackDrop implements Action {
         actionBuilder = actionBuilder
                 .lineToX(36)
                 .strafeToConstantHeading(new Vector2d(44, multiplier * pos))
-                .afterTime(0, new PlacePixelOnBackDrop())
-                .afterTime(4, new GrabPixel())
-                .waitSeconds(4)
+                .afterTime(0, new RaiseArm())
+                .afterTime(1, new PlacePixelOnBackDrop())
+                .afterTime(5, new GrabPixel())
+                .waitSeconds(5)
                 .strafeToConstantHeading(new Vector2d(46, multiplier * pos2))
                 .turn(multiplier * 0.00001)
                 .lineToX(60);
