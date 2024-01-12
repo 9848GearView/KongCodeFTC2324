@@ -383,13 +383,14 @@ public class NewKongBlueStacks extends LinearOpMode
         double pos2 = -12;
         if (smp == SpikeMarkPosition.UNO) {
             pos = -26;
+            pos2 = -61;
         }
         if (smp == SpikeMarkPosition.DOS) {
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
             pos = -44;
-            pos2 = -61;
+            pos2 = -12;
         }
         actionBuilder = actionBuilder
                 .lineToX(36)

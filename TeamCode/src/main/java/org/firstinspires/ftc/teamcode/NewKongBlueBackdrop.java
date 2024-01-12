@@ -377,7 +377,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
         }
         if (smp == SpikeMarkPosition.UNO) {
             pos = -44;
-            pos2 = -61;
+            pos2 = -12;
         }
         actionBuilder = actionBuilder
                 .lineToX(47)

@@ -370,6 +370,7 @@ public class NewKongRedStacks extends LinearOpMode
         double pos2 = -12;
         if (smp == SpikeMarkPosition.UNO) {
             pos = -26;
+            pos2 = -12;
         }
         if (smp == SpikeMarkPosition.DOS) {
             pos2 = -61;
