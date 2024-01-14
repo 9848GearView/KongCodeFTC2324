@@ -363,17 +363,17 @@ public class NewKongRedBackdrop extends LinearOpMode
                     .waitSeconds(2);
         }
 
-        double pos = -34;
+        double pos = -33;
         double pos2 = -12;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -26;
+            pos = -28;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.DOS) {
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -44;
+            pos = -38;
         }
         actionBuilder = actionBuilder
                 .lineToX(47)

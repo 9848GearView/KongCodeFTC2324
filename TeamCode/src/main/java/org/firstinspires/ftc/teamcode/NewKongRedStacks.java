@@ -346,14 +346,14 @@ public class NewKongRedStacks extends LinearOpMode
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
-                    .strafeTo(new Vector2d(-37, -60))
+                    .strafeTo(new Vector2d(-37, -59))
                     .turn(Math.PI + 0.00001);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
-                    .lineToY(-60)
+                    .lineToY(-59)
                     .turn(Math.PI/2);
         } else {
             actionBuilder = actionBuilder
@@ -362,21 +362,21 @@ public class NewKongRedStacks extends LinearOpMode
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
-                    .strafeTo(new Vector2d(-37, -60))
+                    .strafeTo(new Vector2d(-37, -59))
                     .turnTo(Math.PI);
         }
 
-        double pos = -34;
+        double pos = -33;
         double pos2 = -12;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -26;
+            pos = -28;
             pos2 = -12;
         }
         if (smp == SpikeMarkPosition.DOS) {
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -44;
+            pos = -38;
             pos2 = -61;
         }
         actionBuilder = actionBuilder

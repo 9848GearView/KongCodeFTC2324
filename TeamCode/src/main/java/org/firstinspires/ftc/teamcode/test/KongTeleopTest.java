@@ -328,7 +328,7 @@ public class KongTeleopTest extends LinearOpMode {
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
 
-            if (gamepad2.right_trigger > 0 && runtime.milliseconds() > 90_000) {
+            if (gamepad2.right_trigger > 0) {
                 PlaneLauncher.setPosition(0.0);
             }
             if (gamepad2.left_trigger > 0) {

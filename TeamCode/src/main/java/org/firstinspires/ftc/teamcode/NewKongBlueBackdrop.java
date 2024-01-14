@@ -369,14 +369,14 @@ public class NewKongBlueBackdrop extends LinearOpMode
                     .waitSeconds(2);
         }
 
-        double pos = -34;
+        double pos = -33;
         double pos2 = -12;
         if (smp == SpikeMarkPosition.TRES) {
             pos = -28;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -44;
+            pos = -39;
             pos2 = -12;
         }
         actionBuilder = actionBuilder
