@@ -51,6 +51,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.constants.TeleopServoConstants;
+import org.firstinspires.ftc.teamcode.constants.TestServoConstants;
 import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -116,11 +117,11 @@ public class KongTeleopTest extends LinearOpMode {
     private boolean oldLBumper = true;
     private boolean clawIsClosed = true;
     private int index = 0;
-    private double[] LEServoPositions = TeleopServoConstants.LEServoPositions;
-    private double[] REServoPositions = TeleopServoConstants.REServoPositions;
-    private double[] PokerPositions = TeleopServoConstants.PokerPositions;
-    private double[] RWServoPositions = TeleopServoConstants.RWServoPositions;
-    private double[] RingerPositions = TeleopServoConstants.RingerPositions;
+    private double[] LEServoPositions = TestServoConstants.LEServoPositions;
+    private double[] REServoPositions = TestServoConstants.REServoPositions;
+    private double[] PokerPositions = TestServoConstants.PokerPositions;
+    private double[] RWServoPositions = TestServoConstants.RWServoPositions;
+    private double[] RingerPositions = TestServoConstants.RingerPositions;
 
     private final int DELAY_BETWEEN_MOVES = 100;
 
@@ -259,12 +260,12 @@ public class KongTeleopTest extends LinearOpMode {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();
 
-            if (gamepad1.dpad_left) {
-                drive.pose = new Pose2d(0, 0, Math.toRadians(90));
-                aB = drive.actionBuilder(drive.pose)
-                        .lineToY(24).endTrajectory();
-                Actions.runBlocking(aB.build());
-            }
+//            if (gamepad1.dpad_left) {
+//                drive.pose = new Pose2d(0, 0, Math.toRadians(90));
+//                aB = drive.actionBuilder(drive.pose)
+//                        .lineToY(24).endTrajectory();
+//                Actions.runBlocking(aB.build());
+//            }
 
             // Send calculated power to wheels
             // KYLE CODE

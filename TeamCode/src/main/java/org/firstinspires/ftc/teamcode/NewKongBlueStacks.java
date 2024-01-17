@@ -333,6 +333,7 @@ public class NewKongBlueStacks extends LinearOpMode
     }
 
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
+        sleep(5000);
 //        smp = SpikeMarkPosition.TRES;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
         double multiplier = 1;
