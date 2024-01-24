@@ -67,27 +67,28 @@ public class NewKongTeleop extends LinearOpMode {
     private DcMotor FRMotor = null;
     private DcMotor BLMotor = null;
     private DcMotor BRMotor = null;
-    private DcMotor IntakeMotor = null;
     private DcMotor LeftSlide = null;
     private DcMotor RightSlide = null;
-    private Servo LeftElbowServo = null;
-    private Servo RightElbowServo = null;
-    private Servo Poker = null;
-    private Servo RightWristServo = null;
-    private Servo Ringer = null;
+    private Servo WristServo = null;
+    private Servo fingerF = null;
+    private Servo fingerB = null;
+    private Servo clawL = null;
+    private Servo clawR = null;
+    private Servo intakeServo = null;
     private Servo PlaneLauncher = null;
     private boolean oldCrossPressed = true;
     private boolean oldTrianglePressed = true;
     private boolean oldCirclePressed = true;
     private boolean oldSquarePressed = true;
     private boolean oldLBumper = true;
+    private boolean oldRTrigger = true;
     private boolean clawIsClosed = true;
     private int index = 0;
     private double[] LEServoPositions = TeleopServoConstants.LEServoPositions;
     private double[] REServoPositions = TeleopServoConstants.REServoPositions;
-    private double[] PokerPositions = TeleopServoConstants.PokerPositions;
-    private double[] RWServoPositions = TeleopServoConstants.RWServoPositions;
-    private double[] RingerPositions = TeleopServoConstants.RingerPositions;
+    private double[] clawLPositions = TeleopServoConstants.clawLPositions;
+    private double[] WServoPositions = TeleopServoConstants.WServoPositions;
+    private double[] clawRPositions = TeleopServoConstants.clawRPositions;
 
     private final int DELAY_BETWEEN_MOVES = 100;
 
@@ -103,15 +104,7 @@ public class NewKongTeleop extends LinearOpMode {
             }
         }
 
-        class setIsPokerMoving extends TimerTask {
-            boolean val;
-            public setIsPokerMoving(boolean v) {
-                this.val = v;
-            }
-            public void run() {
-                isPokerMoving = val;
-            }
-        }
+        
 
         class LowerArmToCertainServoPosition extends TimerTask {
             int i;
@@ -121,7 +114,6 @@ public class NewKongTeleop extends LinearOpMode {
             public void run() {
                 LeftElbowServo.setPosition(LEServoPositions[i]);
                 RightElbowServo.setPosition(REServoPositions[i]);
-                RightWristServo.setPosition(RWServoPositions[i]);
 
                 telemetry.addData("index", i);
                 telemetry.update();
@@ -129,25 +121,9 @@ public class NewKongTeleop extends LinearOpMode {
             }
         }
 
-        class PutRingerToCertainPosition extends TimerTask {
-            int i;
-            public PutRingerToCertainPosition(int i) {
-                this.i = i;
-            }
-            public void run() {
-                Ringer.setPosition(RingerPositions[i]);
-            }
-        }
+        
 
-        class PutPokerToCertainPosition extends TimerTask {
-            int i;
-            public PutPokerToCertainPosition(int i) {
-                this.i = i;
-            }
-            public void run() {
-                Poker.setPosition(PokerPositions[i]);
-            }
-        }
+        
 
         telemetry.addData("Status", "sInitialized");
         telemetry.update();
@@ -294,6 +270,16 @@ public class NewKongTeleop extends LinearOpMode {
 
             boolean circlePressed = gamepad2.circle;
             boolean trianglePressed = gamepad2.triangle;
+            boolean rTriggerPressed = gamepad2.right_trigger;
+
+            if (rTriggerPressed && !oldRTrigger && !isArmMoving) {
+//                    timer.schedule(new LowerArmToCertainServoPosition(0), 0);
+                    timer.schedule(new LowerArmToCertainServoPosition(1), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(2), 1 * DELAY_BETWEEN_MOVES);
+//                    timer.schedule(new LowerArmToCertainServoPosition(3), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 1 * DELAY_BETWEEN_MOVES);
+                    index = 2;
+                }
             if (index == 0) {
                 if (circlePressed && !oldCirclePressed && !isArmMoving) {
                     new setIsArmMoving(true).run();
