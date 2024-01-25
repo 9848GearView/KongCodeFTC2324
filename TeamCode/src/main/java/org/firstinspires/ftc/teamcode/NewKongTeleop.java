@@ -74,7 +74,7 @@ public class NewKongTeleop extends LinearOpMode {
     private Servo fingerB = null;
     private Servo clawL = null;
     private Servo clawR = null;
-    private Servo intakeServo = null;
+    private CrServo IntakeServo = null;
     private Servo PlaneLauncher = null;
     private boolean oldCrossPressed = true;
     private boolean oldTrianglePressed = true;
@@ -135,21 +135,22 @@ public class NewKongTeleop extends LinearOpMode {
         FRMotor = hardwareMap.get(DcMotor.class, "FR");
         BLMotor = hardwareMap.get(DcMotor.class, "BL");
         BRMotor = hardwareMap.get(DcMotor.class, "BR");
-        IntakeMotor = hardwareMap.get(DcMotor.class, "IN");
+        IntakeServo = hardwareMap.get(CrServo.class, "IN");
         LeftSlide = hardwareMap.get(DcMotor.class, "LS");
         RightSlide = hardwareMap.get(DcMotor.class, "RS");
         LeftElbowServo = hardwareMap.get(Servo.class, "LE");
         RightElbowServo = hardwareMap.get(Servo.class, "RE");
-        Poker = hardwareMap.get(Servo.class, "P");
-        RightWristServo = hardwareMap.get(Servo.class, "RW");
-        Ringer = hardwareMap.get(Servo.class, "R");
+        WriteServo = hardwareMap.get(Servo.class, "W");
+        fingerF = hardwareMap.get(Servo.class, "FF");
+        fingerB = hardwareMap.get(Servo.class, "FB");
+        clawL = hardwareMap.get(Servo.class, "CL");
+        clawR = hardwareMap.get(Servo.class, "CR");
         PlaneLauncher = hardwareMap.get(Servo.class, "PL");
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         FRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         BLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         BRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        IntakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         LeftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         RightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -160,21 +161,20 @@ public class NewKongTeleop extends LinearOpMode {
         FRMotor.setDirection(DcMotor.Direction.FORWARD);
         BLMotor.setDirection(DcMotor.Direction.REVERSE);
         BRMotor.setDirection(DcMotor.Direction.FORWARD);
-        IntakeMotor.setDirection(DcMotor.Direction.FORWARD);
+        IntakeServo.setDirection(CrServo.Direction.FORWARD);
         LeftSlide.setDirection(DcMotor.Direction.REVERSE);
         RightSlide.setDirection(DcMotor.Direction.FORWARD);
         LeftElbowServo.setDirection(Servo.Direction.FORWARD);
         RightElbowServo.setDirection(Servo.Direction.REVERSE);
-        Poker.setDirection(Servo.Direction.FORWARD);
-        RightWristServo.setDirection(Servo.Direction.REVERSE);
-        Ringer.setDirection(Servo.Direction.FORWARD);
-        PlaneLauncher.setDirection(Servo.Direction.FORWARD);
+        WristServo.setDirection(Servo.Direction.REVERSE);
+        fingerF.setDirection(Servo.Direction.FORWARD);
+        clawL.setDirection(Servo.Direction.FORWARD);
+        clawR.setDirection(Servo.Direction.FORWARD);
 
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         FRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         BLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         BRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        IntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -257,11 +257,11 @@ public class NewKongTeleop extends LinearOpMode {
                 BRMotor.setPower(BRPower);
             }
 
-            IntakeMotor.setPower(gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
+            IntakeServo.setPower(gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
 
-            if (gamepad2.right_trigger > 0 && runtime.milliseconds() > 90_000) {
+            if (gamepad2.left_bumper > 0 && runtime.milliseconds() > 90_000) {
                 PlaneLauncher.setPosition(0.0);
             }
             if (gamepad2.left_trigger > 0) {
@@ -273,12 +273,7 @@ public class NewKongTeleop extends LinearOpMode {
             boolean rTriggerPressed = gamepad2.right_trigger;
 
             if (rTriggerPressed && !oldRTrigger && !isArmMoving) {
-//                    timer.schedule(new LowerArmToCertainServoPosition(0), 0);
-                    timer.schedule(new LowerArmToCertainServoPosition(1), 0 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new LowerArmToCertainServoPosition(2), 1 * DELAY_BETWEEN_MOVES);
-//                    timer.schedule(new LowerArmToCertainServoPosition(3), 3 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new setIsArmMoving(false), 1 * DELAY_BETWEEN_MOVES);
-                    index = 2;
+//                    //Make Constants for clawL and clawR
                 }
             if (index == 0) {
                 if (circlePressed && !oldCirclePressed && !isArmMoving) {
