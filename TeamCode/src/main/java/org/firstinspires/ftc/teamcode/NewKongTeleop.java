@@ -61,7 +61,7 @@ import java.util.concurrent.locks.Lock;
 @TeleOp(name="NewKongTeleop", group="Robot")
 public class NewKongTeleop extends LinearOpMode {
     public static boolean isArmMoving = false;
-    public static boolean isPokerMoving = false;
+    public static boolean isRobotMoving = false;
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private Timer timer = new Timer();
@@ -112,6 +112,16 @@ public class NewKongTeleop extends LinearOpMode {
             }
         }
 
+        class setIsRobotMoving extends TimerTask {
+            boolean val;
+            public setIsRobotMovement(boolean v) {
+                this.val = v;
+            }
+            public void run() {
+                isRobotMoving = val;
+            }
+        }
+
         
 
         class LowerArmToCertainServoPosition extends TimerTask {
@@ -125,7 +135,7 @@ public class NewKongTeleop extends LinearOpMode {
 
                 telemetry.addData("index", i);
                 telemetry.update();
-//                sleep(1000);
+
             }
         }
 
@@ -140,7 +150,7 @@ public class NewKongTeleop extends LinearOpMode {
 
                 telemetry.addData("index", i);
                 telemetry.update();
-//                sleep(1000);
+
             }
         }
         class LockPixelToggle extends TimerTask {
@@ -154,7 +164,7 @@ public class NewKongTeleop extends LinearOpMode {
 
                 telemetry.addData("index", i);
                 telemetry.update();
-//                sleep(1000);
+
             }
         }
         class PutBoxToCertainPosition extends TimerTask {
@@ -167,7 +177,7 @@ public class NewKongTeleop extends LinearOpMode {
 
                 telemetry.addData("index", i);
                 telemetry.update();
-//                sleep(1000);
+
             }
         }
 
@@ -199,6 +209,7 @@ public class NewKongTeleop extends LinearOpMode {
         BRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         LeftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         RightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        IntakeServo.setZeroPowerBehavior(CRServo.ZeroPowerBehavior.BRAKE);
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -259,6 +270,7 @@ public class NewKongTeleop extends LinearOpMode {
 
             // Send calculated power to wheels
             if ((gamepad1.right_trigger > 0) || (gamepad1.left_trigger > 0)) {
+                new setIsRobotMoving(true).run();
                 if (gamepad1.right_stick_x == 0 && gamepad1.right_stick_y == 0) {
                     if (gamepad1.right_trigger > 0) {
                         FLMotor.setPower(1);
@@ -298,13 +310,19 @@ public class NewKongTeleop extends LinearOpMode {
                         }
                     }
                 }
+                
             } else {
+                new setIsRobotMoving(true).run();
                 FLMotor.setPower(FLPower);
                 FRMotor.setPower(FRPower);
                 BLMotor.setPower(BLPower);
                 BRMotor.setPower(BRPower);
             }
-
+            
+            if (FLPower == 0 && FRPower == 0 && BLPower == 0 && BRPower == 0) {
+            new setIsRobotMoving(false).run();
+            }
+            
             IntakeServo.setPower(gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
@@ -322,7 +340,7 @@ public class NewKongTeleop extends LinearOpMode {
             boolean squarePressed = gamepad2.square;
             boolean rBumperPressed = gamepad2.right_bumper;
 
-            if (rBumperPressed && !oldRBumperPressed && !isArmMoving) {
+            if (rBumperPressed && !oldRBumperPressed && !isArmMoving && !isRobotMoving) {
                 timer.schedule(new PutClawsToCertainPosition(1), 0 * DELAY_BETWEEN_MOVES);
                 timer.schedule(new PutClawsToCertainPosition(2), 1 * DELAY_BETWEEN_MOVES);
                 timer.schedule(new PutClawsToCertainPosition(3), 2 * DELAY_BETWEEN_MOVES);
