@@ -84,7 +84,7 @@ public class NewKongTeleop extends LinearOpMode {
     private boolean oldTrianglePressed = true;
     private boolean oldCirclePressed = true;
     private boolean oldSquarePressed = true;
-    private float oldRTriggerPressed = 0;
+    private boolean oldRBumperPressed = true;
     private boolean oldLBumper = true;
 
 
@@ -235,7 +235,6 @@ public class NewKongTeleop extends LinearOpMode {
         runtime.reset();
 
         int armIndex = 0;
-        int ringerIndex = 0;
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -321,22 +320,15 @@ public class NewKongTeleop extends LinearOpMode {
             boolean trianglePressed = gamepad2.triangle;
             boolean crossPressed = gamepad2.cross;
             boolean squarePressed = gamepad2.square;
-            boolean rTriggerPressed = gamepad2.right_trigger;
+            boolean rBumperPressed = gamepad2.right_bumper;
 
-            if (rTriggerPressed && !oldRTriggerPressed && !isArmMoving) {
+            if (rBumperPressed && !oldRBumperPressed && !isArmMoving) {
                 timer.schedule(new PutClawsToCertainPosition(1), 0 * DELAY_BETWEEN_MOVES);
                 timer.schedule(new PutClawsToCertainPosition(2), 1 * DELAY_BETWEEN_MOVES);
                 timer.schedule(new PutClawsToCertainPosition(3), 2 * DELAY_BETWEEN_MOVES);
                 }
 
-            if (crossPressed && !oldCrossPressed) {
-                if (fingerLocked) {
-                timer.schedule(new LockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
-                fingerLocked = true;
-                } else {
-                    timer.schedule(new LockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-                }
-            }
+            
 
             if (index == 0) {
                 if (crossPressed && !oldCrossPressed && !isArmMoving) {
@@ -347,7 +339,7 @@ public class NewKongTeleop extends LinearOpMode {
                         timer.schedule(new LockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                     }
                 }
-                if (circlePressed && !oldCirclePressed && !isArmMoving) {
+                if (circlePressed && !oldCirclePressed && !isArmMoving && fingerLocked) {
                     new setIsArmMoving(true).run();
                     timer.schedule(new PutBoxToCertainPosition(1), 0);
                     index = 2;
@@ -409,7 +401,7 @@ public class NewKongTeleop extends LinearOpMode {
             oldCirclePressed = circlePressed;
             oldSquarePressed = squarePressed;
             oldTrianglePressed = trianglePressed;
-            oldRTriggerPressed = rTriggerPressed;
+            oldRBumperPressed = rBumperPressed;
             oldLBumper = LBumper;
         }
     }
