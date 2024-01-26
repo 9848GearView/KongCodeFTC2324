@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -70,11 +71,13 @@ public class NewKongTeleop extends LinearOpMode {
     private DcMotor LeftSlide = null;
     private DcMotor RightSlide = null;
     private Servo WristServo = null;
+    private Servo LeftElbowServo = null;
+    private Servo RightElbowServo = null;
     private Servo fingerF = null;
     private Servo fingerB = null;
     private Servo clawL = null;
     private Servo clawR = null;
-    private CrServo IntakeServo = null;
+    private CRServo IntakeServo = null;
     private Servo PlaneLauncher = null;
     private boolean oldCrossPressed = true;
     private boolean oldTrianglePressed = true;
@@ -86,9 +89,9 @@ public class NewKongTeleop extends LinearOpMode {
     private int index = 0;
     private double[] LEServoPositions = TeleopServoConstants.LEServoPositions;
     private double[] REServoPositions = TeleopServoConstants.REServoPositions;
-    private double[] clawLPositions = TeleopServoConstants.clawLPositions;
+    private double[] clawLPositions = TeleopServoConstants.ClawLPositions;
     private double[] WServoPositions = TeleopServoConstants.WServoPositions;
-    private double[] clawRPositions = TeleopServoConstants.clawRPositions;
+    private double[] clawRPositions = TeleopServoConstants.ClawRPositions;
     private double[] FingerLPositions = TeleopServoConstants.FingerLPositions;
     private double[] FingerRPositions = TeleopServoConstants.FingerRPositions;
 
@@ -150,12 +153,12 @@ public class NewKongTeleop extends LinearOpMode {
         FRMotor = hardwareMap.get(DcMotor.class, "FR");
         BLMotor = hardwareMap.get(DcMotor.class, "BL");
         BRMotor = hardwareMap.get(DcMotor.class, "BR");
-        IntakeServo = hardwareMap.get(CrServo.class, "IN");
+        IntakeServo = hardwareMap.get(CRServo.class, "IN");
         LeftSlide = hardwareMap.get(DcMotor.class, "LS");
         RightSlide = hardwareMap.get(DcMotor.class, "RS");
         LeftElbowServo = hardwareMap.get(Servo.class, "LE");
         RightElbowServo = hardwareMap.get(Servo.class, "RE");
-        WriteServo = hardwareMap.get(Servo.class, "W");
+        WristServo = hardwareMap.get(Servo.class, "W");
         fingerF = hardwareMap.get(Servo.class, "FF");
         fingerB = hardwareMap.get(Servo.class, "FB");
         clawL = hardwareMap.get(Servo.class, "CL");
@@ -176,7 +179,7 @@ public class NewKongTeleop extends LinearOpMode {
         FRMotor.setDirection(DcMotor.Direction.FORWARD);
         BLMotor.setDirection(DcMotor.Direction.REVERSE);
         BRMotor.setDirection(DcMotor.Direction.FORWARD);
-        IntakeServo.setDirection(CrServo.Direction.FORWARD);
+        IntakeServo.setDirection(CRServo.Direction.FORWARD);
         LeftSlide.setDirection(DcMotor.Direction.REVERSE);
         RightSlide.setDirection(DcMotor.Direction.FORWARD);
         LeftElbowServo.setDirection(Servo.Direction.FORWARD);
