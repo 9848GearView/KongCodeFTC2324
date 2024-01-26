@@ -89,6 +89,8 @@ public class NewKongTeleop extends LinearOpMode {
     private double[] clawLPositions = TeleopServoConstants.clawLPositions;
     private double[] WServoPositions = TeleopServoConstants.WServoPositions;
     private double[] clawRPositions = TeleopServoConstants.clawRPositions;
+    private double[] FingerLPositions = TeleopServoConstants.FingerLPositions;
+    private double[] FingerRPositions = TeleopServoConstants.FingerRPositions;
 
     private final int DELAY_BETWEEN_MOVES = 100;
 
@@ -121,7 +123,20 @@ public class NewKongTeleop extends LinearOpMode {
             }
         }
 
-        
+        class PutClawsToCertainPosition extends TimerTask {
+            int i;
+            public PutClawsToCertainPosition(int i) {
+                this.i = i;
+            }
+            public void run() {
+                clawL.setPosition(clawLPositions[i]);
+                clawR.setPosition(clawRPositions[i]);
+
+                telemetry.addData("index", i);
+                telemetry.update();
+//                sleep(1000);
+            }
+        }
 
         
 
