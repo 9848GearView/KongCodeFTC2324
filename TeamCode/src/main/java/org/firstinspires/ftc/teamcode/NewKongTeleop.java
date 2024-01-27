@@ -355,6 +355,7 @@ public class NewKongTeleop extends LinearOpMode {
                         fingerLocked = true;
                     } else {
                         timer.schedule(new LockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+                        fingerLocked = false;
                     }
                 }
                 else if (circlePressed && !oldCirclePressed && !isArmMoving && fingerLocked) {
