@@ -19,7 +19,7 @@
  * SOFTWARE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.disabled;
 
 import androidx.annotation.NonNull;
 
@@ -37,6 +37,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.BlueTeamElementDeterminationPipeline;
+import org.firstinspires.ftc.teamcode.SpikeMarkPosition;
 import org.firstinspires.ftc.teamcode.constants.AutoServoConstants;
 import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -53,9 +55,9 @@ import java.util.TimerTask;
  * 100% accurate) method of detecting the TeamElement when lined up with
  * the sample regions over the first 3 stones.
  */
-@Autonomous(name = "KongBlueStacks")
-//@Disabled
-public class NewKongBlueStacks extends LinearOpMode
+@Autonomous(name = "DisabledNewKongBlueBackdrop")
+@Disabled
+public class NewKongBlueBackdrop extends LinearOpMode
 {
     enum DriveDirection {
         FORWARD,
@@ -99,6 +101,7 @@ public class NewKongBlueStacks extends LinearOpMode
     private double[] PokerPositions = AutoServoConstants.PokerPositions;
     private double[] RWServoPositions = AutoServoConstants.RWServoPositions;
     private double[] RingerPositions = AutoServoConstants.RingerPositions;
+
     private final int DELAY_BETWEEN_MOVES = 300;
     public class LowerArmToCertainServoPosition extends TimerTask {
         int i;
@@ -137,7 +140,6 @@ public class NewKongBlueStacks extends LinearOpMode
         }
     }
 
-
     OpenCvWebcam webcam;
     BlueTeamElementDeterminationPipeline pipeline;
     StartingPositionEnum sideOfFieldToStartOn = StartingPositionEnum.LEFT;
@@ -155,7 +157,6 @@ public class NewKongBlueStacks extends LinearOpMode
 
         telemetry.addData("Status", "sInitialized");
         telemetry.update();
-
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
@@ -234,7 +235,8 @@ public class NewKongBlueStacks extends LinearOpMode
                 telemetry.addData("erroCode", errorCode);
             }
         });
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(-36, 63, -Math.PI / 2));
+
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, 63, -Math.PI / 2));
 //        timer.schedule(new PutGrabberToCertainPosition(0), 3000);
 
         waitForStart();
@@ -306,7 +308,6 @@ public class NewKongBlueStacks extends LinearOpMode
             timer.schedule(new LowerArmToCertainServoPosition(6), 11 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(0),  15 * DELAY_BETWEEN_MOVES);
             timer.schedule(new PutRingerToCertainPosition(0), 15 * DELAY_BETWEEN_MOVES);
-
             return false;
         }
     }
@@ -327,7 +328,6 @@ public class NewKongBlueStacks extends LinearOpMode
     }
 
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-        sleep(4000);
 //        smp = SpikeMarkPosition.TRES;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
         double multiplier = 1;
@@ -336,77 +336,47 @@ public class NewKongBlueStacks extends LinearOpMode
         }
 
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
-                .strafeTo(new Vector2d(-39, multiplier * -63))
+                .strafeTo(new Vector2d(19, multiplier * -63))
                 .turn(multiplier * 0.00001)
-                .lineToY(multiplier * -33);
+                .lineToY(multiplier * -36);
 
-        double pos = -60; //-12;
-
-        if (smp == SpikeMarkPosition.UNO) {
+        if (smp == SpikeMarkPosition.TRES) {
             actionBuilder = actionBuilder
-                    .turn(Math.PI/2)
-                    .lineToX(-34)
+                    .turn(multiplier * Math.PI/2)
+                    .lineToX(11)
+                    .afterTime(0, new VomitPixelOnGround())
+                    .afterTime(1.7, new LeavePixelOnGround())
+                    .waitSeconds(2);
+        } else if (smp == SpikeMarkPosition.DOS) {
+            actionBuilder = actionBuilder
+                    .strafeTo(new Vector2d(15, multiplier * -36))
+                    .waitSeconds(1)
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
-                    .strafeTo(new Vector2d(-39, multiplier * pos))
-                    .turn(multiplier * Math.PI - 0.00001);
-        } else if (smp == SpikeMarkPosition.DOS) {
-            if (pos == -60) {
-                actionBuilder = actionBuilder
-                        .afterTime(0, new VomitPixelOnGround())
-                        .afterTime(1.7, new LeavePixelOnGround())
-                        .waitSeconds(2)
-                        .lineToY(multiplier * pos)
-                        .turn(multiplier * Math.PI/2);
-            } else {
-                actionBuilder = actionBuilder
-                        .turn(Math.PI)
-                        .lineToY(12)
-                        .afterTime(0, new VomitPixelOnGround())
-                        .afterTime(1.7, new LeavePixelOnGround())
-                        .waitSeconds(2)
-                        .lineToY(multiplier * pos)
-                        .turn(multiplier * -Math.PI/2);
-            }
+                    .lineToY(multiplier * -48)
+                    .turn(multiplier * Math.PI/2);
         } else {
             actionBuilder = actionBuilder
                     .turn(multiplier * Math.PI / 2)
-                    .lineToX(-34)
+                    .lineToX(34)
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
-                    .waitSeconds(2)
-                    .strafeTo(new Vector2d(-39, multiplier * pos))
-                    .turnTo(multiplier * Math.PI);
+                    .waitSeconds(2);
         }
 
-//        double pos = -35;
-//        if (smp == SpikeMarkPosition.TRES) {
-//            pos = -30;
-//        }
-//        if (smp == SpikeMarkPosition.UNO) {
-//            pos = -40;
-//        }
-        pos = -35;
+        double pos = -33;
         double pos2 = -12;
-        if (smp == SpikeMarkPosition.UNO) {
-            pos = -41;
-            pos2 = -61;
-        }
-        if (smp == SpikeMarkPosition.DOS) {
-            pos2 = -61;
-        }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -29;
-            pos2 = -12;
-        }
-        if (false) {
+            pos = -28;
             pos2 = -61;
+        }
+        if (smp == SpikeMarkPosition.UNO) {
+            pos = -39;
             pos2 = -12;
         }
-
         actionBuilder = actionBuilder
-                .lineToX(36)
+                .lineToX(47)
                 .strafeToConstantHeading(new Vector2d(44, multiplier * pos))
                 .afterTime(0, new RaiseArm())
                 .afterTime(1, new PlacePixelOnBackDrop())

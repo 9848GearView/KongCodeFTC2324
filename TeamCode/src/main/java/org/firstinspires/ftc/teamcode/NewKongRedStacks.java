@@ -30,6 +30,7 @@ import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -38,16 +39,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.constants.AutoServoConstants;
 import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.Timer;
@@ -59,7 +53,7 @@ import java.util.TimerTask;
  * 100% accurate) method of detecting the TeamElement when lined up with
  * the sample regions over the first 3 stones.
  */
-@Autonomous
+@Autonomous(name = "KongRedStacks")
 //@Disabled
 public class NewKongRedStacks extends LinearOpMode
 {
@@ -331,14 +325,16 @@ public class NewKongRedStacks extends LinearOpMode
     }
 
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-        sleep(5000);
-//        smp = SpikeMarkPosition.UNO;
+        sleep(4000);
+//        smp = SpikeMarkPosition.DOS;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
 
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
-                .strafeTo(new Vector2d(-42, -63))
+                .strafeTo(new Vector2d(-39, -63))
                 .turn(0.00001)
                 .lineToY(-35);
+
+        double pos = -59; //-12;
 
         if (smp == SpikeMarkPosition.TRES) {
             actionBuilder = actionBuilder
@@ -347,15 +343,26 @@ public class NewKongRedStacks extends LinearOpMode
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
-                    .strafeTo(new Vector2d(-37, -59))
+                    .strafeTo(new Vector2d(-37, pos))
                     .turn(Math.PI + 0.00001);
         } else if (smp == SpikeMarkPosition.DOS) {
-            actionBuilder = actionBuilder
-                    .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(1.7, new LeavePixelOnGround())
-                    .waitSeconds(2)
-                    .lineToY(-59)
-                    .turn(Math.PI/2);
+            if (pos == -59) {
+                actionBuilder = actionBuilder
+                        .afterTime(0, new VomitPixelOnGround())
+                        .afterTime(1.7, new LeavePixelOnGround())
+                        .waitSeconds(2)
+                        .lineToY(pos)
+                        .turn(Math.PI/2);
+            } else {
+                actionBuilder = actionBuilder
+                        .turn(Math.PI)
+                        .lineToY(-12)
+                        .afterTime(0, new VomitPixelOnGround())
+                        .afterTime(1.7, new LeavePixelOnGround())
+                        .waitSeconds(2)
+                        .lineToY(pos)
+                        .turn(Math.PI/2);
+            }
         } else {
             actionBuilder = actionBuilder
                     .turn(Math.PI / 2)
@@ -363,22 +370,26 @@ public class NewKongRedStacks extends LinearOpMode
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
-                    .strafeTo(new Vector2d(-37, -59))
-                    .turnTo(Math.PI);
+                    .strafeTo(new Vector2d(-37, pos))
+                    .turn(0.0001);
         }
 
-        double pos = -33;
+        pos = -37;
         double pos2 = -12;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -28;
+            pos = -31;
             pos2 = -12;
         }
         if (smp == SpikeMarkPosition.DOS) {
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -38;
+            pos = -43;
             pos2 = -61;
+        }
+        if (false) {
+            pos2 = -61;
+            pos2 = -12;
         }
         actionBuilder = actionBuilder
                 .lineToX(46.5)

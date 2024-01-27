@@ -30,6 +30,7 @@ import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -38,16 +39,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.constants.AutoServoConstants;
 import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.Timer;
@@ -59,7 +53,7 @@ import java.util.TimerTask;
  * 100% accurate) method of detecting the TeamElement when lined up with
  * the sample regions over the first 3 stones.
  */
-@Autonomous
+@Autonomous(name = "KongRedBackdrop")
 //@Disabled
 public class NewKongRedBackdrop extends LinearOpMode
 {
@@ -104,6 +98,7 @@ public class NewKongRedBackdrop extends LinearOpMode
     private double[] PokerPositions = AutoServoConstants.PokerPositions;
     private double[] RWServoPositions = AutoServoConstants.RWServoPositions;
     private double[] RingerPositions = AutoServoConstants.RingerPositions;
+
     private final int DELAY_BETWEEN_MOVES = 300;
     public class LowerArmToCertainServoPosition extends TimerTask {
         int i;
@@ -141,6 +136,7 @@ public class NewKongRedBackdrop extends LinearOpMode
             Poker.setPosition(PokerPositions[i]);
         }
     }
+
     OpenCvWebcam webcam;
     RedTeamElementDeterminationPipeline pipeline;
     StartingPositionEnum sideOfFieldToStartOn = StartingPositionEnum.RIGHT;
@@ -244,7 +240,6 @@ public class NewKongRedBackdrop extends LinearOpMode
 
         while (opModeIsActive())
         {
-//            sleep(1000);
             telemetry.addData("Analysis", pipeline.getAnalysis());
             telemetry.update();
             doActions(drive, sideOfFieldToStartOn, pipeline.getAnalysis());
@@ -310,7 +305,6 @@ public class NewKongRedBackdrop extends LinearOpMode
             timer.schedule(new LowerArmToCertainServoPosition(6), 11 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(0),  15 * DELAY_BETWEEN_MOVES);
             timer.schedule(new PutRingerToCertainPosition(0), 15 * DELAY_BETWEEN_MOVES);
-
             return false;
         }
     }
@@ -333,6 +327,10 @@ public class NewKongRedBackdrop extends LinearOpMode
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
 //        smp = SpikeMarkPosition.UNO;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
+        double multiplier = 1;
+        if (needInvert) {
+            multiplier = -1;
+        }
 
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
                 .strafeTo(new Vector2d(17, -63))
@@ -363,17 +361,21 @@ public class NewKongRedBackdrop extends LinearOpMode
                     .waitSeconds(2);
         }
 
-        double pos = -33;
+        double pos = -36;
         double pos2 = -12;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -28;
+            pos = -30;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.DOS) {
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -38;
+            pos = -42;
+        }
+        if (false) {
+            pos2 = -61;
+            pos2 = -12;
         }
         actionBuilder = actionBuilder
                 .lineToX(47)
