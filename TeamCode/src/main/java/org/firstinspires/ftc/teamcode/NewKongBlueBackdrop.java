@@ -333,7 +333,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
         }
 
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
-                .strafeTo(new Vector2d(19, multiplier * -63))
+                .strafeTo(new Vector2d(39, multiplier * -63))
                 .turn(multiplier * 0.00001)
                 .lineToY(multiplier * -36);
 
@@ -369,6 +369,10 @@ public class NewKongBlueBackdrop extends LinearOpMode
         }
         if (smp == SpikeMarkPosition.UNO) {
             pos = -30;
+            pos2 = -12;
+        }
+        if (false) {
+            pos2 = -61;
             pos2 = -12;
         }
         if (false) {

@@ -377,6 +377,10 @@ public class NewKongRedBackdrop extends LinearOpMode
             pos2 = -61;
             pos2 = -12;
         }
+        if (false) {
+            pos2 = -61;
+            pos2 = -12;
+        }
         actionBuilder = actionBuilder
                 .lineToX(47)
                 .strafeToConstantHeading(new Vector2d(44, pos))
