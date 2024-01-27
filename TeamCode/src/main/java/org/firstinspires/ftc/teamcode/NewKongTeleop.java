@@ -350,17 +350,19 @@ public class NewKongTeleop extends LinearOpMode {
 
             if (index == 0) {
                 if (crossPressed && !oldCrossPressed && !isArmMoving) {
-                    if (fingerLocked) {
+                    if (!fingerLocked) {
                         timer.schedule(new LockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
                         fingerLocked = true;
                     } else {
                         timer.schedule(new LockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                     }
                 }
-                if (circlePressed && !oldCirclePressed && !isArmMoving && fingerLocked) {
+                else if (circlePressed && !oldCirclePressed && !isArmMoving && fingerLocked) {
                     new setIsArmMoving(true).run();
                     timer.schedule(new PutBoxToCertainPosition(1), 0);
                     index = 2;
+                } else {
+                    new setIsArmMoving(false).run();
                 }
             } else if (index == 2) {
                 if (circlePressed && !oldCirclePressed && !isArmMoving) {
@@ -371,17 +373,20 @@ public class NewKongTeleop extends LinearOpMode {
                     new setIsArmMoving(true).run();
                    timer.schedule(new LowerArmToCertainServoPosition(1), 0);
                     index = 3;
+                } else {
+                     new setIsArmMoving(false).run();
                 }
             } else if (index == 3) {
                 if (squarePressed && !oldSquarePressed && !isArmMoving) {
                         timer.schedule(new LockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                 }
-                if (circlePressed && !oldCirclePressed && !isArmMoving) {
+                else if (circlePressed && !oldCirclePressed && !isArmMoving) {
                     new setIsArmMoving(true).run();
                     timer.schedule(new LowerArmToCertainServoPosition(1), 0);
                     timer.schedule(new PutBoxToCertainPosition(0), 1 *DELAY_BETWEEN_MOVES);
                     index = 0;
-                }
+                } else {
+                    new setIsArmMoving(false).run();
             }
 
             // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
