@@ -114,7 +114,7 @@ public class NewKongTeleop extends LinearOpMode {
 
         class setIsRobotMoving extends TimerTask {
             boolean valTwo;
-            public setIsRobotMovement(boolean v) {
+            public setIsRobotMovement(boolean vTwo) {
                 this.valTwo = vTwo;
             }
             public void run() {
