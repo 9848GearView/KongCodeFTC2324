@@ -58,8 +58,8 @@ import java.util.concurrent.locks.Lock;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="NewKongTeleop", group="Robot")
-public class NewKongTeleop extends LinearOpMode {
+@TeleOp(name="MotorOnlyKongTeleop", group="Robot")
+public class MotorOnlyKongTeleop extends LinearOpMode {
     public static boolean isArmMoving = false;
     public static boolean isRobotMoving = false;
     // Declare OpMode members.
@@ -69,34 +69,7 @@ public class NewKongTeleop extends LinearOpMode {
     private DcMotor FRMotor = null;
     private DcMotor BLMotor = null;
     private DcMotor BRMotor = null;
-    private DcMotor LeftSlide = null;
-    private DcMotor RightSlide = null;
-    private Servo WristServo = null;
-    private Servo LeftElbowServo = null;
-    private Servo RightElbowServo = null;
-    private Servo fingerF = null;
-    private Servo fingerB = null;
-    private Servo clawL = null;
-    private Servo clawR = null;
-    private CRServo IntakeServo = null;
-    private Servo PlaneLauncher = null;
-    private boolean oldCrossPressed = true;
-    private boolean oldTrianglePressed = true;
-    private boolean oldCirclePressed = true;
-    private boolean oldSquarePressed = true;
-    private boolean oldRBumperPressed = true;
-    private boolean oldLBumper = true;
 
-
-    private boolean fingerLocked = false;
-    private int index = 0;
-    private double[] LEServoPositions = TeleopServoConstants.LEServoPositions;
-    private double[] REServoPositions = TeleopServoConstants.REServoPositions;
-    private double[] clawLPositions = TeleopServoConstants.ClawLPositions;
-    private double[] WServoPositions = TeleopServoConstants.WServoPositions;
-    private double[] clawRPositions = TeleopServoConstants.ClawRPositions;
-    private double[] FingerFPositions = TeleopServoConstants.FingerFPositions;
-    private double[] FingerBPositions = TeleopServoConstants.FingerBPositions;
 
     private final int DELAY_BETWEEN_MOVES = 100;
 
@@ -127,70 +100,7 @@ public class NewKongTeleop extends LinearOpMode {
         }
 
 
-        class LowerArmToCertainServoPosition extends TimerTask {
-            int i;
 
-            public LowerArmToCertainServoPosition(int i) {
-                this.i = i;
-            }
-
-            public void run() {
-                LeftElbowServo.setPosition(LEServoPositions[i]);
-                RightElbowServo.setPosition(REServoPositions[i]);
-
-                telemetry.addData("index", i);
-                telemetry.update();
-
-            }
-        }
-
-        class PutClawsToCertainPosition extends TimerTask {
-            int i;
-
-            public PutClawsToCertainPosition(int i) {
-                this.i = i;
-            }
-
-            public void run() {
-                clawL.setPosition(clawLPositions[i]);
-                clawR.setPosition(clawRPositions[i]);
-
-                telemetry.addData("index", i);
-                telemetry.update();
-
-            }
-        }
-        class LockPixelToggle extends TimerTask {
-            int i;
-
-            public LockPixelToggle(int i) {
-                this.i = i;
-            }
-
-            public void run() {
-                fingerF.setPosition(FingerFPositions[i]);
-                fingerB.setPosition(FingerBPositions[i]);
-
-                telemetry.addData("index", i);
-                telemetry.update();
-
-            }
-        }
-        class PutBoxToCertainPosition extends TimerTask {
-            int i;
-
-            public PutBoxToCertainPosition(int i) {
-                this.i = i;
-            }
-
-            public void run() {
-                WristServo.setPosition(WServoPositions[i]);
-
-                telemetry.addData("index", i);
-                telemetry.update();
-
-            }
-        }
 
         telemetry.addData("Status", "sInitialized");
         telemetry.update();
@@ -202,24 +112,13 @@ public class NewKongTeleop extends LinearOpMode {
         FRMotor = hardwareMap.get(DcMotor.class, "FR");
         BLMotor = hardwareMap.get(DcMotor.class, "BL");
         BRMotor = hardwareMap.get(DcMotor.class, "BR");
-        IntakeServo = hardwareMap.get(CRServo.class, "IN");
-        LeftSlide = hardwareMap.get(DcMotor.class, "LS");
-        RightSlide = hardwareMap.get(DcMotor.class, "RS");
-        LeftElbowServo = hardwareMap.get(Servo.class, "LE");
-        RightElbowServo = hardwareMap.get(Servo.class, "RE");
-        WristServo = hardwareMap.get(Servo.class, "W");
-        fingerF = hardwareMap.get(Servo.class, "FF");
-        fingerB = hardwareMap.get(Servo.class, "FB");
-        clawL = hardwareMap.get(Servo.class, "CL");
-        clawR = hardwareMap.get(Servo.class, "CR");
-        PlaneLauncher = hardwareMap.get(Servo.class, "PL");
+
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         FRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         BLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         BRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        LeftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        RightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
 
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
@@ -229,28 +128,16 @@ public class NewKongTeleop extends LinearOpMode {
         FRMotor.setDirection(DcMotor.Direction.FORWARD);
         BLMotor.setDirection(DcMotor.Direction.REVERSE);
         BRMotor.setDirection(DcMotor.Direction.FORWARD);
-        IntakeServo.setDirection(CRServo.Direction.FORWARD);
-        LeftSlide.setDirection(DcMotor.Direction.REVERSE);
-        RightSlide.setDirection(DcMotor.Direction.FORWARD);
-        LeftElbowServo.setDirection(Servo.Direction.FORWARD);
-        RightElbowServo.setDirection(Servo.Direction.REVERSE);
-        WristServo.setDirection(Servo.Direction.REVERSE);
-        fingerF.setDirection(Servo.Direction.FORWARD);
-        clawL.setDirection(Servo.Direction.FORWARD);
-        clawR.setDirection(Servo.Direction.FORWARD);
+
 
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         FRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         BLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         BRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
 
 //        timer.schedule(new PutGrabberToCertainPosition(0), 0);
-        timer.schedule(new LowerArmToCertainServoPosition(0), 0);
-        timer.schedule(new PutClawsToCertainPosition(0), 0);
-        timer.schedule(new LockPixelToggle(0), 0);
-        timer.schedule(new PutBoxToCertainPosition(0), 0);
+
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -334,16 +221,6 @@ public class NewKongTeleop extends LinearOpMode {
                 new setIsRobotMoving(false).run();
             }
 
-            IntakeServo.setPower(gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
-            LeftSlide.setPower(gamepad2.left_stick_y);
-            RightSlide.setPower(gamepad2.left_stick_y);
-
-            if (gamepad2.left_bumper && runtime.milliseconds() > 90_000) {
-                PlaneLauncher.setPosition(0.0);
-            }
-            if (gamepad2.left_trigger > 0) {
-                PlaneLauncher.setPosition(0.57);
-            }
 
             boolean circlePressed = gamepad2.circle;
             boolean trianglePressed = gamepad2.triangle;
@@ -351,89 +228,31 @@ public class NewKongTeleop extends LinearOpMode {
             boolean squarePressed = gamepad2.square;
             boolean rBumperPressed = gamepad2.right_bumper;
 
-            if (rBumperPressed && !oldRBumperPressed && !isArmMoving && !isRobotMoving) {
-                timer.schedule(new PutClawsToCertainPosition(1), 0 * DELAY_BETWEEN_MOVES);
-                timer.schedule(new PutClawsToCertainPosition(2), 1 * DELAY_BETWEEN_MOVES);
-                timer.schedule(new PutClawsToCertainPosition(3), 2 * DELAY_BETWEEN_MOVES);
-            }
 
 
-            if (index == 0) {
-                if (crossPressed && !oldCrossPressed && !isArmMoving) {
-                    if (!fingerLocked) {
-                        timer.schedule(new LockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
-                        fingerLocked = true;
-                    } else {
-                        timer.schedule(new LockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-                        fingerLocked = false;
-                    }
-                } else if (circlePressed && !oldCirclePressed && !isArmMoving && fingerLocked) {
-                    new setIsArmMoving(true).run();
-                    timer.schedule(new PutBoxToCertainPosition(1), 0);
-                    index = 2;
-                } else {
-                    new setIsArmMoving(false).run();
-                }
-            } else if (index == 2) {
-                if (circlePressed && !oldCirclePressed && !isArmMoving) {
-                    new setIsArmMoving(true).run();
-                    timer.schedule(new PutBoxToCertainPosition(0), 0);
-                    index = 0;
-                } else if (trianglePressed && !oldTrianglePressed && !isArmMoving) {
-                    new setIsArmMoving(true).run();
-                    timer.schedule(new LowerArmToCertainServoPosition(1), 0);
-                    index = 3;
-                } else {
-                    new setIsArmMoving(false).run();
-                }
-            } else if (index == 3) {
-                if (squarePressed && !oldSquarePressed && !isArmMoving) {
-                    timer.schedule(new LockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-                } else if (circlePressed && !oldCirclePressed && !isArmMoving) {
-                    new setIsArmMoving(true).run();
-                    timer.schedule(new LowerArmToCertainServoPosition(1), 0);
-                    timer.schedule(new PutBoxToCertainPosition(0), 1 * DELAY_BETWEEN_MOVES);
-                    index = 0;
-                } else {
-                    new setIsArmMoving(false).run();
-                }
+
 
                 // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
 
 
-                boolean LBumper = gamepad2.left_bumper;
-                if (LBumper && !oldLBumper && index == 0) {
-                    new setIsArmMoving(true).run();
-                    WristServo.setPosition(WServoPositions[0] + 0.05);
+
+
                     timer.schedule(new TimerTask() {
                         @Override
                         public void run() {
-                            WristServo.setPosition(WServoPositions[0] - 0.05);
-                        }
-                    }, 500);
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            WristServo.setPosition(WServoPositions[0]);
+
                         }
                     }, 1000);
                     timer.schedule(new setIsArmMoving(false), 1000);
                 }
 
                 // Show the elapsed game time and wheel power.
-                telemetry.addData("Status", "Run Time: " + runtime.toString());
-                telemetry.addData("INDEX", index % LEServoPositions.length);
+
 //            telemetry.addData("", LEServoPositions[index]);
 //            telemetry.addData("", REServoPositions[index]);
 //            telemetry.addData("", RWServoPositions[index]);
                 telemetry.update();
-                oldCrossPressed = crossPressed;
-                oldCirclePressed = circlePressed;
-                oldSquarePressed = squarePressed;
-                oldTrianglePressed = trianglePressed;
-                oldRBumperPressed = rBumperPressed;
-                oldLBumper = LBumper;
+
             }
         }
-    }
-}
+
