@@ -37,6 +37,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.RedTeamElementDeterminationPipeline;
+import org.firstinspires.ftc.teamcode.SpikeMarkPosition;
 import org.firstinspires.ftc.teamcode.constants.AutoServoConstants;
 import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -98,7 +100,6 @@ public class NewKongRedBackdrop extends LinearOpMode
     private double[] PokerPositions = AutoServoConstants.PokerPositions;
     private double[] RWServoPositions = AutoServoConstants.RWServoPositions;
     private double[] RingerPositions = AutoServoConstants.RingerPositions;
-
     private final int DELAY_BETWEEN_MOVES = 300;
     public class LowerArmToCertainServoPosition extends TimerTask {
         int i;
@@ -136,7 +137,6 @@ public class NewKongRedBackdrop extends LinearOpMode
             Poker.setPosition(PokerPositions[i]);
         }
     }
-
     OpenCvWebcam webcam;
     RedTeamElementDeterminationPipeline pipeline;
     StartingPositionEnum sideOfFieldToStartOn = StartingPositionEnum.RIGHT;
@@ -240,6 +240,7 @@ public class NewKongRedBackdrop extends LinearOpMode
 
         while (opModeIsActive())
         {
+//            sleep(1000);
             telemetry.addData("Analysis", pipeline.getAnalysis());
             telemetry.update();
             doActions(drive, sideOfFieldToStartOn, pipeline.getAnalysis());
@@ -327,10 +328,6 @@ public class NewKongRedBackdrop extends LinearOpMode
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
 //        smp = SpikeMarkPosition.UNO;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
-        double multiplier = 1;
-        if (needInvert) {
-            multiplier = -1;
-        }
 
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
                 .strafeTo(new Vector2d(17, -63))
@@ -355,7 +352,7 @@ public class NewKongRedBackdrop extends LinearOpMode
         } else {
             actionBuilder = actionBuilder
                     .turn(Math.PI / 2)
-                    .lineToX(-34)
+                    .lineToX(34)
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2);
@@ -364,27 +361,19 @@ public class NewKongRedBackdrop extends LinearOpMode
         double pos = -36;
         double pos2 = -12;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -30;
+            pos = -29;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.DOS) {
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -42;
-        }
-        if (false) {
-            pos2 = -61;
-            pos2 = -12;
-        }
-        if (false) {
-            pos2 = -61;
-            pos2 = -12;
+            pos = -43;
         }
         actionBuilder = actionBuilder
                 .lineToX(47)
                 .strafeToConstantHeading(new Vector2d(44, pos))
-//                .afterTime(0, new RaiseArm())
+                .afterTime(0, new RaiseArm())
                 .afterTime(1, new PlacePixelOnBackDrop())
                 .afterTime(5, new GrabPixel())
                 .waitSeconds(5)
