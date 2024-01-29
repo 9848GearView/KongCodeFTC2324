@@ -340,7 +340,7 @@ public class NewKongBlueStacks extends LinearOpMode
                 .turn(multiplier * 0.00001)
                 .lineToY(multiplier * -33);
 
-        double pos = -60; //-12;
+        double pos = -12; //-60;
 
         if (smp == SpikeMarkPosition.UNO) {
             actionBuilder = actionBuilder
@@ -387,17 +387,17 @@ public class NewKongBlueStacks extends LinearOpMode
 //        if (smp == SpikeMarkPosition.UNO) {
 //            pos = -40;
 //        }
-        pos = -35;
+        pos = -36;
         double pos2 = -12;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -41;
+            pos = -43;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.DOS) {
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -29;
+            pos = -30;
             pos2 = -12;
         }
         if (false) {
