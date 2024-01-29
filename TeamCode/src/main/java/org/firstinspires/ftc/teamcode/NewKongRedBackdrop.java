@@ -355,7 +355,7 @@ public class NewKongRedBackdrop extends LinearOpMode
         } else {
             actionBuilder = actionBuilder
                     .turn(Math.PI / 2)
-                    .lineToX(34)
+                    .lineToX(-34)
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2);
@@ -384,7 +384,7 @@ public class NewKongRedBackdrop extends LinearOpMode
         actionBuilder = actionBuilder
                 .lineToX(47)
                 .strafeToConstantHeading(new Vector2d(44, pos))
-                .afterTime(0, new RaiseArm())
+//                .afterTime(0, new RaiseArm())
                 .afterTime(1, new PlacePixelOnBackDrop())
                 .afterTime(5, new GrabPixel())
                 .waitSeconds(5)

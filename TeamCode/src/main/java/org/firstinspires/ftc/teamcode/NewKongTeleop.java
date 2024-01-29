@@ -83,6 +83,7 @@ public class NewKongTeleop extends LinearOpMode {
     private boolean oldLBumper = true;
     private boolean clawIsClosed = true;
     private int index = 0;
+    private int armIndex = 0;
     private double[] LEServoPositions = TeleopServoConstants.LEServoPositions;
     private double[] REServoPositions = TeleopServoConstants.REServoPositions;
     private double[] PokerPositions = TeleopServoConstants.PokerPositions;
@@ -336,8 +337,8 @@ public class NewKongTeleop extends LinearOpMode {
             if (crossPressed && !oldCrossPressed && index == 0 && !isPokerMoving) {
                 new setIsPokerMoving(true).run();
                 timer.schedule(new PutPokerToCertainPosition(1), 0);
-                timer.schedule(new PutPokerToCertainPosition(0), 4000);
-                timer.schedule(new setIsPokerMoving(false), 8000);
+                timer.schedule(new PutPokerToCertainPosition(0), 700);
+                timer.schedule(new setIsPokerMoving(false), 1000);
             }
 
             boolean squarePressed = gamepad2.square;

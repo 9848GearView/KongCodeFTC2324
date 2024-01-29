@@ -37,6 +37,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.BlueTeamElementDeterminationPipeline;
+import org.firstinspires.ftc.teamcode.SpikeMarkPosition;
 import org.firstinspires.ftc.teamcode.constants.AutoServoConstants;
 import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -53,7 +55,7 @@ import java.util.TimerTask;
  * 100% accurate) method of detecting the TeamElement when lined up with
  * the sample regions over the first 3 stones.
  */
-@Autonomous(name = "KongBlueBackdrop")
+@Autonomous(name = "NewKongBlueBackdrop")
 //@Disabled
 public class NewKongBlueBackdrop extends LinearOpMode
 {
@@ -73,6 +75,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
         UP,
         DOWN
     }
+
     private ElapsedTime runtime = new ElapsedTime();
     private Timer timer = new Timer();
     private DcMotor FLMotor = null;
@@ -233,7 +236,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
             }
         });
 
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, 63, Math.PI / 2));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, 63, -Math.PI / 2));
 //        timer.schedule(new PutGrabberToCertainPosition(0), 3000);
 
         waitForStart();
@@ -333,9 +336,9 @@ public class NewKongBlueBackdrop extends LinearOpMode
         }
 
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
-                .strafeTo(new Vector2d(39, multiplier * -63))
+                .strafeTo(new Vector2d(19, multiplier * -63))
                 .turn(multiplier * 0.00001)
-                .lineToY(multiplier * -36);
+                .lineToY(multiplier * -33);
 
         if (smp == SpikeMarkPosition.TRES) {
             actionBuilder = actionBuilder
@@ -347,6 +350,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .strafeTo(new Vector2d(15, multiplier * -36))
+                    .waitSeconds(1)
                     .afterTime(0, new VomitPixelOnGround())
                     .afterTime(1.7, new LeavePixelOnGround())
                     .waitSeconds(2)
@@ -364,19 +368,11 @@ public class NewKongBlueBackdrop extends LinearOpMode
         double pos = -36;
         double pos2 = -12;
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -42;
+            pos = -29;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -30;
-            pos2 = -12;
-        }
-        if (false) {
-            pos2 = -61;
-            pos2 = -12;
-        }
-        if (false) {
-            pos2 = -61;
+            pos = -43;
             pos2 = -12;
         }
         actionBuilder = actionBuilder
