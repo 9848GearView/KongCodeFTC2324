@@ -304,8 +304,8 @@ public class NewKongRedBackdrop extends LinearOpMode
             timer.schedule(new LowerArmToCertainServoPosition(4),  1 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(5), 6 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(6), 11 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(0),  15 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new PutRingerToCertainPosition(0), 15 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(0),  20 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new PutRingerToCertainPosition(0), 20 * DELAY_BETWEEN_MOVES);
             return false;
         }
     }
@@ -361,14 +361,14 @@ public class NewKongRedBackdrop extends LinearOpMode
         double pos = -36;
         double pos2 = -12;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -29;
+            pos = -28;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.DOS) {
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -43;
+            pos = -44;
         }
         actionBuilder = actionBuilder
                 .lineToX(47)

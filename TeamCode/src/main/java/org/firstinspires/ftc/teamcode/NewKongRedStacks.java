@@ -302,8 +302,8 @@ public class NewKongRedStacks extends LinearOpMode
             timer.schedule(new LowerArmToCertainServoPosition(4),  1 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(5), 6 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(6), 11 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(0),  15 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new PutRingerToCertainPosition(0), 15 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(0),  20 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new PutRingerToCertainPosition(0), 20 * DELAY_BETWEEN_MOVES);
 
             return false;
         }

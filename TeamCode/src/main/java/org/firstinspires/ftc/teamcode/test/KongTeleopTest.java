@@ -29,18 +29,6 @@
 
 package org.firstinspires.ftc.teamcode.test;
 
-import android.util.Size;
-
-import androidx.annotation.NonNull;
-
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.PoseVelocity2d;
-import com.acmerobotics.roadrunner.TimeTrajectory;
-import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
-import com.acmerobotics.roadrunner.Vector2d;
-import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -48,17 +36,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.constants.TeleopServoConstants;
-import org.firstinspires.ftc.teamcode.constants.TestServoConstants;
-import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.lang.Math;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -76,24 +56,10 @@ import java.util.TimerTask;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TestTeleop", group="Robot")
+@TeleOp(name="KongTeleopTest", group="Robot")
 public class KongTeleopTest extends LinearOpMode {
-    private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
-
-    /**
-     * The variable to store our instance of the AprilTag processor.
-     */
-    private AprilTagProcessor aprilTag;
-
-    /**
-     * The variable to store our instance of the vision portal.
-     */
-    private VisionPortal visionPortal;
-    MecanumDrive drive;
-    TrajectoryActionBuilder aB;
     public static boolean isArmMoving = false;
     public static boolean isPokerMoving = false;
-    public static boolean isRobotInTrajectory = false;
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private Timer timer = new Timer();
@@ -117,17 +83,17 @@ public class KongTeleopTest extends LinearOpMode {
     private boolean oldLBumper = true;
     private boolean clawIsClosed = true;
     private int index = 0;
-    private double[] LEServoPositions = TestServoConstants.LEServoPositions;
-    private double[] REServoPositions = TestServoConstants.REServoPositions;
-    private double[] PokerPositions = TestServoConstants.PokerPositions;
-    private double[] RWServoPositions = TestServoConstants.RWServoPositions;
-    private double[] RingerPositions = TestServoConstants.RingerPositions;
+    private int armIndex = 0;
+    private double[] LEServoPositions = TeleopServoConstants.LEServoPositions;
+    private double[] REServoPositions = TeleopServoConstants.REServoPositions;
+    private double[] PokerPositions = TeleopServoConstants.PokerPositions;
+    private double[] RWServoPositions = TeleopServoConstants.RWServoPositions;
+    private double[] RingerPositions = TeleopServoConstants.RingerPositions;
 
     private final int DELAY_BETWEEN_MOVES = 100;
 
     @Override
     public void runOpMode() {
-
         class setIsArmMoving extends TimerTask {
             boolean val;
             public setIsArmMoving(boolean v) {
@@ -184,9 +150,7 @@ public class KongTeleopTest extends LinearOpMode {
             }
         }
 
-        initAprilTag();
-
-        telemetry.addData("Status", "Initialized");
+        telemetry.addData("Status", "sInitialized");
         telemetry.update();
 
         // Initialize the hardware variables. Note that the strings used here as parameters
@@ -242,8 +206,6 @@ public class KongTeleopTest extends LinearOpMode {
 //        timer.schedule(new PutGrabberToCertainPosition(0), 0);
         timer.schedule(new LowerArmToCertainServoPosition(0), 0);
 
-        drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, Math.toRadians(90)));
-
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -253,19 +215,14 @@ public class KongTeleopTest extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            drive.updatePoseEstimate();
-            telemetryAprilTag();
 
-            telemetry.addData("", gamepad1.left_stick_y);
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.update();
+            double leftPower;
+            double rightPower;
 
-//            if (gamepad1.dpad_left) {
-//                drive.pose = new Pose2d(0, 0, Math.toRadians(90));
-//                aB = drive.actionBuilder(drive.pose)
-//                        .lineToY(24).endTrajectory();
-//                Actions.runBlocking(aB.build());
-//            }
+            double drive = -gamepad1.left_stick_y;
+            double turn = gamepad1.right_stick_x;
+            leftPower = Range.clip(drive + turn, -1.0, 1.0);
+            rightPower = Range.clip(drive - turn, -1.0, 1.0);
 
             // Send calculated power to wheels
             // KYLE CODE
@@ -329,7 +286,7 @@ public class KongTeleopTest extends LinearOpMode {
             LeftSlide.setPower(gamepad2.left_stick_y);
             RightSlide.setPower(gamepad2.left_stick_y);
 
-            if (gamepad2.right_trigger > 0) {
+            if (gamepad2.right_trigger > 0 && runtime.milliseconds() > 90_000) {
                 PlaneLauncher.setPosition(0.0);
             }
             if (gamepad2.left_trigger > 0) {
@@ -352,8 +309,8 @@ public class KongTeleopTest extends LinearOpMode {
                 if (circlePressed && !oldCirclePressed && !isArmMoving) {
                     new setIsArmMoving(true).run();
                     timer.schedule(new LowerArmToCertainServoPosition(1), 0);
-                    timer.schedule(new LowerArmToCertainServoPosition(0), 1 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new setIsArmMoving(false), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
                     index = 0;
                 } else if (trianglePressed && !oldTrianglePressed && !isArmMoving) {
                     new setIsArmMoving(true).run();
@@ -369,8 +326,8 @@ public class KongTeleopTest extends LinearOpMode {
                     timer.schedule(new PutRingerToCertainPosition(0), 0);
                     timer.schedule(new LowerArmToCertainServoPosition(5), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(6), 1 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(0), 10 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 10 * DELAY_BETWEEN_MOVES);
                     index = 0;
                 }
             }
@@ -380,8 +337,8 @@ public class KongTeleopTest extends LinearOpMode {
             if (crossPressed && !oldCrossPressed && index == 0 && !isPokerMoving) {
                 new setIsPokerMoving(true).run();
                 timer.schedule(new PutPokerToCertainPosition(1), 0);
-                timer.schedule(new PutPokerToCertainPosition(0), 4000);
-                timer.schedule(new setIsPokerMoving(false), 8000);
+                timer.schedule(new PutPokerToCertainPosition(0), 1000);
+                timer.schedule(new setIsPokerMoving(false), 1200);
             }
 
             boolean squarePressed = gamepad2.square;
@@ -407,115 +364,19 @@ public class KongTeleopTest extends LinearOpMode {
                 }, 1000);
                 timer.schedule(new setIsArmMoving(false), 1000);
             }
+
+            // Show the elapsed game time and wheel power.
+            telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addData("INDEX", index % LEServoPositions.length);
+//            telemetry.addData("", LEServoPositions[index]);
+//            telemetry.addData("", REServoPositions[index]);
+//            telemetry.addData("", RWServoPositions[index]);
+            telemetry.update();
             oldCrossPressed = crossPressed;
             oldCirclePressed = circlePressed;
             oldSquarePressed = squarePressed;
             oldTrianglePressed = trianglePressed;
             oldLBumper = LBumper;
         }
-
-        visionPortal.close();
-    }
-
-    /**
-     * Initialize the AprilTag processor.
-     */
-    private void initAprilTag() {
-
-        // Create the AprilTag processor.
-        aprilTag = new AprilTagProcessor.Builder()
-
-            // The following default settings are available to un-comment and edit as needed.
-            //.setDrawAxes(false)
-            //.setDrawCubeProjection(false)
-            //.setDrawTagOutline(true)
-            //.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
-            //.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
-            //.setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
-
-            // == CAMERA CALIBRATION ==
-            // If you do not manually specify calibration parameters, the SDK will attempt
-            // to load a predefined calibration for your camera.
-                //Focals (pixels) - Fx: 946.868 Fy: 946.868
-        //        Optical center - Cx: 397.024 Cy: 293.943
-        //        Radial distortion (Brown's Model)
-        //        K1: 0.152515 K2: -0.13222 K3: 0.00047578
-        //        P1: 0.0208688 P2: 0.0438113
-        //        Skew: 0
-            .setLensIntrinsics(946.868, 946.868, 397.024, 293.943)
-            // ... these parameters are fx, fy, cx, cy.
-
-            .build();
-
-        // Adjust Image Decimation to trade-off detection-range for detection-rate.
-        // eg: Some typical detection data using a Logitech C920 WebCam
-        // Decimation = 1 ..  Detect 2" Tag from 10 feet away at 10 Frames per second
-        // Decimation = 2 ..  Detect 2" Tag from 6  feet away at 22 Frames per second
-        // Decimation = 3 ..  Detect 2" Tag from 4  feet away at 30 Frames Per Second (default)
-        // Decimation = 3 ..  Detect 5" Tag from 10 feet away at 30 Frames Per Second (default)
-        // Note: Decimation can be changed on-the-fly to adapt during a match.
-        //aprilTag.setDecimation(3);
-
-        // Create the vision portal by using a builder.
-        VisionPortal.Builder builder = new VisionPortal.Builder();
-
-        // Set the camera (webcam vs. built-in RC phone camera).
-        if (USE_WEBCAM) {
-            builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
-        } else {
-            builder.setCamera(BuiltinCameraDirection.BACK);
-        }
-
-        // Choose a camera resolution. Not all cameras support all resolutions.
-        builder.setCameraResolution(new Size(640, 480));
-
-        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-        //builder.enableLiveView(true);
-
-        // Set the stream format; MJPEG uses less bandwidth than default YUY2.
-        //builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
-
-        // Choose whether or not LiveView stops if no processors are enabled.
-        // If set "true", monitor shows solid orange screen if no processors enabled.
-        // If set "false", monitor shows camera view without annotations.
-        //builder.setAutoStopLiveView(false);
-
-        // Set and enable the processor.
-        builder.addProcessor(aprilTag);
-
-        // Build the Vision Portal, using the above settings.
-        visionPortal = builder.build();
-
-        // Disable or re-enable the aprilTag processor at any time.
-        //visionPortal.setProcessorEnabled(aprilTag, true);
-
-    }   // end method initAprilTag()
-
-
-    /**
-     * Add telemetry about AprilTag detections.
-     */
-    private void telemetryAprilTag() {
-
-        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        telemetry.addData("# AprilTags Detected", currentDetections.size());
-
-        // Step through the list of detections and display info for each one.
-        for (AprilTagDetection detection : currentDetections) {
-            if (detection.metadata != null) {
-                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
-                telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
-                telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
-                telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
-            } else {
-                telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
-                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
-            }
-        }   // end for() loop
-
-        // Add "key" information to telemetry
-        telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
-        telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
-        telemetry.addLine("RBE = Range, Bearing & Elevation");
     }
 }

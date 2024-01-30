@@ -309,8 +309,8 @@ public class NewKongTeleop extends LinearOpMode {
                 if (circlePressed && !oldCirclePressed && !isArmMoving) {
                     new setIsArmMoving(true).run();
                     timer.schedule(new LowerArmToCertainServoPosition(1), 0);
-                    timer.schedule(new LowerArmToCertainServoPosition(0), 1 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new setIsArmMoving(false), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
                     index = 0;
                 } else if (trianglePressed && !oldTrianglePressed && !isArmMoving) {
                     new setIsArmMoving(true).run();
@@ -326,8 +326,8 @@ public class NewKongTeleop extends LinearOpMode {
                     timer.schedule(new PutRingerToCertainPosition(0), 0);
                     timer.schedule(new LowerArmToCertainServoPosition(5), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(6), 1 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(0), 10 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 10 * DELAY_BETWEEN_MOVES);
                     index = 0;
                 }
             }
@@ -337,8 +337,8 @@ public class NewKongTeleop extends LinearOpMode {
             if (crossPressed && !oldCrossPressed && index == 0 && !isPokerMoving) {
                 new setIsPokerMoving(true).run();
                 timer.schedule(new PutPokerToCertainPosition(1), 0);
-                timer.schedule(new PutPokerToCertainPosition(0), 700);
-                timer.schedule(new setIsPokerMoving(false), 1000);
+                timer.schedule(new PutPokerToCertainPosition(0), 1000);
+                timer.schedule(new setIsPokerMoving(false), 1200);
             }
 
             boolean squarePressed = gamepad2.square;
