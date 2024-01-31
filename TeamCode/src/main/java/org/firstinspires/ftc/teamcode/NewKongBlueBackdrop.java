@@ -285,16 +285,9 @@ public class NewKongBlueBackdrop extends LinearOpMode
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             timer.schedule(new PutRingerToCertainPosition(0), 0);
-//            timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(1), 4 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(2), 0 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(3), 3 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(4), 1 * DELAY_BETWEEN_MOVES);
             timer.schedule(new PutRingerToCertainPosition(2), 6 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(4), 7 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(5), 8 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(6), 9 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(7), 10 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(8), 11 * DELAY_BETWEEN_MOVES);
             return false;
         }
     }
@@ -303,7 +296,6 @@ public class NewKongBlueBackdrop extends LinearOpMode
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             timer.schedule(new PutRingerToCertainPosition(2), 0);
-            timer.schedule(new LowerArmToCertainServoPosition(4),  1 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(5), 6 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(6), 11 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(0),  20 * DELAY_BETWEEN_MOVES);
@@ -368,19 +360,18 @@ public class NewKongBlueBackdrop extends LinearOpMode
         double pos = -36;
         double pos2 = -12;
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -28;
+            pos = -27;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -44;
+            pos = -45;
             pos2 = -12;
         }
         actionBuilder = actionBuilder
                 .lineToX(47)
                 .strafeToConstantHeading(new Vector2d(44, multiplier * pos))
-                .afterTime(0, new RaiseArm())
-                .afterTime(1, new PlacePixelOnBackDrop())
-                .afterTime(5, new GrabPixel())
+                .afterTime(0, new PlacePixelOnBackDrop())
+                .afterTime(4, new GrabPixel())
                 .waitSeconds(5)
                 .strafeToConstantHeading(new Vector2d(46, multiplier * pos2))
                 .turn(multiplier * 0.00001)

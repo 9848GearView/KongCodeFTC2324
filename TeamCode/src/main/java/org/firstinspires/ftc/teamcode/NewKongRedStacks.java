@@ -281,16 +281,9 @@ public class NewKongRedStacks extends LinearOpMode
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             timer.schedule(new PutRingerToCertainPosition(0), 0);
-//            timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(1), 4 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(2), 0 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(3), 3 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(4), 1 * DELAY_BETWEEN_MOVES);
             timer.schedule(new PutRingerToCertainPosition(2), 6 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(4), 7 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(5), 8 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(6), 9 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(7), 10 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(8), 11 * DELAY_BETWEEN_MOVES);
             return false;
         }
     }
@@ -299,7 +292,6 @@ public class NewKongRedStacks extends LinearOpMode
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             timer.schedule(new PutRingerToCertainPosition(2), 0);
-            timer.schedule(new LowerArmToCertainServoPosition(4),  1 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(5), 6 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(6), 11 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(0),  20 * DELAY_BETWEEN_MOVES);
@@ -377,14 +369,14 @@ public class NewKongRedStacks extends LinearOpMode
         pos = -36;
         double pos2 = -12;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -29;
+            pos = -28;
             pos2 = -12;
         }
         if (smp == SpikeMarkPosition.DOS) {
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -43;
+            pos = -44;
             pos2 = -61;
         }
         if (false) {
