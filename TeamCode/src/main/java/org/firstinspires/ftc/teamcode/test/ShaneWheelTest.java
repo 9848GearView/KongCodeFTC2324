@@ -31,9 +31,15 @@ package org.firstinspires.ftc.teamcode.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.teamcode.constants.TeleopServoConstants;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /*
@@ -49,48 +55,72 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(group="Test")
-public class SingleServoTest extends LinearOpMode {
-    private Servo servo = null;
-    private boolean oldCrossPressed = false;
-    private boolean oldTrianglePressed = false;
+@TeleOp(name="ShaneWheelTest", group="Robot")
+public class ShaneWheelTest extends LinearOpMode {
+    // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
+    private Timer timer = new Timer();
+    private DcMotor FLMotor = null;
+    private DcMotor FRMotor = null;
+    private DcMotor BLMotor = null;
+    private DcMotor BRMotor = null;
+    private final int DELAY_BETWEEN_MOVES = 100;
 
     @Override
     public void runOpMode() {
-        servo = hardwareMap.get(Servo.class, "RE");
 
-        servo.setDirection(Servo.Direction.FORWARD);
+        telemetry.addData("Status", "sInitialized");
+        telemetry.update();
+
+        // Initialize the hardware variables. Note that the strings used here as parameters
+        // to 'get' must correspond to the names assigned during the robot configuration
+        // step (using the FTC Robot Controller app on the phone).
+        FLMotor = hardwareMap.get(DcMotor.class, "FL");
+        FRMotor = hardwareMap.get(DcMotor.class, "FR");
+        BLMotor = hardwareMap.get(DcMotor.class, "BL");
+        BRMotor = hardwareMap.get(DcMotor.class, "BR");
+
+
+        FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        FRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
+        // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
+        // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
+        FLMotor.setDirection(DcMotor.Direction.REVERSE);
+        FRMotor.setDirection(DcMotor.Direction.FORWARD);
+        BLMotor.setDirection(DcMotor.Direction.REVERSE);
+        BRMotor.setDirection(DcMotor.Direction.FORWARD);
+
+
+        FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        FRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
-        servo.setPosition(.5);
+        int armIndex = 0;
+        int ringerIndex = 0;
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-            // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
-            boolean crossPressed = gamepad2.cross;
-            if (crossPressed && !oldCrossPressed) {
-                servo.setPosition(servo.getPosition() + 0.05);
+            if(gamepad1.dpad_down){
+                BRMotor.setPower(1);
             }
-
-            boolean trianglePressed = gamepad2.triangle;
-            if (trianglePressed && !oldTrianglePressed) {
-                servo.setPosition(servo.getPosition() - 0.05);
+            if(gamepad1.dpad_up){
+                FLMotor.setPower(1);
             }
-
-            if (gamepad2.circle) {
-                servo.setPosition(0.5);
+            if(gamepad1.dpad_right){
+                FRMotor.setPower(1);
             }
-
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("LeftElbowServoPosition", servo.getPosition());
-            telemetry.update();
-            oldCrossPressed = crossPressed;
-            oldTrianglePressed = trianglePressed;
-        }
+            if(gamepad1.dpad_left){
+                BLMotor.setPower(1);
+            }
     }
+}
 }
