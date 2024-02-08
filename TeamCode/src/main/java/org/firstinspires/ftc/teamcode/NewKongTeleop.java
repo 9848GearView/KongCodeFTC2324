@@ -458,7 +458,8 @@ public class NewKongTeleop extends LinearOpMode {
                 } else if (circlePressed && !oldCirclePressed && !isArmMoving) {
                     new setIsArmMoving(true).run();
                     timer.schedule(new LowerArmToCertainServoPosition(1), 0);
-                    timer.schedule(new PutBoxToCertainPosition(0), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(0), 1* DELAY_BETWEEN_MOVES);
+                    timer.schedule(new PutBoxToCertainPosition(0), 2 * DELAY_BETWEEN_MOVES);
                     index = 0;
                     timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
                 }
