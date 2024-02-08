@@ -62,6 +62,7 @@ import java.util.concurrent.locks.Lock;
 @TeleOp(name="NewKongTeleop", group="Robot")
 public class NewKongTeleop extends LinearOpMode {
     public static boolean isArmMoving = false;
+    public static boolean slideOverride = false;
     public static boolean isRobotMoving = false;
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -210,6 +211,34 @@ public class NewKongTeleop extends LinearOpMode {
             }
         }
 
+        class FixCadderMistake extends TimerTask {
+            double i;
+
+            public FixCadderMistake(double i) {
+                this.i = i;
+            }
+
+            public void run() {
+                LeftSlide.setPower(i);
+                RightSlide.setPower(i);
+
+                telemetry.addData("Power", i);
+                telemetry.update();
+
+            }
+        }
+
+        class setSlideOverride extends TimerTask {
+            boolean val;
+
+            public setSlideOverride(boolean v) {
+                this.val = v;
+            }
+
+            public void run() { slideOverride = val; }
+        }
+
+
         telemetry.addData("Status", "sInitialized");
         telemetry.update();
 
@@ -248,8 +277,8 @@ public class NewKongTeleop extends LinearOpMode {
         BLMotor.setDirection(DcMotor.Direction.REVERSE);
         BRMotor.setDirection(DcMotor.Direction.REVERSE);
         IntakeServo.setDirection(CRServo.Direction.FORWARD);
-        LeftSlide.setDirection(DcMotor.Direction.FORWARD);
-        RightSlide.setDirection(DcMotor.Direction.REVERSE);
+        LeftSlide.setDirection(DcMotor.Direction.REVERSE);
+        RightSlide.setDirection(DcMotor.Direction.FORWARD);
         LeftElbowServo.setDirection(Servo.Direction.REVERSE);
         RightElbowServo.setDirection(Servo.Direction.FORWARD);
         WristServo.setDirection(Servo.Direction.FORWARD);
@@ -354,10 +383,12 @@ public class NewKongTeleop extends LinearOpMode {
             }
 
             IntakeServo.setPower(gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
-            LeftSlide.setPower(gamepad2.left_stick_y);
-            RightSlide.setPower(gamepad2.left_stick_y);
+            if (!slideOverride) {
+                LeftSlide.setPower(-gamepad2.left_stick_y);
+                RightSlide.setPower(-gamepad2.left_stick_y);
+            }
 
-            if (gamepad2.left_bumper && runtime.milliseconds() > 90_000) {
+            if (gamepad2.left_bumper) {
                 PlaneLauncher.setPosition(0.0);
             }
             if (gamepad2.left_trigger > 0) {
@@ -393,7 +424,12 @@ public class NewKongTeleop extends LinearOpMode {
                     }
                 } else if (circlePressed && !oldCirclePressed && !isArmMoving && fingerLocked) {
                     new setIsArmMoving(true).run();
-                    timer.schedule(new PutBoxToCertainPosition(1), 0);
+                    timer.schedule(new setSlideOverride(true), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCadderMistake(1), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCadderMistake(0), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new PutBoxToCertainPosition(1), 2 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setSlideOverride(false), 2 * DELAY_BETWEEN_MOVES);
+
                     index = 2;
                     timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
                 }
