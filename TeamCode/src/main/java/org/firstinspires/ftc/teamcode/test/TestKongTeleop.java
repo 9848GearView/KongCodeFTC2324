@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -59,8 +59,8 @@ import java.util.concurrent.locks.Lock;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="NewKongTeleop", group="Robot")
-public class NewKongTeleop extends LinearOpMode {
+@TeleOp(name="TestKongTeleop", group="Robot")
+public class TestKongTeleop extends LinearOpMode {
     public static boolean isArmMoving = false;
     public static boolean slideOverride = false;
     public static boolean isRobotMoving = false;
@@ -412,6 +412,10 @@ public class NewKongTeleop extends LinearOpMode {
 
 
             if (index == 0) {
+                FLMotor.setDirection(DcMotor.Direction.REVERSE);
+                FRMotor.setDirection(DcMotor.Direction.FORWARD);
+                BLMotor.setDirection(DcMotor.Direction.REVERSE);
+                BRMotor.setDirection(DcMotor.Direction.REVERSE);
                 if (crossPressed && !oldCrossPressed && !isArmMoving) {
                     if (!fingerLocked) {
                         timer.schedule(new fLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
@@ -449,6 +453,10 @@ public class NewKongTeleop extends LinearOpMode {
                     timer.schedule(new setIsArmMoving(false), 1 * DELAY_BETWEEN_MOVES);
                 }
             } else if (index == 3) {
+                FLMotor.setDirection(DcMotor.Direction.FORWARD);
+                FRMotor.setDirection(DcMotor.Direction.REVERSE);
+                BLMotor.setDirection(DcMotor.Direction.FORWARD);
+                BRMotor.setDirection(DcMotor.Direction.FORWARD);
                 if (squarePressed && !oldSquarePressed && !isArmMoving && !firstSquarePressed) {
                     timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                     firstSquarePressed = true;
@@ -469,21 +477,21 @@ public class NewKongTeleop extends LinearOpMode {
                 }
             }
 
-                // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
+            // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
 
 
-                boolean LBumper = gamepad2.left_bumper;
+            boolean LBumper = gamepad2.left_bumper;
 
 
-                // Show the elapsed game time and wheel power.
-                telemetry.addData("Status", "Run Time: " + runtime.toString());
-                telemetry.update();
-                oldCrossPressed = crossPressed;
-                oldCirclePressed = circlePressed;
-                oldSquarePressed = squarePressed;
-                oldTrianglePressed = trianglePressed;
-                oldRBumperPressed = rBumperPressed;
-                oldLBumper = LBumper;
-            }
+            // Show the elapsed game time and wheel power.
+            telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.update();
+            oldCrossPressed = crossPressed;
+            oldCirclePressed = circlePressed;
+            oldSquarePressed = squarePressed;
+            oldTrianglePressed = trianglePressed;
+            oldRBumperPressed = rBumperPressed;
+            oldLBumper = LBumper;
         }
     }
+}

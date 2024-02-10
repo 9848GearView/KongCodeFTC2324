@@ -49,13 +49,13 @@ import java.util.List;
 public final class MecanumDrive {
     public static class Params {
         // drive model parameters
-        public double inPerTick = 0.0060111364;
+        public double inPerTick = 0.00300973;
         public double lateralInPerTick = 0.001919109361082941;
         public double trackWidthTicks = 4892.320722720359;
 
         // feedforward parameters (in tick units)
-        public double kS = 0.002;
-        public double kV = 0.00051;
+        public double kS = 1.893424738133755;
+        public double kV = 0.000449801018059725;
         public double kA = 0.00015;
 
         // path profile parameters (in inches)
@@ -187,8 +187,8 @@ public final class MecanumDrive {
 
         leftBack.setDirection(DcMotor.Direction.REVERSE);
         rightBack.setDirection(DcMotor.Direction.REVERSE);
-        leftFront.setDirection(DcMotor.Direction.FORWARD);
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.FORWARD);
 
         imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
