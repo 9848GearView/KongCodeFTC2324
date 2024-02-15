@@ -31,11 +31,13 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.constants.AutoServoConstants;
 import org.firstinspires.ftc.teamcode.constants.AutoServoConstants;
 import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
 import org.opencv.core.Core;
@@ -63,101 +65,225 @@ import java.util.TimerTask;
 //@Disabled
 public class NewKongBlueBackdrop extends LinearOpMode
 {
-    enum DriveDirection {
-        FORWARD,
-        LEFT,
-        RIGHT,
-        BACKWARD
-    }
-
     enum StartingPositionEnum {
         LEFT,
         RIGHT
     }
-
-    enum SlidePackDirection {
-        UP,
-        DOWN
-    }
-
+    public static boolean isArmMoving = false;
+    public static boolean slideOverride = false;
+    public static boolean isRobotMoving = false;
+    // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private Timer timer = new Timer();
     private DcMotor FLMotor = null;
     private DcMotor FRMotor = null;
     private DcMotor BLMotor = null;
     private DcMotor BRMotor = null;
-    private DcMotor IntakeMotor = null;
     private DcMotor LeftSlide = null;
     private DcMotor RightSlide = null;
+    private Servo WristServo = null;
     private Servo LeftElbowServo = null;
     private Servo RightElbowServo = null;
-    private Servo Poker = null;
-    private Servo RightWristServo = null;
-    private Servo Ringer = null;
-    private ElapsedTime eTime = new ElapsedTime();
+    private Servo fingerF = null;
+    private Servo fingerB = null;
+    private Servo ClawL = null;
+    private Servo ClawR = null;
+    private CRServo IntakeServo = null;
+    private Servo PlaneLauncher = null;
+    private boolean oldCrossPressed = true;
+    private boolean oldTrianglePressed = true;
+    private boolean oldCirclePressed = true;
+    private boolean oldSquarePressed = true;
+    private boolean oldRBumperPressed = true;
+    private boolean oldLBumper = true;
 
+    private boolean firstSquarePressed = false;
 
-    //    static final double     FORWARD_SPEED = 0.5;
-//    static final double     TURN_SPEED    = 0.5;
+    private boolean fingerLocked = false;
     private int index = 0;
     private double[] LEServoPositions = AutoServoConstants.LEServoPositions;
     private double[] REServoPositions = AutoServoConstants.REServoPositions;
-    private double[] PokerPositions = AutoServoConstants.PokerPositions;
-    private double[] RWServoPositions = AutoServoConstants.RWServoPositions;
-    private double[] RingerPositions = AutoServoConstants.RingerPositions;
+    private double[] ClawLPositions = AutoServoConstants.ClawLPositions;
+    private double[] WServoPositions = AutoServoConstants.WServoPositions;
+    private double[] ClawRPositions = AutoServoConstants.ClawRPositions;
+    private double[] FingerFPositions = AutoServoConstants.FingerFPositions;
+    private double[] FingerBPositions = AutoServoConstants.FingerBPositions;
 
     private final int DELAY_BETWEEN_MOVES = 300;
-    public class LowerArmToCertainServoPosition extends TimerTask {
-        int i;
-        public LowerArmToCertainServoPosition(int i) {
-            this.i = i;
-        }
-        public void run() {
-            LeftElbowServo.setPosition(LEServoPositions[i]);
-            RightElbowServo.setPosition(REServoPositions[i]);
-//            LeftWristServo.setPosition(LWServoPositions[i]);
-            RightWristServo.setPosition(RWServoPositions[i]);
-
-//                sleep(1000);
-//                telemetry.addData("index", i);
-//                telemetry.update();
-        }
-    }
-
-    public class PutRingerToCertainPosition extends TimerTask {
-        int i;
-        public PutRingerToCertainPosition(int i) {
-            this.i = i;
-        }
-        public void run() {
-            Ringer.setPosition(RingerPositions[i]);
-        }
-    }
-
-    public class PutPokerToCertainPosition extends TimerTask {
-        int i;
-        public PutPokerToCertainPosition(int i) {
-            this.i = i;
-        }
-        public void run() {
-            Poker.setPosition(PokerPositions[i]);
-        }
-    }
 
     OpenCvWebcam webcam;
     BlueTeamElementDeterminationPipeline pipeline;
     StartingPositionEnum sideOfFieldToStartOn = StartingPositionEnum.LEFT;
 
+    class setIsArmMoving extends TimerTask {
+        boolean val;
+
+        public setIsArmMoving(boolean v) {
+            this.val = v;
+        }
+
+        public void run() {
+            isArmMoving = val;
+        }
+    }
+
+    class setIsRobotMoving extends TimerTask {
+        boolean val;
+
+        public setIsRobotMoving(boolean v) {
+            this.val = v;
+        }
+
+        public void run() {
+            isRobotMoving = val;
+        }
+    }
+
+
+    class LowerArmToCertainServoPosition extends TimerTask {
+        int i;
+
+        public LowerArmToCertainServoPosition(int i) {
+            this.i = i;
+        }
+
+        public void run() {
+            LeftElbowServo.setPosition(LEServoPositions[i]);
+            RightElbowServo.setPosition(REServoPositions[i]);
+
+            telemetry.addData("index", i);
+            telemetry.update();
+
+        }
+    }
+
+    class PutClawsToCertainPosition extends TimerTask {
+        int i;
+
+        public PutClawsToCertainPosition(int i) {
+            this.i = i;
+        }
+
+        public void run() {
+            ClawL.setPosition(ClawLPositions[i]);
+            ClawR.setPosition(ClawRPositions[i]);
+
+            telemetry.addData("index", i);
+            telemetry.update();
+
+        }
+    }
+    class fLockPixelToggle extends TimerTask {
+        int i;
+
+        public fLockPixelToggle(int i) {
+            this.i = i;
+        }
+
+        public void run() {
+            fingerF.setPosition(FingerFPositions[i]);
+
+
+            telemetry.addData("index", i);
+            telemetry.update();
+
+        }
+    }
+
+    class bLockPixelToggle extends TimerTask {
+        int i;
+
+        public bLockPixelToggle(int i) {
+            this.i = i;
+        }
+
+        public void run() {
+            fingerB.setPosition(FingerBPositions[i]);
+
+            telemetry.addData("index", i);
+            telemetry.update();
+
+        }
+    }
+    class PutBoxToCertainPosition extends TimerTask {
+        int i;
+
+        public PutBoxToCertainPosition(int i) {
+            this.i = i;
+        }
+
+        public void run() {
+            WristServo.setPosition(WServoPositions[i]);
+
+            telemetry.addData("index", i);
+            telemetry.update();
+
+        }
+    }
+
+    class FixCadderMistake extends TimerTask {
+        double i;
+
+        public FixCadderMistake(double i) {
+            this.i = i;
+        }
+
+        public void run() {
+            LeftSlide.setPower(i);
+            RightSlide.setPower(i);
+
+            telemetry.addData("Power", i);
+            telemetry.update();
+
+        }
+    }
+
+    class SetSlideOverride extends TimerTask {
+        boolean val;
+
+        public SetSlideOverride(boolean v) {
+            this.val = v;
+        }
+
+        public void run() { slideOverride = val; }
+    }
+
+    class MoveArm extends TimerTask {
+        int t;
+        int p;
+
+        public MoveArm(int p, int t) {
+            this.p = p;
+            this.t = t;
+        }
+
+        public void run() {
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    LeftSlide.setPower(p); RightSlide.setPower(p);
+                }
+            }, 0);
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    LeftSlide.setPower(0); RightSlide.setPower(0);
+                }
+            }, t);
+        }
+
+    }
+
     @Override
     public void runOpMode()
     {
+
         /**
          * NOTE: Many comments have been omitted from this sample for the
          * sake of conciseness. If you're just starting out with EasyOpenCv,
          * you should take a look at {@link InternalCamera1Example} or its
          * webcam counterpart, {@link WebcamExample} first.
          */
-
 
         telemetry.addData("Status", "sInitialized");
         telemetry.update();
@@ -169,22 +295,25 @@ public class NewKongBlueBackdrop extends LinearOpMode
         FRMotor = hardwareMap.get(DcMotor.class, "FR");
         BLMotor = hardwareMap.get(DcMotor.class, "BL");
         BRMotor = hardwareMap.get(DcMotor.class, "BR");
-        IntakeMotor = hardwareMap.get(DcMotor.class, "IN");
+        IntakeServo = hardwareMap.get(CRServo.class, "IN");
         LeftSlide = hardwareMap.get(DcMotor.class, "LS");
         RightSlide = hardwareMap.get(DcMotor.class, "RS");
         LeftElbowServo = hardwareMap.get(Servo.class, "LE");
         RightElbowServo = hardwareMap.get(Servo.class, "RE");
-        Poker = hardwareMap.get(Servo.class, "P");
-        RightWristServo = hardwareMap.get(Servo.class, "RW");
-        Ringer = hardwareMap.get(Servo.class, "R");
+        WristServo = hardwareMap.get(Servo.class, "W");
+        fingerF = hardwareMap.get(Servo.class, "FF");
+        fingerB = hardwareMap.get(Servo.class, "FB");
+        ClawL = hardwareMap.get(Servo.class, "CL");
+        ClawR = hardwareMap.get(Servo.class, "CR");
+        PlaneLauncher = hardwareMap.get(Servo.class, "PL");
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         FRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         BLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         BRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        IntakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         LeftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         RightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -192,64 +321,69 @@ public class NewKongBlueBackdrop extends LinearOpMode
         FLMotor.setDirection(DcMotor.Direction.REVERSE);
         FRMotor.setDirection(DcMotor.Direction.FORWARD);
         BLMotor.setDirection(DcMotor.Direction.REVERSE);
-        BRMotor.setDirection(DcMotor.Direction.FORWARD);
-        IntakeMotor.setDirection(DcMotor.Direction.FORWARD);
-        LeftSlide.setDirection(DcMotor.Direction.FORWARD);
-        RightSlide.setDirection(DcMotor.Direction.REVERSE);
-        LeftElbowServo.setDirection(Servo.Direction.FORWARD);
-        RightElbowServo.setDirection(Servo.Direction.REVERSE);
-        Poker.setDirection(Servo.Direction.FORWARD);
-        RightWristServo.setDirection(Servo.Direction.REVERSE);
-        Ringer.setDirection(Servo.Direction.FORWARD);
+        BRMotor.setDirection(DcMotor.Direction.REVERSE);
+        IntakeServo.setDirection(CRServo.Direction.FORWARD);
+        LeftSlide.setDirection(DcMotor.Direction.REVERSE);
+        RightSlide.setDirection(DcMotor.Direction.FORWARD);
+        LeftElbowServo.setDirection(Servo.Direction.REVERSE);
+        RightElbowServo.setDirection(Servo.Direction.FORWARD);
+        WristServo.setDirection(Servo.Direction.FORWARD);
+        fingerF.setDirection(Servo.Direction.FORWARD);
+        ClawL.setDirection(Servo.Direction.FORWARD);
+        ClawR.setDirection(Servo.Direction.FORWARD);
+        PlaneLauncher.setDirection(Servo.Direction.REVERSE);
 
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         FRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         BLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         BRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        IntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        // Wait for the game to start (driver presses PLAY)
+//        timer.schedule(new PutGrabberToCertainPosition(0), 0);
+        new LowerArmToCertainServoPosition(0).run();
+        new PutClawsToCertainPosition(0).run();
+        new fLockPixelToggle(0).run();
+        new bLockPixelToggle(0).run();
+        new PutBoxToCertainPosition(0).run();
+        PlaneLauncher.setPosition(.57);
 
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        pipeline = new BlueTeamElementDeterminationPipeline();
-        webcam.setPipeline(pipeline);
+//        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+//        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+//        pipeline = new BlueTeamElementDeterminationPipeline();
+//        webcam.setPipeline(pipeline);
 
         // We set the viewport policy to optimized view so the preview doesn't appear 90 deg
         // out when the RC activity is in portrait. We do our actual image processing assuming
         // landscape orientation, though.
-//        webcam.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
-        webcam.setMillisecondsPermissionTimeout(2500);
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
-            @Override
-            public void onOpened()
-            {
-                webcam.startStreaming(640,480, OpenCvCameraRotation.UPRIGHT);
-            }
-
-            @Override
-            public void onError(int errorCode)
-            {
-                /*
-                 * This will be called if the camera could not be opened
-                 */
-                telemetry.addData("erroCode", errorCode);
-            }
-        });
+//        webcam.setMillisecondsPermissionTimeout(2500);
+//        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+//        {
+//            @Override
+//            public void onOpened()
+//            {
+//                webcam.startStreaming(640,480, OpenCvCameraRotation.UPRIGHT);
+//            }
+//
+//            @Override
+//            public void onError(int errorCode)
+//            {
+//                /*
+//                 * This will be called if the camera could not be opened
+//                 */
+//                telemetry.addData("erroCode", errorCode);
+//            }
+//        });
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, 63, -Math.PI / 2));
-//        timer.schedule(new PutGrabberToCertainPosition(0), 3000);
 
         waitForStart();
 
         while (opModeIsActive())
         {
-            telemetry.addData("Analysis", pipeline.getAnalysis());
-            telemetry.update();
-            doActions(drive, sideOfFieldToStartOn, pipeline.getAnalysis());
+//            telemetry.addData("Analysis", pipeline.getAnalysis());
+//            telemetry.update();
+            doActions(drive, sideOfFieldToStartOn, SpikeMarkPosition.UNO);//pipeline.getAnalysis());
 
             // Don't burn CPU cycles busy-looping in this sample
             sleep(15000);
@@ -259,14 +393,8 @@ public class NewKongBlueBackdrop extends LinearOpMode
 
     public class VomitPixelOnGround implements Action {
         @Override
-        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            IntakeMotor.setPower(0.15);
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    IntakeMotor.setPower(0);
-                }
-            }, 1400);
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
             return false;
         }
     }
@@ -274,13 +402,8 @@ public class NewKongBlueBackdrop extends LinearOpMode
     public class LeavePixelOnGround implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            IntakeMotor.setPower(-0.2);
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    IntakeMotor.setPower(0);
-                }
-            }, 1000);
+            telemetry.addData("left", "pixel");
+            telemetry.update();
             return false;
         }
     }
@@ -288,17 +411,21 @@ public class NewKongBlueBackdrop extends LinearOpMode
     public class PlacePixelOnBackDrop implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            timer.schedule(new PutRingerToCertainPosition(0), 0);
-//            timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(1), 4 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(2), 0 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(3), 3 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new PutRingerToCertainPosition(2), 6 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(4), 7 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(5), 8 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(6), 9 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(7), 10 * DELAY_BETWEEN_MOVES);
-//            timer.schedule(new LowerArmToCertainServoPosition(8), 11 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(1), 0 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(2), 1 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new PutBoxToCertainPosition(1), 0);
+            timer.schedule(new bLockPixelToggle(0), 2 * DELAY_BETWEEN_MOVES);
+            return false;
+        }
+    }
+
+    public class PlacePixelOnGround implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            timer.schedule(new LowerArmToCertainServoPosition(1), 0 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(3), 1 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new PutBoxToCertainPosition(2), 0);
+            timer.schedule(new fLockPixelToggle(0), 2 * DELAY_BETWEEN_MOVES);
             return false;
         }
     }
@@ -306,12 +433,10 @@ public class NewKongBlueBackdrop extends LinearOpMode
     public class GrabPixel implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            timer.schedule(new PutRingerToCertainPosition(2), 0);
-            timer.schedule(new LowerArmToCertainServoPosition(4),  1 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(5), 6 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(6), 11 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(0),  15 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new PutRingerToCertainPosition(0), 15 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(0), 0 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new FixCadderMistake(-1), 3 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new FixCadderMistake(0), 4 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new PutBoxToCertainPosition(0), 5 * DELAY_BETWEEN_MOVES);
             return false;
         }
     }
@@ -327,12 +452,29 @@ public class NewKongBlueBackdrop extends LinearOpMode
                     LeftSlide.setPower(0); RightSlide.setPower(0);
                 }
             }, 400);
+            timer.schedule(new PutBoxToCertainPosition(0), 0);
+
+            return false;
+        }
+    }
+
+    public class LowerArm implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            LeftSlide.setPower(-0.43);
+            RightSlide.setPower(-0.43);
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    LeftSlide.setPower(0); RightSlide.setPower(0);
+                }
+            }, 400);
             return false;
         }
     }
 
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-//        smp = SpikeMarkPosition.TRES;
+        smp = SpikeMarkPosition.UNO;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
         double multiplier = 1;
         if (needInvert) {
@@ -342,30 +484,34 @@ public class NewKongBlueBackdrop extends LinearOpMode
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
                 .strafeTo(new Vector2d(19, multiplier * -63))
                 .turn(multiplier * 0.00001)
-                .lineToY(multiplier * -36);
+                .lineToY(multiplier * -39);
 
         if (smp == SpikeMarkPosition.TRES) {
             actionBuilder = actionBuilder
-                    .turn(multiplier * Math.PI/2)
-                    .lineToX(11)
-                    .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(1.7, new LeavePixelOnGround())
+                    .turnTo(0.00001)
+                    .lineToX(15)
+                    .afterTime(0, new RaiseArm())
+                    .afterTime(.5, new PlacePixelOnGround())
+                    .afterTime(1.7, new VomitPixelOnGround())
                     .waitSeconds(2);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
-                    .strafeTo(new Vector2d(15, multiplier * -36))
+                    .strafeTo(new Vector2d(15, multiplier * -39))
+                    .turnTo(Math.PI/2 + 0.00001)
                     .waitSeconds(1)
-                    .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(1.7, new LeavePixelOnGround())
+                    .afterTime(0, new RaiseArm())
+                    .afterTime(0, new PlacePixelOnGround())
+                    .afterTime(.5, new VomitPixelOnGround())
                     .waitSeconds(2)
                     .lineToY(multiplier * -48)
-                    .turn(multiplier * Math.PI/2);
+                    .turnTo(0.00001);
         } else {
             actionBuilder = actionBuilder
-                    .turn(multiplier * Math.PI / 2)
-                    .lineToX(34)
-                    .afterTime(0, new VomitPixelOnGround())
-                    .afterTime(1.7, new LeavePixelOnGround())
+                    .turnTo(0.00001)
+                    .lineToX(39)
+                    .afterTime(0, new RaiseArm())
+                    .afterTime(.5, new PlacePixelOnGround())
+                    .afterTime(1.7, new VomitPixelOnGround())
                     .waitSeconds(2);
         }
 
@@ -380,9 +526,10 @@ public class NewKongBlueBackdrop extends LinearOpMode
             pos2 = -12;
         }
         actionBuilder = actionBuilder
+                .turnTo(Math.PI + 0.00001)
                 .lineToX(47)
-                .strafeToConstantHeading(new Vector2d(44, multiplier * pos))
-                .afterTime(0, new RaiseArm())
+                .strafeToConstantHeading(new Vector2d(48, multiplier * pos))
+                .afterTime(0, new LowerArm())
                 .afterTime(1, new PlacePixelOnBackDrop())
                 .afterTime(5, new GrabPixel())
                 .waitSeconds(5)
@@ -390,31 +537,12 @@ public class NewKongBlueBackdrop extends LinearOpMode
                 .turn(multiplier * 0.00001)
                 .lineToX(60);
 
+        actionBuilder = drive.actionBuilder(drive.pose)
+                        .afterTime(0, new RaiseArm())
+                        .afterTime(.5, new PlacePixelOnGround())
+                        .afterTime(1.7, new VomitPixelOnGround())
+                        .afterTime(4, new PlacePixelOnBackDrop())
+                .afterTime(5, new LowerArm());
         Actions.runBlocking(actionBuilder.build());
-    }
-
-    private DriveDirection getCorrectDirection(DriveDirection direction, boolean needInvert) {
-        if (!needInvert)
-            return direction;
-
-        DriveDirection invertedDirection = direction;
-        switch (direction) {
-            case LEFT:
-                invertedDirection = DriveDirection.RIGHT;
-                break;
-            case RIGHT:
-                invertedDirection = DriveDirection.LEFT;
-                break;
-            case FORWARD:
-                invertedDirection = DriveDirection.BACKWARD;
-                break;
-            case BACKWARD:
-                invertedDirection = DriveDirection.FORWARD;
-                break;
-            default:
-                break;
-        }
-
-        return invertedDirection;
     }
 }
