@@ -36,6 +36,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.LED;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.teamcode.constants.TeleopServoConstants;
 
@@ -98,6 +100,11 @@ public class NewKongTeleop extends LinearOpMode {
     private double[] ClawRPositions = TeleopServoConstants.ClawRPositions;
     private double[] FingerFPositions = TeleopServoConstants.FingerFPositions;
     private double[] FingerBPositions = TeleopServoConstants.FingerBPositions;
+
+    private DigitalChannel LDLED;
+    private DigitalChannel LULED;
+    private DigitalChannel RDLED;
+    private DigitalChannel RULED;
 
     private final int DELAY_BETWEEN_MOVES = 100;
 
@@ -292,6 +299,15 @@ public class NewKongTeleop extends LinearOpMode {
         LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        LDLED = hardwareMap.get(DigitalChannel.class, "LDLED");
+        LULED = hardwareMap.get(DigitalChannel.class, "LULED");
+        RDLED = hardwareMap.get(DigitalChannel.class, "RDLED");
+        RULED = hardwareMap.get(DigitalChannel.class, "RULED");
+        LDLED.setMode(DigitalChannel.Mode.OUTPUT);
+        LULED.setMode(DigitalChannel.Mode.OUTPUT);
+        RDLED.setMode(DigitalChannel.Mode.OUTPUT);
+        RULED.setMode(DigitalChannel.Mode.OUTPUT);
+
 //        timer.schedule(new PutGrabberToCertainPosition(0), 0);
         new LowerArmToCertainServoPosition(0).run();
         new PutClawsToCertainPosition(0).run();
@@ -414,8 +430,11 @@ public class NewKongTeleop extends LinearOpMode {
                         timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                         fingerLocked = false;
                     }
-                } else if (circlePressed && !oldCirclePressed && !isArmMoving && fingerLocked) {
+                } else if (circlePressed && !oldCirclePressed && !isArmMoving) {
                     new setIsArmMoving(true).run();
+                    timer.schedule(new fLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new bLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
+                    fingerLocked = true;
                     timer.schedule(new SetSlideOverride(true), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new FixCadderMistake(1), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new FixCadderMistake(0), 1 * DELAY_BETWEEN_MOVES);
@@ -457,6 +476,43 @@ public class NewKongTeleop extends LinearOpMode {
                     timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
                     firstSquarePressed = false;
                     index = 0;
+                }
+            }
+
+            // Lights
+            if (index == 0) {
+                if (fingerLocked) {
+                    LDLED.setState(true);
+                    LULED.setState(true);
+                    RDLED.setState(true);
+                    RULED.setState(true);
+                } else {
+                    LDLED.setState(false);
+                    LULED.setState(false);
+                    RDLED.setState(false);
+                    RULED.setState(false);
+                }
+            } else if (index == 2) {
+                LDLED.setState(true);
+                LULED.setState(true);
+                RDLED.setState(true);
+                RULED.setState(true);
+            } else {
+                if (fingerLocked && !firstSquarePressed) {
+                    LDLED.setState(true);
+                    LULED.setState(true);
+                    RDLED.setState(true);
+                    RULED.setState(true);
+                } else if (fingerLocked && firstSquarePressed) {
+                    LDLED.setState(false);
+                    LULED.setState(true);
+                    RDLED.setState(false);
+                    RULED.setState(true);
+                } else {
+                    LDLED.setState(false);
+                    LULED.setState(false);
+                    RDLED.setState(false);
+                    RULED.setState(false);
                 }
             }
 

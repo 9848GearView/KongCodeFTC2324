@@ -30,12 +30,18 @@ public class RedTeamElementDeterminationPipeline extends OpenCvPipeline
     /*
      * The core values which define the location and size of the sample regions
      */
-    static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(0,80);
-    static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(160,80);
-    static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(560,80);
-    static final Point REGION1_BOTTOMRIGHT_ANCHOR_POINT = new Point(160,320);
-    static final Point REGION2_BOTTOMRIGHT_ANCHOR_POINT = new Point(480,160);
-    static final Point REGION3_BOTTOMRIGHT_ANCHOR_POINT = new Point(640,320);
+//    static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(0,80);
+//    static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(160,80);
+//    static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(560,80);
+//    static final Point REGION1_BOTTOMRIGHT_ANCHOR_POINT = new Point(160,320);
+//    static final Point REGION2_BOTTOMRIGHT_ANCHOR_POINT = new Point(480,160);
+//    static final Point REGION3_BOTTOMRIGHT_ANCHOR_POINT = new Point(640,320);
+    static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(640,400);
+    static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(480,400);
+    static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(80,400);
+    static final Point REGION1_BOTTOMRIGHT_ANCHOR_POINT = new Point(480,160);
+    static final Point REGION2_BOTTOMRIGHT_ANCHOR_POINT = new Point(160,320);
+    static final Point REGION3_BOTTOMRIGHT_ANCHOR_POINT = new Point(0,160);
 
     /*
      * Points which actually define the sample region rectangles, derived from above values
