@@ -269,6 +269,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
          * webcam counterpart, {@link WebcamExample} first.
          */
 
+
         telemetry.addData("Status", "sInitialized");
         telemetry.update();
 
