@@ -38,18 +38,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.constants.AutoServoConstants;
-import org.firstinspires.ftc.teamcode.constants.AutoServoConstants;
 import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.Timer;
@@ -205,10 +197,10 @@ public class NewKongBlueBackdrop extends LinearOpMode
 
         }
     }
-    class PutBoxToCertainPosition extends TimerTask {
+    class SetBoxToCertainPosition extends TimerTask {
         int i;
 
-        public PutBoxToCertainPosition(int i) {
+        public SetBoxToCertainPosition(int i) {
             this.i = i;
         }
 
@@ -248,13 +240,11 @@ public class NewKongBlueBackdrop extends LinearOpMode
         public void run() { slideOverride = val; }
     }
 
-    class MoveArm extends TimerTask {
-        int t;
-        int p;
+    class SetPowerOfSlides extends TimerTask {
+        double p;
 
-        public MoveArm(int p, int t) {
+        public SetPowerOfSlides(double p) {
             this.p = p;
-            this.t = t;
         }
 
         public void run() {
@@ -264,12 +254,6 @@ public class NewKongBlueBackdrop extends LinearOpMode
                     LeftSlide.setPower(p); RightSlide.setPower(p);
                 }
             }, 0);
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    LeftSlide.setPower(0); RightSlide.setPower(0);
-                }
-            }, t);
         }
 
     }
@@ -343,9 +327,9 @@ public class NewKongBlueBackdrop extends LinearOpMode
 //        timer.schedule(new PutGrabberToCertainPosition(0), 0);
         new LowerArmToCertainServoPosition(0).run();
         new PutClawsToCertainPosition(0).run();
-        new fLockPixelToggle(0).run();
-        new bLockPixelToggle(0).run();
-        new PutBoxToCertainPosition(0).run();
+        new fLockPixelToggle(1).run();
+        new bLockPixelToggle(1).run();
+        new SetBoxToCertainPosition(0).run();
         PlaneLauncher.setPosition(.57);
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -375,7 +359,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
             }
         });
 
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, 63, -Math.PI / 2));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, 64, -Math.PI / 2));
 
         waitForStart();
 
@@ -395,15 +379,15 @@ public class NewKongBlueBackdrop extends LinearOpMode
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
             timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new SetBoxToCertainPosition(0), 1000);
             return false;
         }
     }
 
-    public class LeavePixelOnGround implements Action {
+    public class VomitPixelOnBackdrop implements Action {
         @Override
-        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            telemetry.addData("left", "pixel");
-            telemetry.update();
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
             return false;
         }
     }
@@ -413,8 +397,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             timer.schedule(new LowerArmToCertainServoPosition(1), 0 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(2), 1 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new PutBoxToCertainPosition(1), 0);
-            timer.schedule(new bLockPixelToggle(0), 2 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new SetBoxToCertainPosition(1), 1 * DELAY_BETWEEN_MOVES);
             return false;
         }
     }
@@ -424,8 +407,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             timer.schedule(new LowerArmToCertainServoPosition(1), 0 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(3), 1 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new PutBoxToCertainPosition(2), 0);
-            timer.schedule(new fLockPixelToggle(0), 2 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new SetBoxToCertainPosition(2), 0);
             return false;
         }
     }
@@ -434,47 +416,52 @@ public class NewKongBlueBackdrop extends LinearOpMode
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             timer.schedule(new LowerArmToCertainServoPosition(0), 0 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new FixCadderMistake(-1), 3 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new FixCadderMistake(0), 4 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new PutBoxToCertainPosition(0), 5 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new SetBoxToCertainPosition(0), 0 * DELAY_BETWEEN_MOVES);
             return false;
         }
     }
 
     public class RaiseArm implements Action {
+        double p;
+        int t;
+        public RaiseArm(double p, int t) {
+            this.p = p;
+            this.t = t;
+        }
+        public RaiseArm() {
+            this.p = 0.5;
+            this.t = 500;
+        }
+
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            LeftSlide.setPower(0.43);
-            RightSlide.setPower(0.43);
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    LeftSlide.setPower(0); RightSlide.setPower(0);
-                }
-            }, 400);
-            timer.schedule(new PutBoxToCertainPosition(0), 0);
-
+            timer.schedule(new SetPowerOfSlides(p), 0);
+            timer.schedule(new SetPowerOfSlides(0), t);
             return false;
         }
     }
 
     public class LowerArm implements Action {
+        double p;
+        int t;
+        public LowerArm(double p, int t) {
+            this.p = p;
+            this.t = t;
+        }
+        public LowerArm() {
+            this.p = -0.5;
+            this.t = 500;
+        }
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            LeftSlide.setPower(-0.43);
-            RightSlide.setPower(-0.43);
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    LeftSlide.setPower(0); RightSlide.setPower(0);
-                }
-            }, 400);
+            timer.schedule(new SetPowerOfSlides(p), 0);
+            timer.schedule(new SetPowerOfSlides(0), t);
             return false;
         }
     }
 
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-        smp = SpikeMarkPosition.UNO;
+        smp = SpikeMarkPosition.TRES;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
         double multiplier = 1;
         if (needInvert) {
@@ -483,66 +470,73 @@ public class NewKongBlueBackdrop extends LinearOpMode
 
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
                 .strafeTo(new Vector2d(19, multiplier * -63))
-                .turn(multiplier * 0.00001)
-                .lineToY(multiplier * -39);
+                .turn(multiplier * 0.00001);
 
         if (smp == SpikeMarkPosition.TRES) {
             actionBuilder = actionBuilder
+                    .lineToY(multiplier * -31)
                     .turnTo(0.00001)
-                    .lineToX(15)
-                    .afterTime(0, new RaiseArm())
+                    .lineToX(13)
+                    .afterTime(0, new RaiseArm(0.5, 300))
                     .afterTime(.5, new PlacePixelOnGround())
-                    .afterTime(1.7, new VomitPixelOnGround())
-                    .waitSeconds(2);
+                    .afterTime(1.5, new VomitPixelOnGround())
+                    .waitSeconds(3);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
-                    .strafeTo(new Vector2d(15, multiplier * -39))
-                    .turnTo(Math.PI/2 + 0.00001)
+                    .lineToY(multiplier * -33)
+                    .strafeTo(new Vector2d(15, multiplier * -36))
+                    .turnTo(Math.PI / 2 + 0.02)
                     .waitSeconds(1)
-                    .afterTime(0, new RaiseArm())
-                    .afterTime(0, new PlacePixelOnGround())
-                    .afterTime(.5, new VomitPixelOnGround())
-                    .waitSeconds(2)
-                    .lineToY(multiplier * -48)
-                    .turnTo(0.00001);
+                    .afterTime(0, new RaiseArm(0.5, 300))
+                    .afterTime(.5, new PlacePixelOnGround())
+                    .afterTime(1.5, new VomitPixelOnGround())
+                    .waitSeconds(3)
+                    .strafeTo(new Vector2d(24, multiplier * -36));
         } else {
             actionBuilder = actionBuilder
+                    .lineToY(multiplier * -30)
                     .turnTo(0.00001)
-                    .lineToX(39)
-                    .afterTime(0, new RaiseArm())
+                    .lineToX(36)
+                    .afterTime(0, new RaiseArm(0.5, 300))
                     .afterTime(.5, new PlacePixelOnGround())
-                    .afterTime(1.7, new VomitPixelOnGround())
-                    .waitSeconds(2);
+                    .afterTime(1.5, new VomitPixelOnGround())
+                    .waitSeconds(3);
         }
 
-        double pos = -33;
-        double pos2 = -12;
+        actionBuilder = actionBuilder.lineToX(42)
+                .afterTime(0, new PlacePixelOnBackDrop());
+
+        double pos = -32;
+        double pos2 = -8;
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -28;
+            pos = -27;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -39;
-            pos2 = -12;
+            pos = -44;
+            pos2 = -10;
         }
         actionBuilder = actionBuilder
-                .turnTo(Math.PI + 0.00001)
+                .turnTo(Math.PI + 0.04)
                 .lineToX(47)
-                .strafeToConstantHeading(new Vector2d(48, multiplier * pos))
                 .afterTime(0, new LowerArm())
-                .afterTime(1, new PlacePixelOnBackDrop())
-                .afterTime(5, new GrabPixel())
-                .waitSeconds(5)
+                .waitSeconds(1)
+                .afterTime(0, new LowerArm())
+                .strafeToConstantHeading(new Vector2d(55, multiplier * pos))
+                .afterTime(0, new VomitPixelOnBackdrop())
+                .afterTime(1, new RaiseArm())
+                .afterTime(1.1, new GrabPixel())
+                .waitSeconds(2)
                 .strafeToConstantHeading(new Vector2d(46, multiplier * pos2))
                 .turn(multiplier * 0.00001)
-                .lineToX(60);
+                .lineToX(64);
 
-        actionBuilder = drive.actionBuilder(drive.pose)
-                        .afterTime(0, new RaiseArm())
-                        .afterTime(.5, new PlacePixelOnGround())
-                        .afterTime(1.7, new VomitPixelOnGround())
-                        .afterTime(4, new PlacePixelOnBackDrop())
-                .afterTime(5, new LowerArm());
+//        actionBuilder = drive.actionBuilder(drive.pose)
+//                        .afterTime(0, new RaiseArm())
+//                        .afterTime(.5, new PlacePixelOnGround())
+//                        .afterTime(1.7, new VomitPixelOnGround())
+//                        .afterTime(4, new PlacePixelOnBackDrop())
+//                        .afterTime(5, new LowerArm());
         Actions.runBlocking(actionBuilder.build());
     }
 }
