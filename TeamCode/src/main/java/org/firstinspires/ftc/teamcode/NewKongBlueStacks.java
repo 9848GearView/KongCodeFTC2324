@@ -461,7 +461,7 @@ public class NewKongBlueStacks extends LinearOpMode
 
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
 //        sleep(5000);
-        smp = SpikeMarkPosition.TRES;
+        smp = SpikeMarkPosition.UNO;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
         double multiplier = 1;
         if (needInvert) {
@@ -520,11 +520,12 @@ public class NewKongBlueStacks extends LinearOpMode
             pos2 = -8;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -28;
+            pos = -30;
             pos2 = -8;
         }
         actionBuilder = actionBuilder
                 .strafeToConstantHeading(new Vector2d(59, multiplier * pos))
+                .afterTime(1, new LowerArm(-0.5, 100))
                 .afterTime(2, new VomitPixelOnBackdrop())
                 .afterTime(3.2, new RaiseArm())
                 .afterTime(3.3, new GrabPixel())
