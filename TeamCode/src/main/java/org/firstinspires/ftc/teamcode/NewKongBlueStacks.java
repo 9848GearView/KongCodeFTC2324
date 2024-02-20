@@ -366,7 +366,7 @@ public class NewKongBlueStacks extends LinearOpMode
         {
 //            telemetry.addData("Analysis", pipeline.getAnalysis());
 //            telemetry.update();
-            doActions(drive, sideOfFieldToStartOn, SpikeMarkPosition.UNO);//pipeline.getAnalysis());
+            doActions(drive, sideOfFieldToStartOn, pipeline.getAnalysis());
 
             // Don't burn CPU cycles busy-looping in this sample
             sleep(15000);
@@ -460,8 +460,8 @@ public class NewKongBlueStacks extends LinearOpMode
     }
 
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-//        sleep(5000);
-        smp = SpikeMarkPosition.UNO;
+        sleep(5000);
+//        smp = SpikeMarkPosition.UNO;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
         double multiplier = 1;
         if (needInvert) {

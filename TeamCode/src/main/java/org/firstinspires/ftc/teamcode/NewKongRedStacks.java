@@ -366,7 +366,7 @@ public class NewKongRedStacks extends LinearOpMode
         {
 //            telemetry.addData("Analysis", pipeline.getAnalysis());
 //            telemetry.update();
-            doActions(drive, sideOfFieldToStartOn, SpikeMarkPosition.UNO);//pipeline.getAnalysis());
+            doActions(drive, sideOfFieldToStartOn, pipeline.getAnalysis());
 
             // Don't burn CPU cycles busy-looping in this sample
             sleep(15000);
@@ -460,8 +460,8 @@ public class NewKongRedStacks extends LinearOpMode
     }
 
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-//        sleep(5000);
-        smp = SpikeMarkPosition.TRES;
+        sleep(5000);
+//        smp = SpikeMarkPosition.TRES;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
         double multiplier = 1;
         if (needInvert) {
@@ -480,7 +480,7 @@ public class NewKongRedStacks extends LinearOpMode
                     .afterTime(1.5, new VomitPixelOnGround())
                     .waitSeconds(3)
                     .afterTime(0, new GrabPixel())
-                    .strafeTo(new Vector2d(-37, -10.5))
+                    .strafeTo(new Vector2d(-39, -10.5))
                     .turnTo(Math.PI);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
@@ -501,7 +501,7 @@ public class NewKongRedStacks extends LinearOpMode
                     .afterTime(1.5, new VomitPixelOnGround())
                     .waitSeconds(3)
                     .afterTime(0, new GrabPixel())
-                    .strafeTo(new Vector2d(-37, -10.5))
+                    .strafeTo(new Vector2d(-39, -10.5))
                     .turnTo(Math.PI /*+ 0.0005*/);
         }
 
@@ -510,17 +510,17 @@ public class NewKongRedStacks extends LinearOpMode
                 .turnTo(Math.PI)
                 .afterTime(0, new PlacePixelOnBackDrop());
 
-        double pos = -32;
+        double pos = -33;
         double pos2 = -8;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -24;
+            pos = -28;
             pos2 = -8;
         }
         if (smp == SpikeMarkPosition.DOS) {
             pos2 = -58;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -38;
+            pos = -40;
             pos2 = -58;
         }
         actionBuilder = actionBuilder

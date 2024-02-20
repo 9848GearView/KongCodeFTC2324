@@ -368,7 +368,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
         {
 //            telemetry.addData("Analysis", pipeline.getAnalysis());
 //            telemetry.update();
-            doActions(drive, sideOfFieldToStartOn, SpikeMarkPosition.UNO);//pipeline.getAnalysis());
+            doActions(drive, sideOfFieldToStartOn, pipeline.getAnalysis());
 
             // Don't burn CPU cycles busy-looping in this sample
             sleep(15000);
@@ -462,7 +462,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
     }
 
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-        smp = SpikeMarkPosition.TRES;
+//        smp = SpikeMarkPosition.TRES;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
         double multiplier = 1;
         if (needInvert) {

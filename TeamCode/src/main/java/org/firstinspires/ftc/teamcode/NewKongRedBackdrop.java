@@ -368,7 +368,7 @@ public class NewKongRedBackdrop extends LinearOpMode
         {
 //            telemetry.addData("Analysis", pipeline.getAnalysis());
 //            telemetry.update();
-            doActions(drive, sideOfFieldToStartOn, SpikeMarkPosition.UNO);//pipeline.getAnalysis());
+            doActions(drive, sideOfFieldToStartOn, pipeline.getAnalysis());
 
             // Don't burn CPU cycles busy-looping in this sample
             sleep(15000);
@@ -462,7 +462,7 @@ public class NewKongRedBackdrop extends LinearOpMode
     }
 
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-        smp = SpikeMarkPosition.TRES;
+//        smp = SpikeMarkPosition.TRES;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
         double multiplier = 1;
         if (needInvert) {
@@ -475,7 +475,7 @@ public class NewKongRedBackdrop extends LinearOpMode
 
         if (smp == SpikeMarkPosition.UNO) {
             actionBuilder = actionBuilder
-                    .lineToY(multiplier * -34)
+                    .lineToY(multiplier * -33.5)
                     .turnTo(0.00001)
                     .lineToX(13)
                     .afterTime(0, new RaiseArm(0.5, 400))
@@ -507,10 +507,10 @@ public class NewKongRedBackdrop extends LinearOpMode
         actionBuilder = actionBuilder.lineToX(42)
                 .afterTime(0, new PlacePixelOnBackDrop());
 
-        double pos = -34;
+        double pos = -32;
         double pos2 = -8;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -29;
+            pos = -27;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
