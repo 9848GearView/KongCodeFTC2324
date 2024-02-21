@@ -480,7 +480,7 @@ public class NewKongRedBackdrop extends LinearOpMode
                     .lineToX(13)
                     .afterTime(0, new RaiseArm(0.5, 400))
                     .afterTime(.5, new PlacePixelOnGround())
-                    .afterTime(1.5, new VomitPixelOnGround())
+                    .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
@@ -490,7 +490,7 @@ public class NewKongRedBackdrop extends LinearOpMode
                     .waitSeconds(1)
                     .afterTime(0, new RaiseArm(0.5, 400))
                     .afterTime(.5, new PlacePixelOnGround())
-                    .afterTime(1.5, new VomitPixelOnGround())
+                    .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3)
                     .strafeTo(new Vector2d(24, multiplier * -36));
         } else {
@@ -500,7 +500,7 @@ public class NewKongRedBackdrop extends LinearOpMode
                     .lineToX(35)
                     .afterTime(0, new RaiseArm(0.5, 400))
                     .afterTime(.5, new PlacePixelOnGround())
-                    .afterTime(1.5, new VomitPixelOnGround())
+                    .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3);
         }
 

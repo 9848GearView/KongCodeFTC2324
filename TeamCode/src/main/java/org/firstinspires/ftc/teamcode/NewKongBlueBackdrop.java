@@ -475,12 +475,12 @@ public class NewKongBlueBackdrop extends LinearOpMode
 
         if (smp == SpikeMarkPosition.TRES) {
             actionBuilder = actionBuilder
-                    .lineToY(multiplier * -31)
+                    .lineToY(multiplier * -33)
                     .turnTo(0.00001)
                     .lineToX(13)
-                    .afterTime(0, new RaiseArm(0.5, 300))
+                    .afterTime(0, new RaiseArm(0.5, 400))
                     .afterTime(.5, new PlacePixelOnGround())
-                    .afterTime(1.5, new VomitPixelOnGround())
+                    .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
@@ -488,19 +488,19 @@ public class NewKongBlueBackdrop extends LinearOpMode
                     .strafeTo(new Vector2d(15, multiplier * -36))
                     .turnTo(Math.PI / 2 + 0.02)
                     .waitSeconds(1)
-                    .afterTime(0, new RaiseArm(0.5, 300))
+                    .afterTime(0, new RaiseArm(0.5, 400))
                     .afterTime(.5, new PlacePixelOnGround())
-                    .afterTime(1.5, new VomitPixelOnGround())
+                    .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3)
                     .strafeTo(new Vector2d(24, multiplier * -36));
         } else {
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -30)
                     .turnTo(0.00001)
-                    .lineToX(36)
-                    .afterTime(0, new RaiseArm(0.5, 300))
+                    .lineToX(35)
+                    .afterTime(0, new RaiseArm(0.5, 400))
                     .afterTime(.5, new PlacePixelOnGround())
-                    .afterTime(1.5, new VomitPixelOnGround())
+                    .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3);
         }
 
