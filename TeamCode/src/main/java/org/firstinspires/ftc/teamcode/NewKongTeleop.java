@@ -35,8 +35,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
-import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.teamcode.constants.TeleopServoConstants;
@@ -101,10 +99,14 @@ public class NewKongTeleop extends LinearOpMode {
     private double[] FingerFPositions = TeleopServoConstants.FingerFPositions;
     private double[] FingerBPositions = TeleopServoConstants.FingerBPositions;
 
-    private DigitalChannel LDLED;
-    private DigitalChannel LULED;
-    private DigitalChannel RDLED;
-    private DigitalChannel RULED;
+    private DigitalChannel LDLEDG;
+    private DigitalChannel LULEDG;
+    private DigitalChannel RDLEDG;
+    private DigitalChannel RULEDG;
+    private DigitalChannel LDLEDR;
+    private DigitalChannel LULEDR;
+    private DigitalChannel RDLEDR;
+    private DigitalChannel RULEDR;
 
     private final int DELAY_BETWEEN_MOVES = 100;
 
@@ -299,14 +301,23 @@ public class NewKongTeleop extends LinearOpMode {
         LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        LDLED = hardwareMap.get(DigitalChannel.class, "LDLED");
-        LULED = hardwareMap.get(DigitalChannel.class, "LULED");
-        RDLED = hardwareMap.get(DigitalChannel.class, "RDLED");
-        RULED = hardwareMap.get(DigitalChannel.class, "RULED");
-        LDLED.setMode(DigitalChannel.Mode.OUTPUT);
-        LULED.setMode(DigitalChannel.Mode.OUTPUT);
-        RDLED.setMode(DigitalChannel.Mode.OUTPUT);
-        RULED.setMode(DigitalChannel.Mode.OUTPUT);
+        LDLEDG = hardwareMap.get(DigitalChannel.class, "LDLEDG");
+        LULEDG = hardwareMap.get(DigitalChannel.class, "LULEDG");
+        RDLEDG = hardwareMap.get(DigitalChannel.class, "RDLEDG");
+        RULEDG = hardwareMap.get(DigitalChannel.class, "RULEDG");
+        LDLEDG.setMode(DigitalChannel.Mode.OUTPUT);
+        LULEDG.setMode(DigitalChannel.Mode.OUTPUT);
+        RDLEDG.setMode(DigitalChannel.Mode.OUTPUT);
+        RULEDG.setMode(DigitalChannel.Mode.OUTPUT);
+
+        LDLEDR = hardwareMap.get(DigitalChannel.class, "LDLEDR");
+        LULEDR = hardwareMap.get(DigitalChannel.class, "LULEDR");
+        RDLEDR = hardwareMap.get(DigitalChannel.class, "RDLEDR");
+        RULEDR = hardwareMap.get(DigitalChannel.class, "RULEDR");
+        LDLEDR.setMode(DigitalChannel.Mode.OUTPUT);
+        LULEDR.setMode(DigitalChannel.Mode.OUTPUT);
+        RDLEDR.setMode(DigitalChannel.Mode.OUTPUT);
+        RULEDR.setMode(DigitalChannel.Mode.OUTPUT);
 
 //        timer.schedule(new PutGrabberToCertainPosition(0), 0);
         new LowerArmToCertainServoPosition(0).run();
@@ -482,37 +493,61 @@ public class NewKongTeleop extends LinearOpMode {
             // Lights
             if (index == 0) {
                 if (fingerLocked) {
-                    LDLED.setState(true);
-                    LULED.setState(true);
-                    RDLED.setState(true);
-                    RULED.setState(true);
+                    LDLEDG.setState(true);
+                    LULEDG.setState(true);
+                    RDLEDG.setState(true);
+                    RULEDG.setState(true);
+                    LDLEDR.setState(false);
+                    LULEDR.setState(false);
+                    RDLEDR.setState(false);
+                    RULEDR.setState(false);
                 } else {
-                    LDLED.setState(false);
-                    LULED.setState(false);
-                    RDLED.setState(false);
-                    RULED.setState(false);
+                    LDLEDG.setState(false);
+                    LULEDG.setState(false);
+                    RDLEDG.setState(false);
+                    RULEDG.setState(false);
+                    LDLEDR.setState(true);
+                    LULEDR.setState(true);
+                    RDLEDR.setState(true);
+                    RULEDR.setState(true);
                 }
             } else if (index == 2) {
-                LDLED.setState(true);
-                LULED.setState(true);
-                RDLED.setState(true);
-                RULED.setState(true);
+                LDLEDG.setState(true);
+                LULEDG.setState(true);
+                RDLEDG.setState(true);
+                RULEDG.setState(true);
+                LDLEDR.setState(false);
+                LULEDR.setState(false);
+                RDLEDR.setState(false);
+                RULEDR.setState(false);
             } else {
                 if (fingerLocked && !firstSquarePressed) {
-                    LDLED.setState(true);
-                    LULED.setState(true);
-                    RDLED.setState(true);
-                    RULED.setState(true);
+                    LDLEDG.setState(true);
+                    LULEDG.setState(true);
+                    RDLEDG.setState(true);
+                    RULEDG.setState(true);
+                    LDLEDR.setState(false);
+                    LULEDR.setState(false);
+                    RDLEDR.setState(false);
+                    RULEDR.setState(false);
                 } else if (fingerLocked && firstSquarePressed) {
-                    LDLED.setState(false);
-                    LULED.setState(true);
-                    RDLED.setState(false);
-                    RULED.setState(true);
+                    LDLEDG.setState(false);
+                    LULEDG.setState(true);
+                    RDLEDG.setState(false);
+                    RULEDG.setState(true);
+                    LDLEDR.setState(true);
+                    LULEDR.setState(false);
+                    RDLEDR.setState(true);
+                    RULEDR.setState(false);
                 } else {
-                    LDLED.setState(false);
-                    LULED.setState(false);
-                    RDLED.setState(false);
-                    RULED.setState(false);
+                    LDLEDG.setState(false);
+                    LULEDG.setState(false);
+                    RDLEDG.setState(false);
+                    RULEDG.setState(false);
+                    LDLEDR.setState(true);
+                    LULEDR.setState(true);
+                    RDLEDR.setState(true);
+                    RULEDR.setState(true);
                 }
             }
 

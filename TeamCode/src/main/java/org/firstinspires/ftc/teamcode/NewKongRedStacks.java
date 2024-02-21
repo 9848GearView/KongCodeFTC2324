@@ -473,14 +473,16 @@ public class NewKongRedStacks extends LinearOpMode
 
         if (smp == SpikeMarkPosition.TRES) {
             actionBuilder = actionBuilder
-                    .strafeTo(new Vector2d(-38, -33))
-                    .turnTo(Math.PI + 0.00001)
+                    .strafeTo(new Vector2d(-45, -33))
                     .afterTime(0, new RaiseArm(0.5, 400))
                     .afterTime(.5, new PlacePixelOnGround())
+                    .turnTo(Math.PI + 0.00001)
+                    .lineToX(-37)
                     .afterTime(1.5, new VomitPixelOnGround())
                     .waitSeconds(3)
+                    .lineToX(-45)
+                    .strafeTo(new Vector2d(-45, -10.5))
                     .afterTime(0, new GrabPixel())
-                    .strafeTo(new Vector2d(-39, -10.5))
                     .turnTo(Math.PI);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
