@@ -473,14 +473,16 @@ public class NewKongBlueStacks extends LinearOpMode
 
         if (smp == SpikeMarkPosition.UNO) {
             actionBuilder = actionBuilder
-                    .strafeTo(new Vector2d(-36, multiplier * -33))
-                    .turnTo(Math.PI + 0.00001)
+                    .strafeTo(new Vector2d(-45, multiplier * -33))
                     .afterTime(0, new RaiseArm(0.5, 400))
                     .afterTime(.5, new PlacePixelOnGround())
+                    .turnTo(Math.PI + 0.00001)
+                    .lineToX(-36)
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3)
+                    .lineToX(-45)
+                    .strafeTo(new Vector2d(-45, multiplier * -10.5))
                     .afterTime(0, new GrabPixel())
-                    .strafeTo(new Vector2d(-37, multiplier * -10.5))
                     .turnTo(Math.PI);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
@@ -501,7 +503,7 @@ public class NewKongBlueStacks extends LinearOpMode
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3)
                     .afterTime(0, new GrabPixel())
-                    .strafeTo(new Vector2d(-37, multiplier * -12))
+                    .strafeTo(new Vector2d(-40, multiplier * -12))
                     .turnTo(Math.PI + 0.02);
         }
 
@@ -510,7 +512,7 @@ public class NewKongBlueStacks extends LinearOpMode
                 .turnTo(Math.PI)
                 .afterTime(0, new PlacePixelOnBackDrop());
 
-        double pos = -37;
+        double pos = -34;
         double pos2 = -8;
         if (smp == SpikeMarkPosition.UNO) {
             pos = -40;
@@ -521,7 +523,7 @@ public class NewKongBlueStacks extends LinearOpMode
         }
         if (smp == SpikeMarkPosition.TRES) {
             pos = -30;
-            pos2 = -8;
+            pos2 = -10;
         }
         actionBuilder = actionBuilder
                 .strafeToConstantHeading(new Vector2d(59, multiplier * pos))
