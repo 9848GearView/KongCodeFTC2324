@@ -508,6 +508,7 @@ public class NewKongBlueStacks extends LinearOpMode
         }
 
         actionBuilder = actionBuilder
+                .afterTime(0, new LowerArm())
                 .lineToX(47)
                 .turnTo(Math.PI)
                 .afterTime(0, new PlacePixelOnBackDrop());
@@ -527,7 +528,7 @@ public class NewKongBlueStacks extends LinearOpMode
         }
         actionBuilder = actionBuilder
                 .strafeToConstantHeading(new Vector2d(59, multiplier * pos))
-                .afterTime(1, new LowerArm(-0.5, 100))
+                .afterTime(0, new RaiseArm(0.5, 350))
                 .afterTime(2, new VomitPixelOnBackdrop())
                 .afterTime(3.2, new RaiseArm())
                 .afterTime(3.3, new GrabPixel())
