@@ -474,7 +474,7 @@ public class NewKongRedStacks extends LinearOpMode
         if (smp == SpikeMarkPosition.TRES) {
             actionBuilder = actionBuilder
                     .strafeTo(new Vector2d(-45, -33))
-                    .afterTime(0, new RaiseArm(0.5, 400))
+                    .afterTime(0, new RaiseArm(0.5, 350))
                     .afterTime(.5, new PlacePixelOnGround())
                     .turnTo(Math.PI + 0.00001)
                     .lineToX(-37)
@@ -487,7 +487,7 @@ public class NewKongRedStacks extends LinearOpMode
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .lineToY(-12)
-                    .afterTime(0, new RaiseArm(0.5, 400))
+                    .afterTime(0, new RaiseArm(0.5, 350))
                     .afterTime(.5, new PlacePixelOnGround())
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3)
@@ -498,7 +498,7 @@ public class NewKongRedStacks extends LinearOpMode
             actionBuilder = actionBuilder
                     .lineToY(-34)
                     .turnTo(0.00001)
-                    .afterTime(0, new RaiseArm(0.5, 400))
+                    .afterTime(0, new RaiseArm(0.5, 350))
                     .afterTime(.5, new PlacePixelOnGround())
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3)
@@ -527,7 +527,7 @@ public class NewKongRedStacks extends LinearOpMode
             pos2 = -58;
         }
         actionBuilder = actionBuilder
-                .strafeToConstantHeading(new Vector2d(54.5, multiplier * pos))
+                .strafeToConstantHeading(new Vector2d(56, multiplier * pos))
                 .afterTime(0, new RaiseArm(0.5, 350))
                 .afterTime(2, new VomitPixelOnBackdrop())
                 .afterTime(3.2, new RaiseArm())

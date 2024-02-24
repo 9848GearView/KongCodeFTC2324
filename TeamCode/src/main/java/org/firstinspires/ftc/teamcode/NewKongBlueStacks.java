@@ -474,7 +474,7 @@ public class NewKongBlueStacks extends LinearOpMode
         if (smp == SpikeMarkPosition.UNO) {
             actionBuilder = actionBuilder
                     .strafeTo(new Vector2d(-45, multiplier * -33))
-                    .afterTime(0, new RaiseArm(0.5, 400))
+                    .afterTime(0, new RaiseArm(0.5, 350))
                     .afterTime(.5, new PlacePixelOnGround())
                     .turnTo(Math.PI + 0.00001)
                     .lineToX(-36)
@@ -487,7 +487,7 @@ public class NewKongBlueStacks extends LinearOpMode
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -12)
-                    .afterTime(0, new RaiseArm(0.5, 400))
+                    .afterTime(0, new RaiseArm(0.5, 350))
                     .afterTime(.5, new PlacePixelOnGround())
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3)
@@ -498,7 +498,7 @@ public class NewKongBlueStacks extends LinearOpMode
             actionBuilder = actionBuilder
                     .strafeTo(new Vector2d(-35, multiplier * -33))
                     .turnTo(0.00001)
-                    .afterTime(0, new RaiseArm(0.5, 400))
+                    .afterTime(0, new RaiseArm(0.5, 350))
                     .afterTime(.5, new PlacePixelOnGround())
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3)
@@ -516,7 +516,7 @@ public class NewKongBlueStacks extends LinearOpMode
         double pos = -34;
         double pos2 = -8;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -40;
+            pos = -42;
             pos2 = -58;
         }
         if (smp == SpikeMarkPosition.DOS) {
@@ -527,13 +527,13 @@ public class NewKongBlueStacks extends LinearOpMode
             pos2 = -10;
         }
         actionBuilder = actionBuilder
-                .strafeToConstantHeading(new Vector2d(59, multiplier * pos))
+                .strafeToConstantHeading(new Vector2d(57.5, multiplier * pos))
                 .afterTime(0, new RaiseArm(0.5, 350))
                 .afterTime(2, new VomitPixelOnBackdrop())
                 .afterTime(3.2, new RaiseArm())
                 .afterTime(3.3, new GrabPixel())
                 .waitSeconds(3)
-                .strafeToConstantHeading(new Vector2d(42, multiplier * pos2))
+                .strafeToConstantHeading(new Vector2d(42, multiplier * -9))
                 .turn(multiplier * 0.00001)
                 .lineToX(60);
 

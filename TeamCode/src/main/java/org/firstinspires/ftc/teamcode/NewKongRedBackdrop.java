@@ -477,8 +477,8 @@ public class NewKongRedBackdrop extends LinearOpMode
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -33.5)
                     .turnTo(0.00001)
-                    .lineToX(13)
-                    .afterTime(0, new RaiseArm(0.5, 400))
+                    .lineToX(12)
+                    .afterTime(0, new RaiseArm(0.5, 350))
                     .afterTime(.5, new PlacePixelOnGround())
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3);
@@ -488,7 +488,7 @@ public class NewKongRedBackdrop extends LinearOpMode
                     .strafeTo(new Vector2d(14, multiplier * -36))
                     .turnTo(-Math.PI / 2)
                     .waitSeconds(1)
-                    .afterTime(0, new RaiseArm(0.5, 400))
+                    .afterTime(0, new RaiseArm(0.5, 350))
                     .afterTime(.5, new PlacePixelOnGround())
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3)
@@ -498,7 +498,7 @@ public class NewKongRedBackdrop extends LinearOpMode
                     .lineToY(multiplier * -30)
                     .turnTo(0.00001)
                     .lineToX(35)
-                    .afterTime(0, new RaiseArm(0.5, 400))
+                    .afterTime(0, new RaiseArm(0.5, 350))
                     .afterTime(.5, new PlacePixelOnGround())
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3);
@@ -510,7 +510,7 @@ public class NewKongRedBackdrop extends LinearOpMode
         double pos = -32;
         double pos2 = -8;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -27;
+            pos = -25;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
@@ -523,7 +523,7 @@ public class NewKongRedBackdrop extends LinearOpMode
                 .afterTime(0, new LowerArm())
                 .waitSeconds(1)
                 .afterTime(0, new LowerArm())
-                .strafeToConstantHeading(new Vector2d(54.5, multiplier * pos))
+                .strafeToConstantHeading(new Vector2d(56, multiplier * pos))
                 .afterTime(1, new VomitPixelOnBackdrop())
                 .afterTime(2.2, new RaiseArm())
                 .afterTime(2.3, new GrabPixel())
