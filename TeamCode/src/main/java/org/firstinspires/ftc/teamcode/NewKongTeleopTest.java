@@ -57,8 +57,8 @@ import java.util.TimerTask;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="NewKongTeleop", group="Robot")
-public class NewKongTeleop extends LinearOpMode {
+@TeleOp(name="NewKongTeleopTest", group="Robot")
+public class NewKongTeleopTest extends LinearOpMode {
     public static boolean isArmMoving = false;
     public static boolean slideOverride = false;
     public static boolean isRobotMoving = false;
@@ -407,10 +407,10 @@ public class NewKongTeleop extends LinearOpMode {
                 RightSlide.setPower(-gamepad2.left_stick_y);
             }
 
-            if (gamepad2.left_bumper && runtime.seconds() > 90) {
+            if (gamepad2.left_bumper) {
                 PlaneLauncher.setPosition(0.56);
             }
-            if (gamepad2.left_trigger > 0 && runtime.seconds() > 90) {
+            if (gamepad2.left_trigger > 0) {
                 PlaneLauncher.setPosition(1);
             }
 

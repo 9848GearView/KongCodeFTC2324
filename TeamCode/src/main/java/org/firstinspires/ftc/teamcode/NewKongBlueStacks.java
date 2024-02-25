@@ -486,7 +486,8 @@ public class NewKongBlueStacks extends LinearOpMode
                     .turnTo(Math.PI);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
-                    .lineToY(multiplier * -12)
+                    .strafeTo(new Vector2d(-48, multiplier * -12))
+                    .strafeTo(new Vector2d(-36, multiplier * -12))
                     .afterTime(0, new RaiseArm(0.5, 350))
                     .afterTime(.5, new PlacePixelOnGround())
                     .afterTime(2, new VomitPixelOnGround())

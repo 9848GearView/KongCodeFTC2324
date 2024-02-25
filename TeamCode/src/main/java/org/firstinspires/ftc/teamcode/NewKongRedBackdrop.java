@@ -517,6 +517,7 @@ public class NewKongRedBackdrop extends LinearOpMode
             pos = -42;
             pos2 = -10;
         }
+        pos2 = -61;
         actionBuilder = actionBuilder
                 .turnTo(Math.PI - 0.04)
                 .lineToX(47)
