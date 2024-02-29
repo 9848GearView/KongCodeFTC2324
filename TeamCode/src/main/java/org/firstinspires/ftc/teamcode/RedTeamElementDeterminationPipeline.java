@@ -217,7 +217,7 @@ public class RedTeamElementDeterminationPipeline extends OpenCvPipeline
                     REGION1_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
                     REGION1_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle
                     GREEN, // The color the rectangle is drawn in
-                    -1); // Negative thickness means solid fill
+                    2); // Negative thickness means solid fill
         }
         else if(max == avg2) // Was it from region 2?
         {
@@ -232,7 +232,7 @@ public class RedTeamElementDeterminationPipeline extends OpenCvPipeline
                     REGION2_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
                     REGION2_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle
                     GREEN, // The color the rectangle is drawn in
-                    -1); // Negative thickness means solid fill
+                    2); // Negative thickness means solid fill
         }
         else if(max == avg3) // Was it from region 3?
         {
@@ -247,7 +247,7 @@ public class RedTeamElementDeterminationPipeline extends OpenCvPipeline
                     REGION3_TOPLEFT_ANCHOR_POINT, // First point which defines the rectangle
                     REGION3_BOTTOMRIGHT_ANCHOR_POINT, // Second point which defines the rectangle,
                     GREEN, // The color the rectangle is drawn in
-                    -1); // Negative thickness means solid fill
+                    2); // Negative thickness means solid fill
         }
 
         /*

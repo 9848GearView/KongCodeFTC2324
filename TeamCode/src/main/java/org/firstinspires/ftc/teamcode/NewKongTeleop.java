@@ -408,10 +408,10 @@ public class NewKongTeleop extends LinearOpMode {
             }
 
             if (gamepad2.left_bumper && runtime.seconds() > 90) {
-                PlaneLauncher.setPosition(0.56);
+                PlaneLauncher.setPosition(0.56); // TODO: new servo , new positions
             }
             if (gamepad2.left_trigger > 0 && runtime.seconds() > 90) {
-                PlaneLauncher.setPosition(1);
+                PlaneLauncher.setPosition(1); // TODO: new servo , new positions
             }
 
             boolean circlePressed = gamepad2.circle;
@@ -483,7 +483,7 @@ public class NewKongTeleop extends LinearOpMode {
                     new setIsArmMoving(true).run();
                     timer.schedule(new LowerArmToCertainServoPosition(1), 0);
                     timer.schedule(new LowerArmToCertainServoPosition(0), 1 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new PutBoxToCertainPosition(0), 2 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new PutBoxToCertainPosition(0), 2 * DELAY_BETWEEN_MOVES); // TODO: change delay for new intake
                     timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
                     firstSquarePressed = false;
                     index = 0;

@@ -31,13 +31,14 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
-import org.firstinspires.ftc.teamcode.constants.TeleopServoConstants;
+import org.firstinspires.ftc.teamcode.constants.TestServoConstants;
 
 import java.lang.Math;
 import java.util.Timer;
@@ -65,6 +66,8 @@ public class NewKongTeleopTest extends LinearOpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private Timer timer = new Timer();
+    private ColorSensor frontColorSensor;
+    private ColorSensor backColorSensor;
     private DcMotor FLMotor = null;
     private DcMotor FRMotor = null;
     private DcMotor BLMotor = null;
@@ -90,14 +93,14 @@ public class NewKongTeleopTest extends LinearOpMode {
     private boolean firstSquarePressed = false;
 
     private boolean fingerLocked = false;
-    private int index = 0;
-    private double[] LEServoPositions = TeleopServoConstants.LEServoPositions;
-    private double[] REServoPositions = TeleopServoConstants.REServoPositions;
-    private double[] ClawLPositions = TeleopServoConstants.ClawLPositions;
-    private double[] WServoPositions = TeleopServoConstants.WServoPositions;
-    private double[] ClawRPositions = TeleopServoConstants.ClawRPositions;
-    private double[] FingerFPositions = TeleopServoConstants.FingerFPositions;
-    private double[] FingerBPositions = TeleopServoConstants.FingerBPositions;
+    private int index = 0; // 0 is ready to intake, 2 is intermediate, 3 is ready to place
+    private double[] LEServoPositions = TestServoConstants.LEServoPositions;
+    private double[] REServoPositions = TestServoConstants.REServoPositions;
+    private double[] ClawLPositions = TestServoConstants.ClawLPositions;
+    private double[] WServoPositions = TestServoConstants.WServoPositions;
+    private double[] ClawRPositions = TestServoConstants.ClawRPositions;
+    private double[] FingerFPositions = TestServoConstants.FingerFPositions;
+    private double[] FingerBPositions = TestServoConstants.FingerBPositions;
 
     private DigitalChannel LDLEDG;
     private DigitalChannel LULEDG;
@@ -219,17 +222,17 @@ public class NewKongTeleopTest extends LinearOpMode {
         }
 
         class FixCadderMistake extends TimerTask {
-            double i;
+            double p;
 
-            public FixCadderMistake(double i) {
-                this.i = i;
+            public FixCadderMistake(double p) {
+                this.p = p;
             }
 
             public void run() {
-                LeftSlide.setPower(i);
-                RightSlide.setPower(i);
+                LeftSlide.setPower(p);
+                RightSlide.setPower(p);
 
-                telemetry.addData("Power", i);
+                telemetry.addData("Power", p);
                 telemetry.update();
 
             }
@@ -318,6 +321,9 @@ public class NewKongTeleopTest extends LinearOpMode {
         LULEDR.setMode(DigitalChannel.Mode.OUTPUT);
         RDLEDR.setMode(DigitalChannel.Mode.OUTPUT);
         RULEDR.setMode(DigitalChannel.Mode.OUTPUT);
+
+        backColorSensor = hardwareMap.get(ColorSensor.class, "CSB");
+        frontColorSensor = hardwareMap.get(ColorSensor.class, "CSF");
 
 //        timer.schedule(new PutGrabberToCertainPosition(0), 0);
         new LowerArmToCertainServoPosition(0).run();
@@ -428,8 +434,8 @@ public class NewKongTeleopTest extends LinearOpMode {
 //            }
 
 
-            if (index == 0) {
-                if (crossPressed && !oldCrossPressed && !isArmMoving) {
+            if (index == 0) { //bucket down
+                if (crossPressed && !oldCrossPressed && !isArmMoving) { //grab
                     if (!fingerLocked) {
                         timer.schedule(new fLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
                         timer.schedule(new bLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
@@ -441,120 +447,94 @@ public class NewKongTeleopTest extends LinearOpMode {
                         timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                         fingerLocked = false;
                     }
-                } else if (circlePressed && !oldCirclePressed && !isArmMoving) {
+                } else if (circlePressed && !oldCirclePressed && !isArmMoving) { //bucket up
                     new setIsArmMoving(true).run();
                     timer.schedule(new fLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new bLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
                     fingerLocked = true;
                     timer.schedule(new SetSlideOverride(true), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new FixCadderMistake(1), 0 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new FixCadderMistake(0), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCadderMistake(0), 5 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new PutBoxToCertainPosition(1), 2 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new SetSlideOverride(false), 2 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
                     index = 2;
                 }
-            } else if (index == 2) {
-                if (circlePressed && !oldCirclePressed && !isArmMoving) {
+            } else if (index == 2) { //bucket up
+                if (circlePressed && !oldCirclePressed && !isArmMoving) { //go back down
                     new setIsArmMoving(true).run();
                     timer.schedule(new PutBoxToCertainPosition(0), 0);
                     timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
                     index = 0;
-                } else if (trianglePressed && !oldTrianglePressed && !isArmMoving) {
+                } else if (trianglePressed && !oldTrianglePressed && !isArmMoving) { //flip arm
                     new setIsArmMoving(true).run();
                     timer.schedule(new LowerArmToCertainServoPosition(1), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(2), 1 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setIsArmMoving(false), 1 * DELAY_BETWEEN_MOVES);
                     index = 3;
                 }
-            } else if (index == 3) {
-                if (squarePressed && !oldSquarePressed && !isArmMoving) {
+            } else if (index == 3) { //ready to place
+                if (squarePressed && !oldSquarePressed && !isArmMoving) { //release 1
                     if (!firstSquarePressed) {
                         timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                         timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
                         firstSquarePressed = true;
-                    } else {
+                    } else { //release back
                         timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                         timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
                         firstSquarePressed = false;
                         fingerLocked = false;
                     }
-                } else if (circlePressed && !oldCirclePressed && !isArmMoving) {
+                } else if (circlePressed && !oldCirclePressed && !isArmMoving) { //back to stage 1
                     new setIsArmMoving(true).run();
-                    timer.schedule(new LowerArmToCertainServoPosition(1), 0);
-                    timer.schedule(new LowerArmToCertainServoPosition(0), 1 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new PutBoxToCertainPosition(0), 2 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new PutBoxToCertainPosition(0), 0);
+                    timer.schedule(new LowerArmToCertainServoPosition(1), 2 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
                     firstSquarePressed = false;
                     index = 0;
                 }
             }
 
             // Lights
-            if (index == 0) {
-                if (fingerLocked) {
-                    LDLEDG.setState(true);
-                    LULEDG.setState(true);
-                    RDLEDG.setState(true);
-                    RULEDG.setState(true);
-                    LDLEDR.setState(false);
-                    LULEDR.setState(false);
-                    RDLEDR.setState(false);
-                    RULEDR.setState(false);
-                } else {
-                    LDLEDG.setState(false);
-                    LULEDG.setState(false);
-                    RDLEDG.setState(false);
-                    RULEDG.setState(false);
-                    LDLEDR.setState(true);
-                    LULEDR.setState(true);
-                    RDLEDR.setState(true);
-                    RULEDR.setState(true);
-                }
-            } else if (index == 2) {
-                LDLEDG.setState(true);
-                LULEDG.setState(true);
-                RDLEDG.setState(true);
-                RULEDG.setState(true);
-                LDLEDR.setState(false);
-                LULEDR.setState(false);
-                RDLEDR.setState(false);
-                RULEDR.setState(false);
+            if (frontColorSensor.red()
+                    + frontColorSensor.green()
+                    + frontColorSensor.blue() < 700) {
+                LULEDR.setState(true);
+                RULEDR.setState(true);
+                LULEDG.setState(false);
+                RULEDG.setState(false);
             } else {
-                if (fingerLocked && !firstSquarePressed) {
-                    LDLEDG.setState(true);
-                    LULEDG.setState(true);
-                    RDLEDG.setState(true);
-                    RULEDG.setState(true);
-                    LDLEDR.setState(false);
-                    LULEDR.setState(false);
-                    RDLEDR.setState(false);
-                    RULEDR.setState(false);
-                } else if (fingerLocked && firstSquarePressed) {
-                    LDLEDG.setState(false);
-                    LULEDG.setState(true);
-                    RDLEDG.setState(false);
-                    RULEDG.setState(true);
-                    LDLEDR.setState(true);
-                    LULEDR.setState(false);
-                    RDLEDR.setState(true);
-                    RULEDR.setState(false);
-                } else {
-                    LDLEDG.setState(false);
-                    LULEDG.setState(false);
-                    RDLEDG.setState(false);
-                    RULEDG.setState(false);
-                    LDLEDR.setState(true);
-                    LULEDR.setState(true);
-                    RDLEDR.setState(true);
-                    RULEDR.setState(true);
-                }
+                LULEDR.setState(false);
+                RULEDR.setState(false);
+                LULEDG.setState(true);
+                RULEDG.setState(true);
+            }
+
+            if (backColorSensor.red()
+                    + backColorSensor.green()
+                    + backColorSensor.blue() < 700) {
+                LDLEDR.setState(true);
+                RDLEDR.setState(true);
+                LDLEDG.setState(false);
+                RDLEDG.setState(false);
+            } else {
+                LDLEDR.setState(false);
+                RDLEDR.setState(false);
+                LDLEDG.setState(true);
+                RDLEDG.setState(true);
             }
 
             // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
             boolean LBumper = gamepad2.left_bumper;
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addData("RED", backColorSensor.red());
+            telemetry.addData("GREEN", backColorSensor.green());
+            telemetry.addData("BLUE", backColorSensor.blue());
+            telemetry.addData("RED", frontColorSensor.red());
+            telemetry.addData("GREEN", frontColorSensor.green());
+            telemetry.addData("BLUE", frontColorSensor.blue());
             telemetry.update();
             oldCrossPressed = crossPressed;
             oldCirclePressed = circlePressed;
