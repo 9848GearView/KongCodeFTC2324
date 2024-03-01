@@ -31,13 +31,14 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
-import org.firstinspires.ftc.teamcode.constants.TeleopServoConstants;
+import org.firstinspires.ftc.teamcode.constants.TestServoConstants;
 
 import java.lang.Math;
 import java.util.Timer;
@@ -59,12 +60,18 @@ import java.util.TimerTask;
 
 @TeleOp(name="NewKongTeleop", group="Robot")
 public class NewKongTeleop extends LinearOpMode {
+    public static boolean manualIntakeControl = false;
+    public static boolean isIntakeDown = true;
     public static boolean isArmMoving = false;
     public static boolean slideOverride = false;
     public static boolean isRobotMoving = false;
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private Timer timer = new Timer();
+    private ColorSensor frontColorSensor;
+    private ColorSensor backColorSensor;
+    private AnalogInput frontAnalogInput;
+    private AnalogInput backAnalogInput;
     private DcMotor FLMotor = null;
     private DcMotor FRMotor = null;
     private DcMotor BLMotor = null;
@@ -76,9 +83,9 @@ public class NewKongTeleop extends LinearOpMode {
     private Servo RightElbowServo = null;
     private Servo fingerF = null;
     private Servo fingerB = null;
-    private Servo ClawL = null;
-    private Servo ClawR = null;
-    private CRServo IntakeServo = null;
+    private Servo LeftIntakeServo = null;
+    private Servo RightIntakeServo = null;
+    private DcMotor IntakeMotor = null;
     private Servo PlaneLauncher = null;
     private boolean oldCrossPressed = true;
     private boolean oldTrianglePressed = true;
@@ -86,18 +93,24 @@ public class NewKongTeleop extends LinearOpMode {
     private boolean oldSquarePressed = true;
     private boolean oldRBumperPressed = true;
     private boolean oldLBumper = true;
+    private boolean oldStartPressed = true;
 
     private boolean firstSquarePressed = false;
 
-    private boolean fingerLocked = false;
-    private int index = 0;
-    private double[] LEServoPositions = TeleopServoConstants.LEServoPositions;
-    private double[] REServoPositions = TeleopServoConstants.REServoPositions;
-    private double[] ClawLPositions = TeleopServoConstants.ClawLPositions;
-    private double[] WServoPositions = TeleopServoConstants.WServoPositions;
-    private double[] ClawRPositions = TeleopServoConstants.ClawRPositions;
-    private double[] FingerFPositions = TeleopServoConstants.FingerFPositions;
-    private double[] FingerBPositions = TeleopServoConstants.FingerBPositions;
+    private boolean fingersLocked = false;
+    private boolean backFingerLocked = false;
+    private boolean fingerMovementFinished = true;
+    private boolean intakeMoving = false;
+    private int index = 0; // 0 is ready to intake, 2 is intermediate, 3 is ready to place
+    private double[] LEServoPositions = TestServoConstants.LEServoPositions;
+    private double[] REServoPositions = TestServoConstants.REServoPositions;
+    private double[] ClawLPositions = TestServoConstants.ClawLPositions;
+    private double[] WServoPositions = TestServoConstants.WServoPositions;
+    private double[] ClawRPositions = TestServoConstants.ClawRPositions;
+    private double[] FingerFPositions = TestServoConstants.FingerFPositions;
+    private double[] FingerBPositions = TestServoConstants.FingerBPositions;
+    private double[] LeftIntakePositions = TestServoConstants.LeftIntakePositions;
+    private double[] RightIntakePositions = TestServoConstants.RightIntakePositions;
 
     private DigitalChannel LDLEDG;
     private DigitalChannel LULEDG;
@@ -162,8 +175,8 @@ public class NewKongTeleop extends LinearOpMode {
             }
 
             public void run() {
-                ClawL.setPosition(ClawLPositions[i]);
-                ClawR.setPosition(ClawRPositions[i]);
+                LeftIntakeServo.setPosition(ClawLPositions[i]);
+                RightIntakeServo.setPosition(ClawRPositions[i]);
 
                 telemetry.addData("index", i);
                 telemetry.update();
@@ -218,18 +231,35 @@ public class NewKongTeleop extends LinearOpMode {
             }
         }
 
-        class FixCadderMistake extends TimerTask {
-            double i;
+        class PutIntakeToCertainPosition extends TimerTask {
+            int i;
 
-            public FixCadderMistake(double i) {
+            public PutIntakeToCertainPosition(int i) {
                 this.i = i;
             }
 
             public void run() {
-                LeftSlide.setPower(i);
-                RightSlide.setPower(i);
+                LeftIntakeServo.setPosition(LeftIntakePositions[i]);
+                RightIntakeServo.setPosition(RightIntakePositions[i]);
 
-                telemetry.addData("Power", i);
+                telemetry.addData("intake index", i);
+                telemetry.update();
+
+            }
+        }
+
+        class FixCadderMistake extends TimerTask {
+            double p;
+
+            public FixCadderMistake(double p) {
+                this.p = p;
+            }
+
+            public void run() {
+                LeftSlide.setPower(p);
+                RightSlide.setPower(p);
+
+                telemetry.addData("Power", p);
                 telemetry.update();
 
             }
@@ -245,6 +275,22 @@ public class NewKongTeleop extends LinearOpMode {
             public void run() { slideOverride = val; }
         }
 
+        class setBackFingerFinished extends TimerTask {
+            boolean val;
+
+            public setBackFingerFinished(boolean v) {
+                this.val = v;
+            }
+
+            public void run() { fingerMovementFinished = val; }
+        }
+        class intakeCurrentlyMoving extends TimerTask {
+            boolean val;
+            public intakeCurrentlyMoving(boolean v) {
+                this.val = v;
+            }
+            public void run() { intakeMoving = val; }
+        }
 
         telemetry.addData("Status", "sInitialized");
         telemetry.update();
@@ -256,7 +302,7 @@ public class NewKongTeleop extends LinearOpMode {
         FRMotor = hardwareMap.get(DcMotor.class, "FR");
         BLMotor = hardwareMap.get(DcMotor.class, "BL");
         BRMotor = hardwareMap.get(DcMotor.class, "BR");
-        IntakeServo = hardwareMap.get(CRServo.class, "IN");
+        IntakeMotor = hardwareMap.get(DcMotor.class, "IN");
         LeftSlide = hardwareMap.get(DcMotor.class, "LS");
         RightSlide = hardwareMap.get(DcMotor.class, "RS");
         LeftElbowServo = hardwareMap.get(Servo.class, "LE");
@@ -264,9 +310,11 @@ public class NewKongTeleop extends LinearOpMode {
         WristServo = hardwareMap.get(Servo.class, "W");
         fingerF = hardwareMap.get(Servo.class, "FF");
         fingerB = hardwareMap.get(Servo.class, "FB");
-        ClawL = hardwareMap.get(Servo.class, "CL");
-        ClawR = hardwareMap.get(Servo.class, "CR");
+        LeftIntakeServo = hardwareMap.get(Servo.class, "LI");
+        RightIntakeServo = hardwareMap.get(Servo.class, "RI");
         PlaneLauncher = hardwareMap.get(Servo.class, "PL");
+        backAnalogInput = hardwareMap.get(AnalogInput.class, "B");
+        frontAnalogInput = hardwareMap.get(AnalogInput.class, "F");
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         FRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -283,15 +331,15 @@ public class NewKongTeleop extends LinearOpMode {
         FRMotor.setDirection(DcMotor.Direction.FORWARD);
         BLMotor.setDirection(DcMotor.Direction.REVERSE);
         BRMotor.setDirection(DcMotor.Direction.REVERSE);
-        IntakeServo.setDirection(CRServo.Direction.FORWARD);
+        IntakeMotor.setDirection(DcMotor.Direction.FORWARD);
         LeftSlide.setDirection(DcMotor.Direction.REVERSE);
         RightSlide.setDirection(DcMotor.Direction.FORWARD);
         LeftElbowServo.setDirection(Servo.Direction.REVERSE);
         RightElbowServo.setDirection(Servo.Direction.FORWARD);
         WristServo.setDirection(Servo.Direction.FORWARD);
         fingerF.setDirection(Servo.Direction.FORWARD);
-        ClawL.setDirection(Servo.Direction.FORWARD);
-        ClawR.setDirection(Servo.Direction.FORWARD);
+        LeftIntakeServo.setDirection(Servo.Direction.FORWARD);
+        RightIntakeServo.setDirection(Servo.Direction.REVERSE);
         PlaneLauncher.setDirection(Servo.Direction.REVERSE);
 
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -319,12 +367,15 @@ public class NewKongTeleop extends LinearOpMode {
         RDLEDR.setMode(DigitalChannel.Mode.OUTPUT);
         RULEDR.setMode(DigitalChannel.Mode.OUTPUT);
 
-//        timer.schedule(new PutGrabberToCertainPosition(0), 0);
+        backColorSensor = hardwareMap.get(ColorSensor.class, "CSF");
+        frontColorSensor = hardwareMap.get(ColorSensor.class, "CSB");
+
         new LowerArmToCertainServoPosition(0).run();
         new PutClawsToCertainPosition(0).run();
         new fLockPixelToggle(0).run();
         new bLockPixelToggle(0).run();
         new PutBoxToCertainPosition(0).run();
+        new PutIntakeToCertainPosition(2).run();
         PlaneLauncher.setPosition(.57);
 
         // Wait for the game to start (driver presses PLAY)
@@ -351,43 +402,44 @@ public class NewKongTeleop extends LinearOpMode {
                 new setIsRobotMoving(true).run();
                 if (gamepad1.right_stick_x == 0 && gamepad1.right_stick_y == 0) {
                     if (gamepad1.right_trigger > 0) {
-                        FLMotor.setPower(1);
-                        FRMotor.setPower(-1);
-                        BLMotor.setPower(-1);
-                        BRMotor.setPower(1);
+                        FLMotor.setPower(gamepad1.right_trigger);
+                        FRMotor.setPower(-gamepad1.right_trigger);
+                        BLMotor.setPower(-gamepad1.right_trigger);
+                        BRMotor.setPower(gamepad1.right_trigger);
                     } else {
-                        FLMotor.setPower(-1);
-                        FRMotor.setPower(1);
-                        BLMotor.setPower(1);
-                        BRMotor.setPower(-1);
-                    }
-                } else {
-                    if (-gamepad1.right_stick_y > 0) {
-                        if (gamepad1.right_trigger > 0) {
-                            FLMotor.setPower(1);
-                            FRMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
-                            BLMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
-                            BRMotor.setPower(1);
-                        } else {
-                            FLMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
-                            FRMotor.setPower(1);
-                            BLMotor.setPower(1);
-                            BRMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
-                        }
-                    } else {
-                        if (gamepad1.right_trigger > 0) {
-                            FLMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
-                            FRMotor.setPower(-1);
-                            BLMotor.setPower(-1);
-                            BRMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
-                        } else {
-                            FLMotor.setPower(-1);
-                            FRMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
-                            BLMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
-                            BRMotor.setPower(-1);
-                        }
+                        FLMotor.setPower(-gamepad1.left_trigger);
+                        FRMotor.setPower(gamepad1.left_trigger);
+                        BLMotor.setPower(gamepad1.left_trigger);
+                        BRMotor.setPower(-gamepad1.left_trigger);
                     }
                 }
+//                else {
+//                    if (-gamepad1.right_stick_y > 0) {
+//                        if (gamepad1.right_trigger > 0) {
+//                            FLMotor.setPower(1);
+//                            FRMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
+//                            BLMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
+//                            BRMotor.setPower(1);
+//                        } else {
+//                            FLMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
+//                            FRMotor.setPower(1);
+//                            BLMotor.setPower(1);
+//                            BRMotor.setPower(-1 + Math.abs(gamepad1.right_stick_y));
+//                        }
+//                    } else {
+//                        if (gamepad1.right_trigger > 0) {
+//                            FLMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
+//                            FRMotor.setPower(-1);
+//                            BLMotor.setPower(-1);
+//                            BRMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
+//                        } else {
+//                            FLMotor.setPower(-1);
+//                            FRMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
+//                            BLMotor.setPower(1 - Math.abs(gamepad1.right_stick_y));
+//                            BRMotor.setPower(-1);
+//                        }
+//                    }
+//                }
 
             } else {
                 new setIsRobotMoving(true).run();
@@ -400,18 +452,36 @@ public class NewKongTeleop extends LinearOpMode {
             if (FLPower == 0 && FRPower == 0 && BLPower == 0 && BRPower == 0) {
                 new setIsRobotMoving(false).run();
             }
-
-            IntakeServo.setPower(gamepad2.dpad_up ? -1 : gamepad2.dpad_down ? 1 : 0);
+            if (isIntakeDown && index == 0) { //only if index == 0 ??
+                IntakeMotor.setPower(gamepad2.dpad_up ? -1 : 0);
+            } else if (isIntakeDown){
+                IntakeMotor.setPower(0);
+            } else {//only if index == 0 ??
+                IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : gamepad2.dpad_down ? 0.75 : 0);
+            }
+            if (gamepad2.dpad_left) {
+                new PutIntakeToCertainPosition(0).run();
+                isIntakeDown = true;
+            } else if (gamepad2.dpad_right && isIntakeDown && !intakeMoving){
+                timer.schedule(new intakeCurrentlyMoving(true), 0);
+                new PutIntakeToCertainPosition(2);
+                timer.schedule(new intakeCurrentlyMoving(false), 400);
+            }else if (gamepad2.dpad_right) {
+                timer.schedule(new intakeCurrentlyMoving(true), 0);
+                new PutIntakeToCertainPosition(1);
+                timer.schedule(new intakeCurrentlyMoving(false), 400);
+                isIntakeDown = false;
+            }
             if (!slideOverride) {
                 LeftSlide.setPower(-gamepad2.left_stick_y);
                 RightSlide.setPower(-gamepad2.left_stick_y);
             }
 
             if (gamepad2.left_bumper && runtime.seconds() > 90) {
-                PlaneLauncher.setPosition(0.56); // TODO: new servo , new positions
+                PlaneLauncher.setPosition(0.56);
             }
             if (gamepad2.left_trigger > 0 && runtime.seconds() > 90) {
-                PlaneLauncher.setPosition(1); // TODO: new servo , new positions
+                PlaneLauncher.setPosition(1);
             }
 
             boolean circlePressed = gamepad2.circle;
@@ -419,142 +489,150 @@ public class NewKongTeleop extends LinearOpMode {
             boolean crossPressed = gamepad2.cross;
             boolean squarePressed = gamepad2.square;
             boolean rBumperPressed = gamepad2.right_bumper;
+            boolean startPressed = gamepad2.start;
 
+            if (startPressed && !oldStartPressed) {
+                manualIntakeControl = !manualIntakeControl;
+            }
 
-//            if (rBumperPressed && !oldRBumperPressed && !isArmMoving && !isRobotMoving) {
-//                timer.schedule(new PutClawsToCertainPosition(1), 0 * DELAY_BETWEEN_MOVES);
-//                timer.schedule(new PutClawsToCertainPosition(2), 1 * DELAY_BETWEEN_MOVES);
-//                timer.schedule(new PutClawsToCertainPosition(3), 2 * DELAY_BETWEEN_MOVES);
-//            }
-
-
-            if (index == 0) {
-                if (crossPressed && !oldCrossPressed && !isArmMoving) {
-                    if (!fingerLocked) {
-                        timer.schedule(new fLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
-                        timer.schedule(new bLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
-                        timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
-                        fingerLocked = true;
-
-                    } else {
-                        timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-                        timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-                        fingerLocked = false;
+            if (index == 0) { //bucket down
+                if (!manualIntakeControl) {
+                    if (!backFingerLocked && fingerMovementFinished && backColorSensor.red() + backColorSensor.green() + backColorSensor.blue() > 700) {
+                        new bLockPixelToggle(1).run();
+                        backFingerLocked = true;
+                        new setBackFingerFinished(false).run();
+                        timer.schedule(new setBackFingerFinished(true), 500);
                     }
-                } else if (circlePressed && !oldCirclePressed && !isArmMoving) {
+                    if (backFingerLocked && frontColorSensor.red() + frontColorSensor.green() + frontColorSensor.blue() > 700) {
+                        new fLockPixelToggle(1).run();
+                    }
+                    if (backFingerLocked && fingerMovementFinished && backAnalogInput.getVoltage() < 2.87) {
+                        new bLockPixelToggle(0).run();
+                        backFingerLocked = false;
+                        new setBackFingerFinished(false).run();
+                        new PutBoxToCertainPosition(3).run();
+                        timer.schedule(new PutBoxToCertainPosition(0), 750);
+                        timer.schedule(new setBackFingerFinished(true), 500);
+                    }
+                } else {
+                    if (crossPressed && !oldCrossPressed && !isArmMoving) { //grab
+                        if (!fingersLocked) {
+                            timer.schedule(new fLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
+                            timer.schedule(new bLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
+                            backFingerLocked = true;
+                            fingersLocked = true;
+                        } else {
+                            timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+                            timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+                            backFingerLocked = false;
+                            fingersLocked = false;
+                        }
+                    }
+                }
+                if (circlePressed && !oldCirclePressed && !isArmMoving) { //bucket up
                     new setIsArmMoving(true).run();
                     timer.schedule(new fLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new bLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
-                    fingerLocked = true;
-                    timer.schedule(new SetSlideOverride(true), 0 * DELAY_BETWEEN_MOVES);
+                    backFingerLocked = true;
+                    fingersLocked = true;
+                    timer.schedule(new setBackFingerFinished(true), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new FixCadderMistake(1), 0 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new FixCadderMistake(0), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCadderMistake(0), 5 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new PutBoxToCertainPosition(1), 2 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new SetSlideOverride(false), 2 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setBackFingerFinished(false), 2 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
                     index = 2;
                 }
-            } else if (index == 2) {
-                if (circlePressed && !oldCirclePressed && !isArmMoving) {
+            } else if (index == 2) { //bucket up
+                if (circlePressed && !oldCirclePressed && !isArmMoving) { //go back down
                     new setIsArmMoving(true).run();
+                    timer.schedule(new FixCadderMistake(1), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCadderMistake(0), 5 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new PutBoxToCertainPosition(0), 0);
+                    timer.schedule(new FixCadderMistake(-1), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCadderMistake(0), 5 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+                    backFingerLocked = false;
+                    fingersLocked = false;
                     index = 0;
-                } else if (trianglePressed && !oldTrianglePressed && !isArmMoving) {
+                } else if (trianglePressed && !oldTrianglePressed && !isArmMoving) { //flip arm
                     new setIsArmMoving(true).run();
                     timer.schedule(new LowerArmToCertainServoPosition(1), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(2), 1 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new PutBoxToCertainPosition(2), 1 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setIsArmMoving(false), 1 * DELAY_BETWEEN_MOVES);
                     index = 3;
                 }
-            } else if (index == 3) {
-                if (squarePressed && !oldSquarePressed && !isArmMoving) {
+            } else if (index == 3) { //ready to place
+                if (squarePressed && !oldSquarePressed && !isArmMoving) { //release 1
                     if (!firstSquarePressed) {
                         timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                         timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
                         firstSquarePressed = true;
-                    } else {
+                    } else { //release back
                         timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                         timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
                         firstSquarePressed = false;
-                        fingerLocked = false;
+                        backFingerLocked = false;
+                        fingersLocked = false;
                     }
-                } else if (circlePressed && !oldCirclePressed && !isArmMoving) {
+                } else if (circlePressed && !oldCirclePressed && !isArmMoving) { //back to stage 1
                     new setIsArmMoving(true).run();
-                    timer.schedule(new LowerArmToCertainServoPosition(1), 0);
-                    timer.schedule(new LowerArmToCertainServoPosition(0), 1 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new PutBoxToCertainPosition(0), 2 * DELAY_BETWEEN_MOVES); // TODO: change delay for new intake
-                    timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new PutBoxToCertainPosition(0), 0);
+                    timer.schedule(new LowerArmToCertainServoPosition(1), 2 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
                     firstSquarePressed = false;
+                    timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+                    backFingerLocked = false;
+                    fingersLocked = false;
                     index = 0;
                 }
             }
 
             // Lights
-            if (index == 0) {
-                if (fingerLocked) {
-                    LDLEDG.setState(true);
-                    LULEDG.setState(true);
-                    RDLEDG.setState(true);
-                    RULEDG.setState(true);
-                    LDLEDR.setState(false);
-                    LULEDR.setState(false);
-                    RDLEDR.setState(false);
-                    RULEDR.setState(false);
-                } else {
-                    LDLEDG.setState(false);
-                    LULEDG.setState(false);
-                    RDLEDG.setState(false);
-                    RULEDG.setState(false);
-                    LDLEDR.setState(true);
-                    LULEDR.setState(true);
-                    RDLEDR.setState(true);
-                    RULEDR.setState(true);
-                }
-            } else if (index == 2) {
-                LDLEDG.setState(true);
-                LULEDG.setState(true);
-                RDLEDG.setState(true);
-                RULEDG.setState(true);
-                LDLEDR.setState(false);
-                LULEDR.setState(false);
-                RDLEDR.setState(false);
-                RULEDR.setState(false);
+            if (frontColorSensor.red()
+                    + frontColorSensor.green()
+                    + frontColorSensor.blue() < 700) {
+                LULEDR.setState(true);
+                RULEDR.setState(true);
+                LULEDG.setState(false);
+                RULEDG.setState(false);
             } else {
-                if (fingerLocked && !firstSquarePressed) {
-                    LDLEDG.setState(true);
-                    LULEDG.setState(true);
-                    RDLEDG.setState(true);
-                    RULEDG.setState(true);
-                    LDLEDR.setState(false);
-                    LULEDR.setState(false);
-                    RDLEDR.setState(false);
-                    RULEDR.setState(false);
-                } else if (fingerLocked && firstSquarePressed) {
-                    LDLEDG.setState(false);
-                    LULEDG.setState(true);
-                    RDLEDG.setState(false);
-                    RULEDG.setState(true);
-                    LDLEDR.setState(true);
-                    LULEDR.setState(false);
-                    RDLEDR.setState(true);
-                    RULEDR.setState(false);
-                } else {
-                    LDLEDG.setState(false);
-                    LULEDG.setState(false);
-                    RDLEDG.setState(false);
-                    RULEDG.setState(false);
-                    LDLEDR.setState(true);
-                    LULEDR.setState(true);
-                    RDLEDR.setState(true);
-                    RULEDR.setState(true);
-                }
+                LULEDR.setState(false);
+                RULEDR.setState(false);
+                LULEDG.setState(true);
+                RULEDG.setState(true);
+            }
+
+            if (backFingerLocked) {
+                LDLEDR.setState(true);
+                RDLEDR.setState(true);
+                LDLEDG.setState(false);
+                RDLEDG.setState(false);
+            } else {
+                LDLEDR.setState(false);
+                RDLEDR.setState(false);
+                LDLEDG.setState(true);
+                RDLEDG.setState(true);
             }
 
             // ffffffffffffffffffffffffftttttttttttttttttfffffffffttttt
             boolean LBumper = gamepad2.left_bumper;
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addData("RED", backColorSensor.red());
+            telemetry.addData("GREEN", backColorSensor.green());
+            telemetry.addData("BLUE", backColorSensor.blue());
+            telemetry.addData("RED", frontColorSensor.red());
+            telemetry.addData("GREEN", frontColorSensor.green());
+            telemetry.addData("BLUE", frontColorSensor.blue());
+            telemetry.addData("fVoltage", frontAnalogInput.getVoltage());
+            telemetry.addData("bVoltage", backAnalogInput.getVoltage());
+            telemetry.addData("manual intake control", manualIntakeControl);
             telemetry.update();
             oldCrossPressed = crossPressed;
             oldCirclePressed = circlePressed;
@@ -562,6 +640,7 @@ public class NewKongTeleop extends LinearOpMode {
             oldTrianglePressed = trianglePressed;
             oldRBumperPressed = rBumperPressed;
             oldLBumper = LBumper;
+            oldStartPressed = startPressed;
         }
     }
 }
