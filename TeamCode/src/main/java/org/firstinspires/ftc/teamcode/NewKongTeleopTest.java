@@ -248,23 +248,6 @@ public class NewKongTeleopTest extends LinearOpMode {
             }
         }
 
-        class FixCadderMistake extends TimerTask {
-            double p;
-
-            public FixCadderMistake(double p) {
-                this.p = p;
-            }
-
-            public void run() {
-                LeftSlide.setPower(p);
-                RightSlide.setPower(p);
-
-                telemetry.addData("Power", p);
-                telemetry.update();
-
-            }
-        }
-
         class SetSlideOverride extends TimerTask {
             boolean val;
 
@@ -273,6 +256,25 @@ public class NewKongTeleopTest extends LinearOpMode {
             }
 
             public void run() { slideOverride = val; }
+        }
+
+        class FixCaddersMistake extends TimerTask {
+            double p;
+
+            public FixCaddersMistake(double p) {
+                this.p = p;
+            }
+
+            public void run() {
+                LeftSlide.setPower(p);
+                RightSlide.setPower(p);
+
+                new SetSlideOverride(p != 0).run();
+
+                telemetry.addData("Power", p);
+                telemetry.update();
+
+            }
         }
 
         class setBackFingerFinished extends TimerTask {
@@ -535,9 +537,9 @@ public class NewKongTeleopTest extends LinearOpMode {
                     backFingerLocked = true;
                     fingersLocked = true;
                     timer.schedule(new setBackFingerFinished(true), 0 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new FixCadderMistake(1), 0 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new FixCadderMistake(0), 20 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new PutBoxToCertainPosition(1), 20 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(1), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(0), 4 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new PutBoxToCertainPosition(1), 4 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setBackFingerFinished(false), 2 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
                     index = 2;
@@ -545,11 +547,11 @@ public class NewKongTeleopTest extends LinearOpMode {
             } else if (index == 2) { //bucket up
                 if (circlePressed && !oldCirclePressed && !isArmMoving) { //go back down
                     new setIsArmMoving(true).run();
-                    timer.schedule(new FixCadderMistake(1), 0 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new FixCadderMistake(0), 10 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new PutBoxToCertainPosition(0), 10);
-                    timer.schedule(new FixCadderMistake(-1), 10 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new FixCadderMistake(0), 20 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(1), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(0), 4 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new PutBoxToCertainPosition(0), 4 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(-1), 4 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(0), 8 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
@@ -579,9 +581,9 @@ public class NewKongTeleopTest extends LinearOpMode {
                     }
                 } else if (circlePressed && !oldCirclePressed && !isArmMoving) { //back to stage 1
                     new setIsArmMoving(true).run();
-                    timer.schedule(new FixCadderMistake(1), 0 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new FixCadderMistake(0), 20 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new PutBoxToCertainPosition(0), 0);
+                    timer.schedule(new FixCaddersMistake(1), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(0), 4 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new PutBoxToCertainPosition(0), 8 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(1), 2 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
@@ -590,8 +592,8 @@ public class NewKongTeleopTest extends LinearOpMode {
                     timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                     backFingerLocked = false;
                     fingersLocked = false;
-                    timer.schedule(new FixCadderMistake(-1), 20 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new FixCadderMistake(0), 40 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(-1), 4 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(0), 8 * DELAY_BETWEEN_MOVES);
                     index = 0;
                 }
             }

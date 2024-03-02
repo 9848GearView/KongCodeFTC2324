@@ -61,7 +61,7 @@ import java.util.TimerTask;
 @TeleOp(name="NewKongTeleop", group="Robot")
 public class NewKongTeleop extends LinearOpMode {
     public static boolean manualIntakeControl = false;
-    public static boolean isIntakeDown = true;
+    public static int intakePos = 2;
     public static boolean isArmMoving = false;
     public static boolean slideOverride = false;
     public static boolean isRobotMoving = false;
@@ -94,9 +94,9 @@ public class NewKongTeleop extends LinearOpMode {
     private boolean oldRBumperPressed = true;
     private boolean oldLBumper = true;
     private boolean oldStartPressed = true;
-
     private boolean firstSquarePressed = false;
-
+    private boolean oldDpadLeft = true;
+    private boolean oldDpadRight = true;
     private boolean fingersLocked = false;
     private boolean backFingerLocked = false;
     private boolean fingerMovementFinished = true;
@@ -248,23 +248,6 @@ public class NewKongTeleop extends LinearOpMode {
             }
         }
 
-        class FixCadderMistake extends TimerTask {
-            double p;
-
-            public FixCadderMistake(double p) {
-                this.p = p;
-            }
-
-            public void run() {
-                LeftSlide.setPower(p);
-                RightSlide.setPower(p);
-
-                telemetry.addData("Power", p);
-                telemetry.update();
-
-            }
-        }
-
         class SetSlideOverride extends TimerTask {
             boolean val;
 
@@ -275,6 +258,25 @@ public class NewKongTeleop extends LinearOpMode {
             public void run() { slideOverride = val; }
         }
 
+        class FixCaddersMistake extends TimerTask {
+            double p;
+
+            public FixCaddersMistake(double p) {
+                this.p = p;
+            }
+
+            public void run() {
+                LeftSlide.setPower(p);
+                RightSlide.setPower(p);
+
+                new SetSlideOverride(p != 0).run();
+
+                telemetry.addData("Power", p);
+                telemetry.update();
+
+            }
+        }
+
         class setBackFingerFinished extends TimerTask {
             boolean val;
 
@@ -283,13 +285,6 @@ public class NewKongTeleop extends LinearOpMode {
             }
 
             public void run() { fingerMovementFinished = val; }
-        }
-        class intakeCurrentlyMoving extends TimerTask {
-            boolean val;
-            public intakeCurrentlyMoving(boolean v) {
-                this.val = v;
-            }
-            public void run() { intakeMoving = val; }
         }
 
         telemetry.addData("Status", "sInitialized");
@@ -452,26 +447,32 @@ public class NewKongTeleop extends LinearOpMode {
             if (FLPower == 0 && FRPower == 0 && BLPower == 0 && BRPower == 0) {
                 new setIsRobotMoving(false).run();
             }
-            if (isIntakeDown && index == 0) { //only if index == 0 ??
-                IntakeMotor.setPower(gamepad2.dpad_up ? -1 : 0);
-            } else if (isIntakeDown){
-                IntakeMotor.setPower(0);
-            } else {//only if index == 0 ??
-                IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : gamepad2.dpad_down ? 0.75 : 0);
+
+            if (index == 0) {
+                if (intakePos == 0) { //only if index == 0 ??
+                    IntakeMotor.setPower(gamepad2.dpad_up ? -1 : gamepad2.dpad_down ? 1 : 0);
+                } else {
+                    IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : gamepad2.dpad_down ? 0.75 : 0);
+                }
+            } else {
+                IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : 0);
             }
-            if (gamepad2.dpad_left) {
+
+            boolean DpadLeft = gamepad2.dpad_left;
+            boolean DpadRight = gamepad2.dpad_right;
+            if (DpadLeft && !oldDpadLeft) {
                 new PutIntakeToCertainPosition(0).run();
-                isIntakeDown = true;
-            } else if (gamepad2.dpad_right && isIntakeDown && !intakeMoving){
-                timer.schedule(new intakeCurrentlyMoving(true), 0);
-                new PutIntakeToCertainPosition(2);
-                timer.schedule(new intakeCurrentlyMoving(false), 400);
-            }else if (gamepad2.dpad_right) {
-                timer.schedule(new intakeCurrentlyMoving(true), 0);
-                new PutIntakeToCertainPosition(1);
-                timer.schedule(new intakeCurrentlyMoving(false), 400);
-                isIntakeDown = false;
+                intakePos = 0;
+            } else if (DpadRight && !oldDpadRight) {
+                if (intakePos == 0 || intakePos == 2) {
+                    new PutIntakeToCertainPosition(1).run();
+                    intakePos = 1;
+                } else {
+                    new PutIntakeToCertainPosition(2).run();
+                    intakePos = 2;
+                }
             }
+
             if (!slideOverride) {
                 LeftSlide.setPower(-gamepad2.left_stick_y);
                 RightSlide.setPower(-gamepad2.left_stick_y);
@@ -536,9 +537,9 @@ public class NewKongTeleop extends LinearOpMode {
                     backFingerLocked = true;
                     fingersLocked = true;
                     timer.schedule(new setBackFingerFinished(true), 0 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new FixCadderMistake(1), 0 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new FixCadderMistake(0), 5 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new PutBoxToCertainPosition(1), 2 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(1), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(0), 4 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new PutBoxToCertainPosition(1), 4 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setBackFingerFinished(false), 2 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
                     index = 2;
@@ -546,11 +547,11 @@ public class NewKongTeleop extends LinearOpMode {
             } else if (index == 2) { //bucket up
                 if (circlePressed && !oldCirclePressed && !isArmMoving) { //go back down
                     new setIsArmMoving(true).run();
-                    timer.schedule(new FixCadderMistake(1), 0 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new FixCadderMistake(0), 5 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new PutBoxToCertainPosition(0), 0);
-                    timer.schedule(new FixCadderMistake(-1), 0 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new FixCadderMistake(0), 5 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(1), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(0), 4 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new PutBoxToCertainPosition(0), 4 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(-1), 4 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(0), 8 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setIsArmMoving(false), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
@@ -580,7 +581,9 @@ public class NewKongTeleop extends LinearOpMode {
                     }
                 } else if (circlePressed && !oldCirclePressed && !isArmMoving) { //back to stage 1
                     new setIsArmMoving(true).run();
-                    timer.schedule(new PutBoxToCertainPosition(0), 0);
+                    timer.schedule(new FixCaddersMistake(1), 0 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(0), 4 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new PutBoxToCertainPosition(0), 8 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(1), 2 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
@@ -589,6 +592,8 @@ public class NewKongTeleop extends LinearOpMode {
                     timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                     backFingerLocked = false;
                     fingersLocked = false;
+                    timer.schedule(new FixCaddersMistake(-1), 4 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new FixCaddersMistake(0), 8 * DELAY_BETWEEN_MOVES);
                     index = 0;
                 }
             }
@@ -632,6 +637,9 @@ public class NewKongTeleop extends LinearOpMode {
             telemetry.addData("BLUE", frontColorSensor.blue());
             telemetry.addData("fVoltage", frontAnalogInput.getVoltage());
             telemetry.addData("bVoltage", backAnalogInput.getVoltage());
+            telemetry.addData("dpad_left", DpadLeft);
+            telemetry.addData("dpad_right", DpadRight);
+            telemetry.addData("pos", intakePos);
             telemetry.addData("manual intake control", manualIntakeControl);
             telemetry.update();
             oldCrossPressed = crossPressed;
@@ -641,6 +649,8 @@ public class NewKongTeleop extends LinearOpMode {
             oldRBumperPressed = rBumperPressed;
             oldLBumper = LBumper;
             oldStartPressed = startPressed;
+            oldDpadLeft = DpadLeft;
+            oldDpadRight = DpadRight;
         }
     }
 }
