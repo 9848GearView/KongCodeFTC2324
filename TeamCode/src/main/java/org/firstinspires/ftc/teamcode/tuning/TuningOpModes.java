@@ -1,10 +1,11 @@
-package org.firstinspires.ftc.teamcode.rr.tuning;
+package org.firstinspires.ftc.teamcode.tuning;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.reflection.ReflectionConfig;
 import com.acmerobotics.roadrunner.MotorFeedforward;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.ftc.AngularRampLogger;
+import com.acmerobotics.roadrunner.ftc.DeadWheelDirectionDebugger;
 import com.acmerobotics.roadrunner.ftc.DriveType;
 import com.acmerobotics.roadrunner.ftc.DriveView;
 import com.acmerobotics.roadrunner.ftc.DriveViewFactory;
@@ -21,10 +22,10 @@ import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegistrar;
 
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
-import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
-import org.firstinspires.ftc.teamcode.rr.TankDrive;
-import org.firstinspires.ftc.teamcode.rr.ThreeDeadWheelLocalizer;
-import org.firstinspires.ftc.teamcode.rr.TwoDeadWheelLocalizer;
+import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.TankDrive;
+import org.firstinspires.ftc.teamcode.ThreeDeadWheelLocalizer;
+import org.firstinspires.ftc.teamcode.TwoDeadWheelLocalizer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,9 +61,9 @@ public final class TuningOpModes {
                 if (md.localizer instanceof MecanumDrive.DriveLocalizer) {
                     MecanumDrive.DriveLocalizer dl = (MecanumDrive.DriveLocalizer) md.localizer;
                     leftEncs.add(dl.leftFront);
-                    leftEncs.add(dl.leftRear);
+                    leftEncs.add(dl.leftBack);
                     rightEncs.add(dl.rightFront);
-                    rightEncs.add(dl.rightRear);
+                    rightEncs.add(dl.rightBack);
                 } else if (md.localizer instanceof ThreeDeadWheelLocalizer) {
                     ThreeDeadWheelLocalizer dl = (ThreeDeadWheelLocalizer) md.localizer;
                     parEncs.add(dl.par0);
@@ -73,11 +74,11 @@ public final class TuningOpModes {
                     parEncs.add(dl.par);
                     perpEncs.add(dl.perp);
                 } else {
-                    throw new IllegalArgumentException("unknown localizer: " + md.localizer.getClass().getName());
+                    throw new RuntimeException("unknown localizer: " + md.localizer.getClass().getName());
                 }
 
                 return new DriveView(
-                        DriveType.MECANUM,
+                    DriveType.MECANUM,
                         MecanumDrive.PARAMS.inPerTick,
                         MecanumDrive.PARAMS.maxWheelVel,
                         MecanumDrive.PARAMS.minProfileAccel,
@@ -95,9 +96,9 @@ public final class TuningOpModes {
                         rightEncs,
                         parEncs,
                         perpEncs,
-                        md.imu,
+                        md.lazyImu,
                         md.voltageSensor,
-                        new MotorFeedforward(MecanumDrive.PARAMS.kS,
+                        () -> new MotorFeedforward(MecanumDrive.PARAMS.kS,
                                 MecanumDrive.PARAMS.kV / MecanumDrive.PARAMS.inPerTick,
                                 MecanumDrive.PARAMS.kA / MecanumDrive.PARAMS.inPerTick)
                 );
@@ -122,11 +123,11 @@ public final class TuningOpModes {
                     parEncs.add(dl.par);
                     perpEncs.add(dl.perp);
                 } else {
-                    throw new IllegalArgumentException("unknown localizer: " + td.localizer.getClass().getName());
+                    throw new RuntimeException("unknown localizer: " + td.localizer.getClass().getName());
                 }
 
                 return new DriveView(
-                        DriveType.TANK,
+                    DriveType.TANK,
                         TankDrive.PARAMS.inPerTick,
                         TankDrive.PARAMS.maxWheelVel,
                         TankDrive.PARAMS.minProfileAccel,
@@ -138,15 +139,15 @@ public final class TuningOpModes {
                         rightEncs,
                         parEncs,
                         perpEncs,
-                        td.imu,
+                        td.lazyImu,
                         td.voltageSensor,
-                        new MotorFeedforward(TankDrive.PARAMS.kS,
+                        () -> new MotorFeedforward(TankDrive.PARAMS.kS,
                                 TankDrive.PARAMS.kV / TankDrive.PARAMS.inPerTick,
                                 TankDrive.PARAMS.kA / TankDrive.PARAMS.inPerTick)
                 );
             };
         } else {
-            throw new AssertionError();
+            throw new RuntimeException();
         }
 
         manager.register(metaForClass(AngularRampLogger.class), new AngularRampLogger(dvf));
@@ -156,6 +157,7 @@ public final class TuningOpModes {
         manager.register(metaForClass(LateralRampLogger.class), new LateralRampLogger(dvf));
         manager.register(metaForClass(ManualFeedforwardTuner.class), new ManualFeedforwardTuner(dvf));
         manager.register(metaForClass(MecanumMotorDirectionDebugger.class), new MecanumMotorDirectionDebugger(dvf));
+        manager.register(metaForClass(DeadWheelDirectionDebugger.class), new DeadWheelDirectionDebugger(dvf));
 
         manager.register(metaForClass(ManualFeedbackTuner.class), ManualFeedbackTuner.class);
         manager.register(metaForClass(SplineTest.class), SplineTest.class);

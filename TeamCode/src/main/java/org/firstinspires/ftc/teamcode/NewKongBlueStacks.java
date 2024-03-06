@@ -38,7 +38,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.constants.AutoServoConstants;
-import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
+import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
