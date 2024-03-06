@@ -371,7 +371,6 @@ public class NewKongTeleop extends LinearOpMode {
         new bLockPixelToggle(0).run();
         new PutBoxToCertainPosition(0).run();
         new PutIntakeToCertainPosition(2).run();
-        PlaneLauncher.setPosition(.57);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -450,12 +449,12 @@ public class NewKongTeleop extends LinearOpMode {
 
             if (index == 0) {
                 if (intakePos == 0) { //only if index == 0 ??
-                    IntakeMotor.setPower(gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
+                    IntakeMotor.setPower(gamepad2.dpad_up ? -1 : gamepad2.dpad_down ? 1 : 0);
                 } else {
-                    IntakeMotor.setPower(gamepad2.dpad_up ? 0.75 : gamepad2.dpad_down ? -0.75 : 0);
+                    IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : gamepad2.dpad_down ? 0.75 : 0);
                 }
             } else {
-                IntakeMotor.setPower(gamepad2.dpad_up ? 0.75 : 0);
+                IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : 0);
             }
 
             boolean DpadLeft = gamepad2.dpad_left;
@@ -478,11 +477,11 @@ public class NewKongTeleop extends LinearOpMode {
                 RightSlide.setPower(-gamepad2.left_stick_y);
             }
 
-            if (gamepad2.left_bumper && runtime.seconds() > 90) {
-                PlaneLauncher.setPosition(0.56);
+            if (gamepad2.left_bumper) {
+                PlaneLauncher.setPosition(0.3);
             }
-            if (gamepad2.left_trigger > 0 && runtime.seconds() > 90) {
-                PlaneLauncher.setPosition(1);
+            if (gamepad2.left_trigger > 0) {
+                PlaneLauncher.setPosition(0.79);
             }
 
             boolean circlePressed = gamepad2.circle;
@@ -497,38 +496,17 @@ public class NewKongTeleop extends LinearOpMode {
             }
 
             if (index == 0) { //bucket down
-                if (!manualIntakeControl) {
-                    if (!backFingerLocked && fingerMovementFinished && backColorSensor.red() + backColorSensor.green() + backColorSensor.blue() > 700) {
-                        new bLockPixelToggle(1).run();
+                if (crossPressed && !oldCrossPressed && !isArmMoving) { //grab
+                    if (!fingersLocked) {
+                        timer.schedule(new fLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
+                        timer.schedule(new bLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
                         backFingerLocked = true;
-                        new setFingerMovementFinished(false).run();
-                        timer.schedule(new setFingerMovementFinished(true), 500);
-                    }
-                    if (backFingerLocked && frontColorSensor.red() + frontColorSensor.green() + frontColorSensor.blue() > 700) {
-                        new fLockPixelToggle(1).run();
-                    }
-                    if (backFingerLocked && fingerMovementFinished && backAnalogInput.getVoltage() > 1.2) {
-                        // TODO: change numbers until box shake is acceptable
-                        new bLockPixelToggle(0).run();
+                        fingersLocked = true;
+                    } else { //release
+                        timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+                        timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                         backFingerLocked = false;
-                        new setFingerMovementFinished(false).run();
-                        new PutBoxToCertainPosition(3).run();
-                        timer.schedule(new PutBoxToCertainPosition(0), 750);
-                        timer.schedule(new setFingerMovementFinished(true), 700);
-                    }
-                } else {
-                    if (crossPressed && !oldCrossPressed && !isArmMoving) { //grab
-                        if (!fingersLocked) {
-                            timer.schedule(new fLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
-                            timer.schedule(new bLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
-                            backFingerLocked = true;
-                            fingersLocked = true;
-                        } else {
-                            timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-                            timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-                            backFingerLocked = false;
-                            fingersLocked = false;
-                        }
+                        fingersLocked = false;
                     }
                 }
                 if (circlePressed && !oldCirclePressed && !isArmMoving) { //bucket up

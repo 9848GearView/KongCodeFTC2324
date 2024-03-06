@@ -385,7 +385,6 @@ public class NewKongTeleopTest extends LinearOpMode {
         new bLockPixelToggle(0).run();
         new PutBoxToCertainPosition(0).run();
         new PutIntakeToCertainPosition(2).run();
-        PlaneLauncher.setPosition(.57);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -466,12 +465,12 @@ public class NewKongTeleopTest extends LinearOpMode {
 
             if (index == 0) {
                 if (intakePos == 0) { //only if index == 0 ??
-                    IntakeMotor.setPower(gamepad2.dpad_up ? 1 : gamepad2.dpad_down ? -1 : 0);
+                    IntakeMotor.setPower(gamepad2.dpad_up ? -1 : gamepad2.dpad_down ? 1 : 0);
                 } else {
-                    IntakeMotor.setPower(gamepad2.dpad_up ? 0.75 : gamepad2.dpad_down ? -0.75 : 0);
+                    IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : gamepad2.dpad_down ? 0.75 : 0);
                 }
             } else {
-                IntakeMotor.setPower(gamepad2.dpad_up ? 0.75 : 0);
+                IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : 0);
             }
 
             boolean DpadLeft = gamepad2.dpad_left;
@@ -494,11 +493,11 @@ public class NewKongTeleopTest extends LinearOpMode {
                 RightSlide.setPower(-gamepad2.left_stick_y);
             }
 
-            if (gamepad2.left_bumper && runtime.seconds() > 90) {
-                PlaneLauncher.setPosition(0.56);
+            if (gamepad2.left_bumper) {
+                PlaneLauncher.setPosition(0.3);
             }
-            if (gamepad2.left_trigger > 0 && runtime.seconds() > 90) {
-                PlaneLauncher.setPosition(1);
+            if (gamepad2.left_trigger > 0) {
+                PlaneLauncher.setPosition(0.79);
             }
 
             boolean circlePressed = gamepad2.circle;
