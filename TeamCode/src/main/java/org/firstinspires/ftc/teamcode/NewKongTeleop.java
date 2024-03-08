@@ -386,10 +386,18 @@ public class NewKongTeleop extends LinearOpMode {
             double r = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
             double robotAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
             double rightX = gamepad1.right_stick_x;
-            final double FLPower = r * Math.cos(robotAngle) + rightX;
-            final double FRPower = r * Math.sin(robotAngle) - rightX;
-            final double BLPower = r * Math.sin(robotAngle) + rightX;
-            final double BRPower = r * Math.cos(robotAngle) - rightX;
+            double FLPower = r * Math.cos(robotAngle) + rightX;
+            double FRPower = r * Math.sin(robotAngle) - rightX;
+            double BLPower = r * Math.sin(robotAngle) + rightX;
+            double BRPower = r * Math.cos(robotAngle) - rightX;
+
+            double ratio = 1.0 / Math.max(Math.max(Math.abs(BLPower), Math.abs(BRPower)),
+                    Math.max(Math.abs(FLPower), Math.abs(FRPower)));
+
+            FLPower *= ratio;// TODO: Remove later maybe idk
+            FRPower *= ratio;
+            BLPower *= ratio;
+            BRPower *= ratio;
 
             // Send calculated power to wheels
             if ((gamepad1.right_trigger > 0) || (gamepad1.left_trigger > 0)) {
@@ -569,10 +577,10 @@ public class NewKongTeleop extends LinearOpMode {
                     timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
                     firstSquarePressed = false;
-                    timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-                    backFingerLocked = false;
-                    fingersLocked = false;
+//                    timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+//                    timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+//                    backFingerLocked = false;
+//                    fingersLocked = false;
                     index = 0;
                 }
             }

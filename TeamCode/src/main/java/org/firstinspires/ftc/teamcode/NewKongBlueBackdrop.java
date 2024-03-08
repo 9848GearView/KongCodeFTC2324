@@ -37,8 +37,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.constants.AutoServoConstants;
-import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.constants.TestServoConstants;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -78,9 +77,11 @@ public class NewKongBlueBackdrop extends LinearOpMode
     private Servo RightElbowServo = null;
     private Servo fingerF = null;
     private Servo fingerB = null;
+    private Servo LeftIntakeServo = null;
+    private Servo RightIntakeServo = null;
     private Servo ClawL = null;
     private Servo ClawR = null;
-    private CRServo IntakeServo = null;
+    private DcMotor IntakeMotor = null;
     private Servo PlaneLauncher = null;
     private boolean oldCrossPressed = true;
     private boolean oldTrianglePressed = true;
@@ -93,14 +94,15 @@ public class NewKongBlueBackdrop extends LinearOpMode
 
     private boolean fingerLocked = false;
     private int index = 0;
-    private double[] LEServoPositions = AutoServoConstants.LEServoPositions;
-    private double[] REServoPositions = AutoServoConstants.REServoPositions;
-    private double[] ClawLPositions = AutoServoConstants.ClawLPositions;
-    private double[] WServoPositions = AutoServoConstants.WServoPositions;
-    private double[] ClawRPositions = AutoServoConstants.ClawRPositions;
-    private double[] FingerFPositions = AutoServoConstants.FingerFPositions;
-    private double[] FingerBPositions = AutoServoConstants.FingerBPositions;
-
+    private double[] LEServoPositions = TestServoConstants.LEServoPositions;
+    private double[] REServoPositions = TestServoConstants.REServoPositions;
+    private double[] ClawLPositions = TestServoConstants.ClawLPositions;
+    private double[] WServoPositions = TestServoConstants.WServoPositions;
+    private double[] ClawRPositions = TestServoConstants.ClawRPositions;
+    private double[] FingerFPositions = TestServoConstants.FingerFPositions;
+    private double[] FingerBPositions = TestServoConstants.FingerBPositions;
+    private double[] LeftIntakePositions = TestServoConstants.LeftIntakePositions;
+    private double[] RightIntakePositions = TestServoConstants.RightIntakePositions;
     private final int DELAY_BETWEEN_MOVES = 300;
 
     OpenCvWebcam webcam;
@@ -255,7 +257,39 @@ public class NewKongBlueBackdrop extends LinearOpMode
                 }
             }, 0);
         }
+    }
 
+    class PutBoxToCertainPosition extends TimerTask {
+        int i;
+
+        public PutBoxToCertainPosition(int i) {
+            this.i = i;
+        }
+
+        public void run() {
+            WristServo.setPosition(WServoPositions[i]);
+
+            telemetry.addData("index", i);
+            telemetry.update();
+
+        }
+    }
+
+    class PutIntakeToCertainPosition extends TimerTask {
+        int i;
+
+        public PutIntakeToCertainPosition(int i) {
+            this.i = i;
+        }
+
+        public void run() {
+            LeftIntakeServo.setPosition(LeftIntakePositions[i]);
+            RightIntakeServo.setPosition(RightIntakePositions[i]);
+
+            telemetry.addData("intake index", i);
+            telemetry.update();
+
+        }
     }
 
     @Override
@@ -280,7 +314,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
         FRMotor = hardwareMap.get(DcMotor.class, "FR");
         BLMotor = hardwareMap.get(DcMotor.class, "BL");
         BRMotor = hardwareMap.get(DcMotor.class, "BR");
-        IntakeServo = hardwareMap.get(CRServo.class, "IN");
+        IntakeMotor = hardwareMap.get(DcMotor.class, "IN");
         LeftSlide = hardwareMap.get(DcMotor.class, "LS");
         RightSlide = hardwareMap.get(DcMotor.class, "RS");
         LeftElbowServo = hardwareMap.get(Servo.class, "LE");
@@ -307,7 +341,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
         FRMotor.setDirection(DcMotor.Direction.FORWARD);
         BLMotor.setDirection(DcMotor.Direction.REVERSE);
         BRMotor.setDirection(DcMotor.Direction.REVERSE);
-        IntakeServo.setDirection(CRServo.Direction.FORWARD);
+        IntakeMotor.setDirection(CRServo.Direction.FORWARD);
         LeftSlide.setDirection(DcMotor.Direction.REVERSE);
         RightSlide.setDirection(DcMotor.Direction.FORWARD);
         LeftElbowServo.setDirection(Servo.Direction.REVERSE);
@@ -325,13 +359,12 @@ public class NewKongBlueBackdrop extends LinearOpMode
         LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-//        timer.schedule(new PutGrabberToCertainPosition(0), 0);
         new LowerArmToCertainServoPosition(0).run();
         new PutClawsToCertainPosition(0).run();
-        new fLockPixelToggle(1).run();
-        new bLockPixelToggle(1).run();
-        new SetBoxToCertainPosition(0).run();
-        PlaneLauncher.setPosition(.57);
+        new fLockPixelToggle(0).run();
+        new bLockPixelToggle(0).run();
+        new PutBoxToCertainPosition(0).run();
+        new PutIntakeToCertainPosition(2).run();
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -468,6 +501,8 @@ public class NewKongBlueBackdrop extends LinearOpMode
         if (needInvert) {
             multiplier = -1;
         }
+
+        new PutIntakeToCertainPosition(0).run();
 
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
                 .strafeTo(new Vector2d(19, multiplier * -63))
