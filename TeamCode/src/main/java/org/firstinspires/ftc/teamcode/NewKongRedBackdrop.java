@@ -78,9 +78,11 @@ public class NewKongRedBackdrop extends LinearOpMode
     private Servo RightElbowServo = null;
     private Servo fingerF = null;
     private Servo fingerB = null;
-    private Servo ClawL = null;
-    private Servo ClawR = null;
-    private CRServo IntakeServo = null;
+    private Servo LeftIntakeServo = null;
+    private Servo RightIntakeServo = null;
+//    private Servo ClawL = null;
+//    private Servo ClawR = null;
+    private DcMotor IntakeMotor = null;
     private Servo PlaneLauncher = null;
     private boolean oldCrossPressed = true;
     private boolean oldTrianglePressed = true;
@@ -100,7 +102,8 @@ public class NewKongRedBackdrop extends LinearOpMode
     private double[] ClawRPositions = AutoServoConstants.ClawRPositions;
     private double[] FingerFPositions = AutoServoConstants.FingerFPositions;
     private double[] FingerBPositions = AutoServoConstants.FingerBPositions;
-
+    private double[] LeftIntakePositions = AutoServoConstants.LeftIntakePositions;
+    private double[] RightIntakePositions = AutoServoConstants.RightIntakePositions;
     private final int DELAY_BETWEEN_MOVES = 300;
 
     OpenCvWebcam webcam;
@@ -149,22 +152,22 @@ public class NewKongRedBackdrop extends LinearOpMode
         }
     }
 
-    class PutClawsToCertainPosition extends TimerTask {
-        int i;
-
-        public PutClawsToCertainPosition(int i) {
-            this.i = i;
-        }
-
-        public void run() {
-            ClawL.setPosition(ClawLPositions[i]);
-            ClawR.setPosition(ClawRPositions[i]);
-
-            telemetry.addData("index", i);
-            telemetry.update();
-
-        }
-    }
+//    class PutClawsToCertainPosition extends TimerTask {
+//        int i;
+//
+//        public PutClawsToCertainPosition(int i) {
+//            this.i = i;
+//        }
+//
+//        public void run() {
+//            ClawL.setPosition(ClawLPositions[i]);
+//            ClawR.setPosition(ClawRPositions[i]);
+//
+//            telemetry.addData("index", i);
+//            telemetry.update();
+//
+//        }
+//    }
     class fLockPixelToggle extends TimerTask {
         int i;
 
@@ -255,7 +258,39 @@ public class NewKongRedBackdrop extends LinearOpMode
                 }
             }, 0);
         }
+    }
 
+    class PutBoxToCertainPosition extends TimerTask {
+        int i;
+
+        public PutBoxToCertainPosition(int i) {
+            this.i = i;
+        }
+
+        public void run() {
+            WristServo.setPosition(WServoPositions[i]);
+
+            telemetry.addData("index", i);
+            telemetry.update();
+
+        }
+    }
+
+    class PutIntakeToCertainPosition extends TimerTask {
+        int i;
+
+        public PutIntakeToCertainPosition(int i) {
+            this.i = i;
+        }
+
+        public void run() {
+            LeftIntakeServo.setPosition(LeftIntakePositions[i]);
+            RightIntakeServo.setPosition(RightIntakePositions[i]);
+
+            telemetry.addData("intake index", i);
+            telemetry.update();
+
+        }
     }
 
     @Override
@@ -280,7 +315,7 @@ public class NewKongRedBackdrop extends LinearOpMode
         FRMotor = hardwareMap.get(DcMotor.class, "FR");
         BLMotor = hardwareMap.get(DcMotor.class, "BL");
         BRMotor = hardwareMap.get(DcMotor.class, "BR");
-        IntakeServo = hardwareMap.get(CRServo.class, "IN");
+        IntakeMotor = hardwareMap.get(DcMotor.class, "IN");
         LeftSlide = hardwareMap.get(DcMotor.class, "LS");
         RightSlide = hardwareMap.get(DcMotor.class, "RS");
         LeftElbowServo = hardwareMap.get(Servo.class, "LE");
@@ -288,8 +323,8 @@ public class NewKongRedBackdrop extends LinearOpMode
         WristServo = hardwareMap.get(Servo.class, "W");
         fingerF = hardwareMap.get(Servo.class, "FF");
         fingerB = hardwareMap.get(Servo.class, "FB");
-        ClawL = hardwareMap.get(Servo.class, "CL");
-        ClawR = hardwareMap.get(Servo.class, "CR");
+        LeftIntakeServo = hardwareMap.get(Servo.class, "LI");
+        RightIntakeServo = hardwareMap.get(Servo.class, "RI");
         PlaneLauncher = hardwareMap.get(Servo.class, "PL");
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -307,15 +342,16 @@ public class NewKongRedBackdrop extends LinearOpMode
         FRMotor.setDirection(DcMotor.Direction.FORWARD);
         BLMotor.setDirection(DcMotor.Direction.REVERSE);
         BRMotor.setDirection(DcMotor.Direction.REVERSE);
-        IntakeServo.setDirection(CRServo.Direction.FORWARD);
+        IntakeMotor.setDirection(CRServo.Direction.FORWARD);
         LeftSlide.setDirection(DcMotor.Direction.REVERSE);
         RightSlide.setDirection(DcMotor.Direction.FORWARD);
         LeftElbowServo.setDirection(Servo.Direction.REVERSE);
         RightElbowServo.setDirection(Servo.Direction.FORWARD);
         WristServo.setDirection(Servo.Direction.FORWARD);
         fingerF.setDirection(Servo.Direction.FORWARD);
-        ClawL.setDirection(Servo.Direction.FORWARD);
-        ClawR.setDirection(Servo.Direction.FORWARD);
+        fingerB.setDirection(Servo.Direction.FORWARD);
+        LeftIntakeServo.setDirection(Servo.Direction.FORWARD);
+        RightIntakeServo.setDirection(Servo.Direction.REVERSE);
         PlaneLauncher.setDirection(Servo.Direction.REVERSE);
 
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -325,13 +361,12 @@ public class NewKongRedBackdrop extends LinearOpMode
         LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-//        timer.schedule(new PutGrabberToCertainPosition(0), 0);
         new LowerArmToCertainServoPosition(0).run();
-        new PutClawsToCertainPosition(0).run();
+//        new PutClawsToCertainPosition(0).run();
         new fLockPixelToggle(1).run();
         new bLockPixelToggle(1).run();
-        new SetBoxToCertainPosition(0).run();
-        PlaneLauncher.setPosition(.57);
+        new PutBoxToCertainPosition(1).run();
+//        new PutIntakeToCertainPosition(2).run();
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -380,7 +415,7 @@ public class NewKongRedBackdrop extends LinearOpMode
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
             timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new SetBoxToCertainPosition(0), 1000);
+            timer.schedule(new SetBoxToCertainPosition(0), 500);
             return false;
         }
     }
@@ -389,6 +424,7 @@ public class NewKongRedBackdrop extends LinearOpMode
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
             timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
             return false;
         }
     }
@@ -397,7 +433,7 @@ public class NewKongRedBackdrop extends LinearOpMode
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             timer.schedule(new LowerArmToCertainServoPosition(1), 0 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(2), 1 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(2), 1 * DELAY_BETWEEN_MOVES); //no 3 index
             timer.schedule(new SetBoxToCertainPosition(1), 1 * DELAY_BETWEEN_MOVES);
             return false;
         }
@@ -409,6 +445,7 @@ public class NewKongRedBackdrop extends LinearOpMode
             timer.schedule(new LowerArmToCertainServoPosition(1), 0 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(3), 1 * DELAY_BETWEEN_MOVES);
             timer.schedule(new SetBoxToCertainPosition(2), 0);
+            timer.schedule(new fLockPixelToggle(0), 3 * DELAY_BETWEEN_MOVES);
             return false;
         }
     }
@@ -446,7 +483,7 @@ public class NewKongRedBackdrop extends LinearOpMode
         double p;
         int t;
         public LowerArm(double p, int t) {
-            this.p = p;
+            this.p = -p;
             this.t = t;
         }
         public LowerArm() {
@@ -469,76 +506,80 @@ public class NewKongRedBackdrop extends LinearOpMode
             multiplier = -1;
         }
 
+        new PutIntakeToCertainPosition(0).run();
+
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
-                .strafeTo(new Vector2d(19, multiplier * -63))
-                .turn(multiplier * 0.00001);
+                .strafeTo(new Vector2d(17, multiplier * -63))
+                .turn(multiplier * 0.00001)
+                .afterTime(0, new RaiseArm(0.5, 1000));
 
         if (smp == SpikeMarkPosition.UNO) {
             actionBuilder = actionBuilder
-                    .lineToY(multiplier * -33.5)
+                    .lineToY(multiplier * -36)
                     .turnTo(0.00001)
                     .lineToX(12)
-                    .afterTime(0, new RaiseArm(0.5, 350))
-                    .afterTime(.5, new PlacePixelOnGround())
+                    .afterTime(0, new PlacePixelOnGround())
+                    .afterTime(0.5, new LowerArm(0.5, 350))
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
-                    .lineToY(multiplier * -33)
+                    .lineToY(multiplier * -36)
                     .strafeTo(new Vector2d(14, multiplier * -36))
                     .turnTo(-Math.PI / 2)
                     .waitSeconds(1)
-                    .afterTime(0, new RaiseArm(0.5, 350))
-                    .afterTime(.5, new PlacePixelOnGround())
+                    .afterTime(0, new PlacePixelOnGround())
+                    .afterTime(0.5, new LowerArm(0.5, 350))
                     .afterTime(2, new VomitPixelOnGround())
-                    .waitSeconds(3)
-                    .strafeTo(new Vector2d(24, multiplier * -36));
+                    .waitSeconds(3);
         } else {
             actionBuilder = actionBuilder
-                    .lineToY(multiplier * -30)
+                    .lineToY(multiplier * -36)
                     .turnTo(0.00001)
                     .lineToX(35)
-                    .afterTime(0, new RaiseArm(0.5, 350))
-                    .afterTime(.5, new PlacePixelOnGround())
+                    .afterTime(0, new PlacePixelOnGround())
+                    .afterTime(0.5, new LowerArm(0.5, 350))
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3);
         }
 
-        actionBuilder = actionBuilder.lineToX(42)
+        actionBuilder = actionBuilder.lineToX(38)
+                .afterTime(0, new RaiseArm(0.5, 500))
                 .afterTime(0, new PlacePixelOnBackDrop());
 
-        double pos = -32;
-        double pos2 = -8;
+        double pos = -36;
+        double pos2 = -12;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -25;
+            pos = -28;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -42;
+            pos = -44;
             pos2 = -10;
         }
-        pos2 = -61;
+//        pos2 = -61;
         actionBuilder = actionBuilder
                 .turnTo(Math.PI - 0.04)
                 .lineToX(47)
-                .afterTime(0, new LowerArm())
                 .waitSeconds(1)
-                .afterTime(0, new LowerArm())
-                .strafeToConstantHeading(new Vector2d(56, multiplier * pos))
+                .strafeToConstantHeading(new Vector2d(49, multiplier * pos))
                 .afterTime(1, new VomitPixelOnBackdrop())
                 .afterTime(2.2, new RaiseArm())
                 .afterTime(2.3, new GrabPixel())
                 .waitSeconds(2)
-                .strafeToConstantHeading(new Vector2d(42, multiplier * pos2))
+                .strafeToConstantHeading(new Vector2d(36, multiplier * pos2))
+                .afterTime(0.5, new LowerArm(0.5, 700))
                 .turn(multiplier * 0.00001)
                 .lineToX(60);
 
+        // For testing placing on backdrop
 //        actionBuilder = drive.actionBuilder(drive.pose)
 //                        .afterTime(0, new RaiseArm())
 //                        .afterTime(.5, new PlacePixelOnGround())
 //                        .afterTime(1.7, new VomitPixelOnGround())
 //                        .afterTime(4, new PlacePixelOnBackDrop())
 //                        .afterTime(5, new LowerArm());
+
         Actions.runBlocking(actionBuilder.build());
     }
 }

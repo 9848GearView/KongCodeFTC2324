@@ -8,10 +8,10 @@ public class AutoServoConstants {
     public static final double[] RingerPositions = {0.30, 0.58, 1};
 
 
-    public static final double[]  LEServoPositions = {0.15, 0.3, .8/*0.80*/};
-    public static final double[] REServoPositions = {0.15, 0.3, .8};
-    public static final double[] WServoPositions = {0.95, .36, .46};
-    public static final double[] ClawLPositions = {0.1, 0.65, 0.82};
+    public static final double[]  LEServoPositions = {0.15, 0.3, .8, .9};
+    public static final double[] REServoPositions = {0.15, 0.3, .8, .9};
+    public static final double[] WServoPositions = {.95, .54, .54, 0.73};
+    public static final double[] ClawLPositions = {0, 0.65, 0.82};
     public static final double[] ClawRPositions = {0, 0.65, 0.82};
     public static final double[] FingerFPositions = {0.6, 0.1}; //Ben: moved servo finger to close better, servo positions changed
     public static final double[] FingerBPositions = {1, .7};
