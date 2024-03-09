@@ -532,7 +532,7 @@ public class NewKongBlueStacks extends LinearOpMode
                     .strafeTo(new Vector2d(-43, multiplier * -34))
                     .afterTime(.5, new PlacePixelOnGround())
                     .turnTo(Math.PI + 0.00001)
-                    .afterTime(0.5, new LowerArm(0.5, 350))
+                    .afterTime(0.5, new LowerArm(0.5, 320))
                     .lineToX(-36)
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3)
@@ -545,16 +545,16 @@ public class NewKongBlueStacks extends LinearOpMode
                     .strafeTo(new Vector2d(-48, multiplier * -12))
                     .strafeTo(new Vector2d(-36, multiplier * -12))
                     .afterTime(.5, new PlacePixelOnGround())
-                    .afterTime(0.5, new LowerArm(0.5, 350))
+                    .afterTime(0.5, new LowerArm(0.5, 320))
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3)
                     .turnTo(Math.PI);
         } else {
             actionBuilder = actionBuilder
-                    .strafeTo(new Vector2d(-35, multiplier * -33))
+                    .strafeTo(new Vector2d(-32, multiplier * -33))
                     .turnTo(0.00001)
                     .afterTime(.5, new PlacePixelOnGround())
-                    .afterTime(0.5, new LowerArm(0.5, 350))
+                    .afterTime(0.5, new LowerArm(0.5, 320))
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3)
                     .strafeTo(new Vector2d(-40, multiplier * -12))
@@ -575,7 +575,7 @@ public class NewKongBlueStacks extends LinearOpMode
             pos2 = -8;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -30;
+            pos = -28;
             pos2 = -10;
         }
         actionBuilder = actionBuilder
