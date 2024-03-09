@@ -531,7 +531,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
 
         if (smp == SpikeMarkPosition.TRES) {
             actionBuilder = actionBuilder
-                    .lineToY(multiplier * -33)
+                    .lineToY(multiplier * -35)
                     .turnTo(0.00001)
                     .lineToX(12)
                     .afterTime(0, new PlacePixelOnGround())
