@@ -519,45 +519,45 @@ public class NewKongRedBackdrop extends LinearOpMode
                     .turnTo(0.00001)
                     .lineToX(12)
                     .afterTime(0, new PlacePixelOnGround())
-                    .afterTime(0.5, new LowerArm(0.5, 350))
+                    .afterTime(0.5, new LowerArm(0.5, 380))
                     .afterTime(2, new VomitPixelOnGround())
-                    .waitSeconds(3);
+                    .waitSeconds(3)
+                    .lineToX(38);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -36)
-                    .strafeTo(new Vector2d(14, multiplier * -36))
-                    .turnTo(-Math.PI / 2)
+                    .strafeTo(new Vector2d(17, multiplier * -38))
+                    .turnTo(-Math.PI / 2 + 0.00001)
                     .waitSeconds(1)
                     .afterTime(0, new PlacePixelOnGround())
-                    .afterTime(0.5, new LowerArm(0.5, 350))
+                    .afterTime(0.5, new LowerArm(0.5, 380))
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3);
         } else {
             actionBuilder = actionBuilder
-                    .lineToY(multiplier * -36)
+                    .lineToY(multiplier * -34)
                     .turnTo(0.00001)
                     .lineToX(35)
                     .afterTime(0, new PlacePixelOnGround())
-                    .afterTime(0.5, new LowerArm(0.5, 350))
+                    .afterTime(0.5, new LowerArm(0.5, 380))
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3);
         }
 
-        actionBuilder = actionBuilder.lineToX(38)
-                .afterTime(0, new RaiseArm(0.5, 500))
+        actionBuilder = actionBuilder
+                .afterTime(0, new RaiseArm(0.5, 400))
                 .afterTime(0, new PlacePixelOnBackDrop());
 
-        double pos = -36;
+        double pos = -39;
         double pos2 = -12;
         if (smp == SpikeMarkPosition.UNO) {
             pos = -28;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -44;
+            pos = -42;
             pos2 = -10;
         }
-//        pos2 = -61;
         actionBuilder = actionBuilder
                 .turnTo(Math.PI - 0.04)
                 .lineToX(47)
