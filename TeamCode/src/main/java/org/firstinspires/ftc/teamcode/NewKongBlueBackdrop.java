@@ -543,7 +543,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -36)
                     .strafeTo(new Vector2d(17, multiplier * -38))
-                    .turnTo(-Math.PI / 2 + 0.00001)
+                    .turnTo(multiplier * -Math.PI / 2 + 0.00001)
                     .waitSeconds(1)
                     .afterTime(0, new PlacePixelOnGround())
                     .afterTime(0.5, new LowerArm(0.5, 380))
@@ -564,7 +564,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
                 .afterTime(0, new RaiseArm(0.5, 400))
                 .afterTime(0, new PlacePixelOnBackDrop());
 
-        double pos = -38;
+        double pos = -36;
         double pos2 = -8;
         if (smp == SpikeMarkPosition.TRES) {
             pos = -28;
