@@ -78,9 +78,11 @@ public class NewKongRedStacks extends LinearOpMode
     private Servo RightElbowServo = null;
     private Servo fingerF = null;
     private Servo fingerB = null;
-    private Servo ClawL = null;
-    private Servo ClawR = null;
-    private CRServo IntakeServo = null;
+    private Servo LeftIntakeServo = null;
+    private Servo RightIntakeServo = null;
+//    private Servo ClawL = null;
+//    private Servo ClawR = null;
+    private DcMotor IntakeMotor = null;
     private Servo PlaneLauncher = null;
     private boolean oldCrossPressed = true;
     private boolean oldTrianglePressed = true;
@@ -100,7 +102,8 @@ public class NewKongRedStacks extends LinearOpMode
     private double[] ClawRPositions = AutoServoConstants.ClawRPositions;
     private double[] FingerFPositions = AutoServoConstants.FingerFPositions;
     private double[] FingerBPositions = AutoServoConstants.FingerBPositions;
-
+    private double[] LeftIntakePositions = AutoServoConstants.LeftIntakePositions;
+    private double[] RightIntakePositions = AutoServoConstants.RightIntakePositions;
     private final int DELAY_BETWEEN_MOVES = 300;
 
     OpenCvWebcam webcam;
@@ -149,22 +152,22 @@ public class NewKongRedStacks extends LinearOpMode
         }
     }
 
-    class PutClawsToCertainPosition extends TimerTask {
-        int i;
-
-        public PutClawsToCertainPosition(int i) {
-            this.i = i;
-        }
-
-        public void run() {
-            ClawL.setPosition(ClawLPositions[i]);
-            ClawR.setPosition(ClawRPositions[i]);
-
-            telemetry.addData("index", i);
-            telemetry.update();
-
-        }
-    }
+//    class PutClawsToCertainPosition extends TimerTask {
+//        int i;
+//
+//        public PutClawsToCertainPosition(int i) {
+//            this.i = i;
+//        }
+//
+//        public void run() {
+//            ClawL.setPosition(ClawLPositions[i]);
+//            ClawR.setPosition(ClawRPositions[i]);
+//
+//            telemetry.addData("index", i);
+//            telemetry.update();
+//
+//        }
+//    }
     class fLockPixelToggle extends TimerTask {
         int i;
 
@@ -255,12 +258,45 @@ public class NewKongRedStacks extends LinearOpMode
                 }
             }, 0);
         }
+    }
 
+    class PutBoxToCertainPosition extends TimerTask {
+        int i;
+
+        public PutBoxToCertainPosition(int i) {
+            this.i = i;
+        }
+
+        public void run() {
+            WristServo.setPosition(WServoPositions[i]);
+
+            telemetry.addData("index", i);
+            telemetry.update();
+
+        }
+    }
+
+    class PutIntakeToCertainPosition extends TimerTask {
+        int i;
+
+        public PutIntakeToCertainPosition(int i) {
+            this.i = i;
+        }
+
+        public void run() {
+            LeftIntakeServo.setPosition(LeftIntakePositions[i]);
+            RightIntakeServo.setPosition(RightIntakePositions[i]);
+
+            telemetry.addData("intake index", i);
+            telemetry.update();
+
+        }
     }
 
     @Override
     public void runOpMode()
     {
+
         /**
          * NOTE: Many comments have been omitted from this sample for the
          * sake of conciseness. If you're just starting out with EasyOpenCv,
@@ -279,7 +315,7 @@ public class NewKongRedStacks extends LinearOpMode
         FRMotor = hardwareMap.get(DcMotor.class, "FR");
         BLMotor = hardwareMap.get(DcMotor.class, "BL");
         BRMotor = hardwareMap.get(DcMotor.class, "BR");
-        IntakeServo = hardwareMap.get(CRServo.class, "IN");
+        IntakeMotor = hardwareMap.get(DcMotor.class, "IN");
         LeftSlide = hardwareMap.get(DcMotor.class, "LS");
         RightSlide = hardwareMap.get(DcMotor.class, "RS");
         LeftElbowServo = hardwareMap.get(Servo.class, "LE");
@@ -287,8 +323,8 @@ public class NewKongRedStacks extends LinearOpMode
         WristServo = hardwareMap.get(Servo.class, "W");
         fingerF = hardwareMap.get(Servo.class, "FF");
         fingerB = hardwareMap.get(Servo.class, "FB");
-        ClawL = hardwareMap.get(Servo.class, "CL");
-        ClawR = hardwareMap.get(Servo.class, "CR");
+        LeftIntakeServo = hardwareMap.get(Servo.class, "LI");
+        RightIntakeServo = hardwareMap.get(Servo.class, "RI");
         PlaneLauncher = hardwareMap.get(Servo.class, "PL");
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -306,15 +342,16 @@ public class NewKongRedStacks extends LinearOpMode
         FRMotor.setDirection(DcMotor.Direction.FORWARD);
         BLMotor.setDirection(DcMotor.Direction.REVERSE);
         BRMotor.setDirection(DcMotor.Direction.REVERSE);
-        IntakeServo.setDirection(CRServo.Direction.FORWARD);
+        IntakeMotor.setDirection(CRServo.Direction.FORWARD);
         LeftSlide.setDirection(DcMotor.Direction.REVERSE);
         RightSlide.setDirection(DcMotor.Direction.FORWARD);
         LeftElbowServo.setDirection(Servo.Direction.REVERSE);
         RightElbowServo.setDirection(Servo.Direction.FORWARD);
         WristServo.setDirection(Servo.Direction.FORWARD);
         fingerF.setDirection(Servo.Direction.FORWARD);
-        ClawL.setDirection(Servo.Direction.FORWARD);
-        ClawR.setDirection(Servo.Direction.FORWARD);
+        fingerB.setDirection(Servo.Direction.FORWARD);
+        LeftIntakeServo.setDirection(Servo.Direction.FORWARD);
+        RightIntakeServo.setDirection(Servo.Direction.REVERSE);
         PlaneLauncher.setDirection(Servo.Direction.REVERSE);
 
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -324,13 +361,12 @@ public class NewKongRedStacks extends LinearOpMode
         LeftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-//        timer.schedule(new PutGrabberToCertainPosition(0), 0);
         new LowerArmToCertainServoPosition(0).run();
-        new PutClawsToCertainPosition(0).run();
+//        new PutClawsToCertainPosition(0).run();
         new fLockPixelToggle(1).run();
         new bLockPixelToggle(1).run();
-        new SetBoxToCertainPosition(0).run();
-        PlaneLauncher.setPosition(.57);
+        new PutBoxToCertainPosition(1).run();
+//        new PutIntakeToCertainPosition(2).run();
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -387,6 +423,7 @@ public class NewKongRedStacks extends LinearOpMode
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
             timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
             return false;
         }
     }
@@ -395,7 +432,7 @@ public class NewKongRedStacks extends LinearOpMode
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             timer.schedule(new LowerArmToCertainServoPosition(1), 0 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new LowerArmToCertainServoPosition(2), 1 * DELAY_BETWEEN_MOVES);
+            timer.schedule(new LowerArmToCertainServoPosition(2), 1 * DELAY_BETWEEN_MOVES); //no 3 index
             timer.schedule(new SetBoxToCertainPosition(1), 1 * DELAY_BETWEEN_MOVES);
             return false;
         }
@@ -416,6 +453,22 @@ public class NewKongRedStacks extends LinearOpMode
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             timer.schedule(new LowerArmToCertainServoPosition(0), 0 * DELAY_BETWEEN_MOVES);
             timer.schedule(new SetBoxToCertainPosition(0), 0 * DELAY_BETWEEN_MOVES);
+            return false;
+        }
+    }
+
+    public class RaiseIntake implements Action {
+        int i;
+        public RaiseIntake(int i) {
+            this.i = i;
+        }
+        public RaiseIntake() {
+            this.i = 2;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            new PutIntakeToCertainPosition(i).run();
             return false;
         }
     }
@@ -444,7 +497,7 @@ public class NewKongRedStacks extends LinearOpMode
         double p;
         int t;
         public LowerArm(double p, int t) {
-            this.p = p;
+            this.p = -p;
             this.t = t;
         }
         public LowerArm() {
@@ -460,60 +513,59 @@ public class NewKongRedStacks extends LinearOpMode
     }
 
     private void doActions(MecanumDrive drive, StartingPositionEnum position, SpikeMarkPosition smp) {
-        sleep(5000);
-//        smp = SpikeMarkPosition.TRES;
+//        sleep(5000);
+//        smp = SpikeMarkPosition.UNO;
         boolean needInvert = (position != StartingPositionEnum.RIGHT);
         double multiplier = 1;
         if (needInvert) {
             multiplier = -1;
         }
 
+        new PutIntakeToCertainPosition(0).run();
+
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
-                .turn(multiplier * 0.00001);
+                .turn(multiplier * 0.00001)
+                .afterTime(0, new RaiseArm(0.5, 1000));
 
         if (smp == SpikeMarkPosition.TRES) {
             actionBuilder = actionBuilder
-                    .strafeTo(new Vector2d(-45, -33))
-                    .afterTime(0, new RaiseArm(0.5, 350))
+                    .strafeTo(new Vector2d(-44, multiplier * -33))
                     .afterTime(.5, new PlacePixelOnGround())
                     .turnTo(Math.PI + 0.00001)
-                    .lineToX(-37)
+                    .afterTime(0.5, new LowerArm(0.5, 320))
+                    .lineToX(-36)
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3)
                     .lineToX(-45)
-                    .strafeTo(new Vector2d(-45, -10.5))
-                    .afterTime(0, new GrabPixel())
+                    .strafeTo(new Vector2d(-46, multiplier * -10.5))
                     .turnTo(Math.PI);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
-                    .lineToY(-12)
-                    .afterTime(0, new RaiseArm(0.5, 350))
+                    .afterTime(0, new RaiseIntake(2))
+                    .strafeTo(new Vector2d(-48, multiplier * -13))
+                    .strafeTo(new Vector2d(-36, multiplier * -13))
                     .afterTime(.5, new PlacePixelOnGround())
+                    .afterTime(0.5, new LowerArm(0.5, 320))
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3)
-                    .afterTime(0, new GrabPixel())
-                    .lineToY(-10.5)
                     .turnTo(Math.PI);
         } else {
             actionBuilder = actionBuilder
-                    .lineToY(-34)
+                    .strafeTo(new Vector2d(-33, multiplier * -33))
                     .turnTo(0.00001)
-                    .afterTime(0, new RaiseArm(0.5, 350))
                     .afterTime(.5, new PlacePixelOnGround())
+                    .afterTime(0.5, new LowerArm(0.5, 320))
                     .afterTime(2, new VomitPixelOnGround())
                     .waitSeconds(3)
-                    .afterTime(0, new GrabPixel())
-                    .strafeTo(new Vector2d(-39, -10.5))
-                    .turnTo(Math.PI /*+ 0.0005*/);
+                    .strafeTo(new Vector2d(-40, multiplier * -12))
+                    .turnTo(Math.PI);
         }
 
         actionBuilder = actionBuilder
-                .afterTime(0, new LowerArm())
-                .lineToX(47)
-                .turnTo(Math.PI)
-                .afterTime(0, new PlacePixelOnBackDrop());
+                .lineToX(24)
+                .turnTo(Math.PI);
 
-        double pos = -33;
+        double pos = -36;
         double pos2 = -8;
         if (smp == SpikeMarkPosition.UNO) {
             pos = -28;
@@ -523,20 +575,24 @@ public class NewKongRedStacks extends LinearOpMode
             pos2 = -58;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -40;
+            pos = -40.5;
             pos2 = -58;
         }
         actionBuilder = actionBuilder
-                .strafeToConstantHeading(new Vector2d(56, multiplier * pos))
+                .afterTime(0, new PlacePixelOnBackDrop())
                 .afterTime(0, new RaiseArm(0.5, 350))
+                .strafeToConstantHeading(new Vector2d(49, multiplier * pos))
                 .afterTime(2, new VomitPixelOnBackdrop())
                 .afterTime(3.2, new RaiseArm())
                 .afterTime(3.3, new GrabPixel())
                 .waitSeconds(3)
                 .strafeToConstantHeading(new Vector2d(42, multiplier * pos2))
                 .turn(multiplier * 0.00001)
-                .lineToX(60);
+                .lineToX(60)
+                .afterTime(0, new RaiseIntake(0))
+                .afterTime(0, new LowerArm(0.5, 700));
 
+        // For testing placing on backdrop
 //        actionBuilder = drive.actionBuilder(drive.pose)
 //                        .afterTime(0, new RaiseArm())
 //                        .afterTime(.5, new PlacePixelOnGround())
