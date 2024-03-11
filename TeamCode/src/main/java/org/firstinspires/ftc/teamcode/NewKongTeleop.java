@@ -370,7 +370,6 @@ public class NewKongTeleop extends LinearOpMode {
         new fLockPixelToggle(0).run();
         new bLockPixelToggle(0).run();
         new PutBoxToCertainPosition(0).run();
-        new PutIntakeToCertainPosition(2).run();
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -586,7 +585,7 @@ public class NewKongTeleop extends LinearOpMode {
             }
 
             // Lights
-            if (frontColorSensor.red() + frontColorSensor.green() + frontColorSensor.blue() < 700) {
+            if (Math.abs(fingerF.getPosition() - FingerFPositions[1]) < 0.01) {
                 LULEDR.setState(true);
                 RULEDR.setState(true);
                 LULEDG.setState(false);
@@ -598,7 +597,7 @@ public class NewKongTeleop extends LinearOpMode {
                 RULEDG.setState(true);
             }
 
-            if (backFingerLocked) {
+            if (Math.abs(fingerB.getPosition() - FingerBPositions[1]) < 0.01) {
                 LDLEDR.setState(true);
                 RDLEDR.setState(true);
                 LDLEDG.setState(false);
@@ -626,8 +625,8 @@ public class NewKongTeleop extends LinearOpMode {
             telemetry.addData("dpad_right", DpadRight);
             telemetry.addData("pos", intakePos);
             telemetry.addData("manual intake control", manualIntakeControl);
-            telemetry.addData("backFingerLocked", backFingerLocked);
-            telemetry.addData("FingerFinished", fingerMovementFinished);
+            telemetry.addData("fposition", fingerF.getPosition());
+            telemetry.addData("bposition", fingerB.getPosition());
             telemetry.update();
             oldCrossPressed = crossPressed;
             oldCirclePressed = circlePressed;
