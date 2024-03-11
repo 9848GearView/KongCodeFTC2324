@@ -415,7 +415,7 @@ public class NewKongRedBackdrop extends LinearOpMode
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
             timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new SetBoxToCertainPosition(0), 500);
+//            timer.schedule(new SetBoxToCertainPosition(0), 500);
             return false;
         }
     }
@@ -445,7 +445,6 @@ public class NewKongRedBackdrop extends LinearOpMode
             timer.schedule(new LowerArmToCertainServoPosition(1), 0 * DELAY_BETWEEN_MOVES);
             timer.schedule(new LowerArmToCertainServoPosition(3), 1 * DELAY_BETWEEN_MOVES);
             timer.schedule(new SetBoxToCertainPosition(2), 0);
-            timer.schedule(new fLockPixelToggle(0), 3 * DELAY_BETWEEN_MOVES);
             return false;
         }
     }
@@ -455,6 +454,22 @@ public class NewKongRedBackdrop extends LinearOpMode
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             timer.schedule(new LowerArmToCertainServoPosition(0), 0 * DELAY_BETWEEN_MOVES);
             timer.schedule(new SetBoxToCertainPosition(0), 0 * DELAY_BETWEEN_MOVES);
+            return false;
+        }
+    }
+
+    public class RaiseIntake implements Action {
+        int i;
+        public RaiseIntake(int i) {
+            this.i = i;
+        }
+        public RaiseIntake() {
+            this.i = 2;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            new PutIntakeToCertainPosition(i).run();
             return false;
         }
     }
@@ -506,9 +521,8 @@ public class NewKongRedBackdrop extends LinearOpMode
             multiplier = -1;
         }
 
-        new PutIntakeToCertainPosition(0).run();
-
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
+                .afterTime(0, new RaiseIntake(0))
                 .strafeTo(new Vector2d(17, multiplier * -63))
                 .turn(multiplier * 0.00001)
                 .afterTime(0, new RaiseArm(0.5, 1000));
@@ -517,41 +531,44 @@ public class NewKongRedBackdrop extends LinearOpMode
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -36)
                     .turnTo(0.00001)
-                    .lineToX(12)
+                    .lineToX(15)
                     .afterTime(0, new PlacePixelOnGround())
-                    .afterTime(0.5, new LowerArm(0.5, 380))
-                    .afterTime(2, new VomitPixelOnGround())
+                    .afterTime(0, new LowerArm(0.5, 400))
+                    .afterTime(1.5, new VomitPixelOnGround())
+                    .afterTime(2, new RaiseArm(0.5, 400))
                     .waitSeconds(3)
                     .lineToX(38);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -36)
-                    .strafeTo(new Vector2d(17, multiplier * -38))
+                    .strafeTo(new Vector2d(18, multiplier * -41))
                     .turnTo(-Math.PI / 2 + 0.00001)
                     .waitSeconds(1)
                     .afterTime(0, new PlacePixelOnGround())
-                    .afterTime(0.5, new LowerArm(0.5, 380))
-                    .afterTime(2, new VomitPixelOnGround())
+                    .afterTime(0, new LowerArm(0.5, 400))
+                    .afterTime(1.5, new VomitPixelOnGround())
+                    .afterTime(2, new RaiseArm(0.5, 400))
                     .waitSeconds(3);
         } else {
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -34)
                     .turnTo(0.00001)
-                    .lineToX(35)
+                    .lineToX(37)
                     .afterTime(0, new PlacePixelOnGround())
-                    .afterTime(0.5, new LowerArm(0.5, 380))
-                    .afterTime(2, new VomitPixelOnGround())
+                    .afterTime(0, new LowerArm(0.5, 400))
+                    .afterTime(1.5, new VomitPixelOnGround())
+                    .afterTime(2, new RaiseArm(0.5, 400))
                     .waitSeconds(3);
         }
 
         actionBuilder = actionBuilder
-                .afterTime(0, new RaiseArm(0.5, 400))
+                .afterTime(0, new RaiseArm(0.5, 200))
                 .afterTime(0, new PlacePixelOnBackDrop());
 
-        double pos = -39;
-        double pos2 = -12;
+        double pos = -42;
+        double pos2 = -15;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -28;
+            pos = -27;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
@@ -560,9 +577,9 @@ public class NewKongRedBackdrop extends LinearOpMode
         }
         actionBuilder = actionBuilder
                 .turnTo(Math.PI - 0.04)
-                .lineToX(47)
+                .lineToX(42)
                 .waitSeconds(1)
-                .strafeToConstantHeading(new Vector2d(49, multiplier * pos))
+                .strafeToConstantHeading(new Vector2d(48, multiplier * pos))
                 .afterTime(1, new VomitPixelOnBackdrop())
                 .afterTime(2.2, new RaiseArm())
                 .afterTime(2.3, new GrabPixel())
@@ -570,7 +587,8 @@ public class NewKongRedBackdrop extends LinearOpMode
                 .strafeToConstantHeading(new Vector2d(36, multiplier * pos2))
                 .afterTime(0.5, new LowerArm(0.5, 700))
                 .turn(multiplier * 0.00001)
-                .lineToX(60);
+                .lineToX(60)
+                .afterTime(0, new RaiseIntake(0));
 
         // For testing placing on backdrop
 //        actionBuilder = drive.actionBuilder(drive.pose)
