@@ -541,26 +541,26 @@ public class NewKongBlueStacks extends LinearOpMode
                     .turnTo(Math.PI);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
-                    .afterTime(0, new RaiseIntake(0))
+                    .afterTime(.5, new PlacePixelOnGround())
+                    .afterTime(1.3, new RaiseIntake(2))
                     .strafeTo(new Vector2d(-48, multiplier * -12))
                     .strafeTo(new Vector2d(-36, multiplier * -12))
-                    .afterTime(.5, new PlacePixelOnGround())
                     .afterTime(0, new LowerArm(0.5, 400))
                     .afterTime(2, new VomitPixelOnGround())
-                    .afterTime(2, new RaiseIntake(2))
                     .afterTime(2.6, new RaiseArm(0.5, 400))
                     .waitSeconds(3)
-                    .turnTo(Math.PI);
+                    .strafeToLinearHeading(new Vector2d(-48, multiplier * -12), Math.PI + 0.00001);
+//                    .turnTo(Math.PI);
         } else {
             actionBuilder = actionBuilder
-                    .afterTime(0, new RaiseIntake(0))
-                    .strafeTo(new Vector2d(-46, multiplier * -12))
                     .afterTime(.5, new PlacePixelOnGround())
+                    .afterTime(1.3, new RaiseIntake(2))
+                    .strafeTo(new Vector2d(-48, multiplier * -14))
                     .afterTime(0, new LowerArm(0.5, 400))
                     .afterTime(2, new VomitPixelOnGround())
-                    .afterTime(2, new RaiseIntake(2))
                     .afterTime(2.6, new RaiseArm(0.5, 400))
                     .waitSeconds(3)
+                    .strafeTo(new Vector2d(-47, multiplier * -12))
                     .turnTo(Math.PI);
         }
 
@@ -593,8 +593,8 @@ public class NewKongBlueStacks extends LinearOpMode
                 .waitSeconds(3)
                 .strafeToConstantHeading(new Vector2d(42, multiplier * pos2))
                 .turn(multiplier * 0.00001)
-                .lineToX(60)
-                .afterTime(0, new LowerArm(0.5, 700));
+                .afterTime(0, new LowerArm(0.5, 700))
+                .lineToX(60);
 
         // For testing placing on backdrop
 //        actionBuilder = drive.actionBuilder(drive.pose)
