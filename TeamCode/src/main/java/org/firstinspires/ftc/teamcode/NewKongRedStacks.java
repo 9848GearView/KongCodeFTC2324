@@ -366,7 +366,7 @@ public class NewKongRedStacks extends LinearOpMode
         new fLockPixelToggle(1).run();
         new bLockPixelToggle(1).run();
         new PutBoxToCertainPosition(1).run();
-//        new PutIntakeToCertainPosition(2).run();
+        new PutIntakeToCertainPosition(2).run();
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -414,7 +414,7 @@ public class NewKongRedStacks extends LinearOpMode
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
             timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-            timer.schedule(new SetBoxToCertainPosition(0), 1000);
+//            timer.schedule(new SetBoxToCertainPosition(0), 1000);
             return false;
         }
     }
@@ -521,76 +521,80 @@ public class NewKongRedStacks extends LinearOpMode
             multiplier = -1;
         }
 
-        new PutIntakeToCertainPosition(0).run();
-
         TrajectoryActionBuilder actionBuilder = drive.actionBuilder(drive.pose)
+                .afterTime(0, new RaiseIntake(0))
                 .turn(multiplier * 0.00001)
                 .afterTime(0, new RaiseArm(0.5, 1000));
 
         if (smp == SpikeMarkPosition.TRES) {
             actionBuilder = actionBuilder
-                    .strafeTo(new Vector2d(-44, multiplier * -33))
+                    .strafeTo(new Vector2d(-43, multiplier * -36))
                     .afterTime(.5, new PlacePixelOnGround())
                     .turnTo(Math.PI + 0.00001)
-                    .afterTime(0.5, new LowerArm(0.5, 320))
-                    .lineToX(-36)
-                    .afterTime(2, new VomitPixelOnGround())
+                    .lineToX(-38)
+                    .afterTime(0, new LowerArm(0.5, 400))
+                    .afterTime(1.5, new VomitPixelOnGround())
+                    .afterTime(2, new RaiseArm(0.5, 400))
                     .waitSeconds(3)
                     .lineToX(-45)
                     .strafeTo(new Vector2d(-46, multiplier * -10.5))
                     .turnTo(Math.PI);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
-                    .afterTime(0, new RaiseIntake(2))
-                    .strafeTo(new Vector2d(-48, multiplier * -13))
-                    .strafeTo(new Vector2d(-36, multiplier * -13))
                     .afterTime(.5, new PlacePixelOnGround())
-                    .afterTime(0.5, new LowerArm(0.5, 320))
+                    .afterTime(1.3, new RaiseIntake(2))
+                    .strafeTo(new Vector2d(-48, multiplier * -12))
+                    .strafeTo(new Vector2d(-36, multiplier * -12))
+                    .afterTime(0, new LowerArm(0.5, 400))
                     .afterTime(2, new VomitPixelOnGround())
+                    .afterTime(2.6, new RaiseArm(0.5, 400))
                     .waitSeconds(3)
-                    .turnTo(Math.PI);
+                    .strafeToLinearHeading(new Vector2d(-48, multiplier * -12), Math.PI + 0.00001);
+//                    .turnTo(Math.PI);
         } else {
             actionBuilder = actionBuilder
-                    .strafeTo(new Vector2d(-33, multiplier * -33))
-                    .turnTo(0.00001)
                     .afterTime(.5, new PlacePixelOnGround())
-                    .afterTime(0.5, new LowerArm(0.5, 320))
+                    .afterTime(1.3, new RaiseIntake(2))
+                    .strafeTo(new Vector2d(-48, multiplier * -14))
+                    .afterTime(0, new LowerArm(0.5, 400))
                     .afterTime(2, new VomitPixelOnGround())
+                    .afterTime(2.6, new RaiseArm(0.5, 400))
                     .waitSeconds(3)
-                    .strafeTo(new Vector2d(-40, multiplier * -12))
+                    .strafeTo(new Vector2d(-47, multiplier * -12))
                     .turnTo(Math.PI);
         }
 
         actionBuilder = actionBuilder
+                .afterTime(0, new LowerArm(0.5, 700))
+                .afterTime(0, new PlacePixelOnBackDrop())
                 .lineToX(24)
                 .turnTo(Math.PI);
 
-        double pos = -36;
+        double pos = -33.75;
         double pos2 = -8;
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -28;
+            pos = -26;
             pos2 = -8;
         }
         if (smp == SpikeMarkPosition.DOS) {
             pos2 = -58;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -40.5;
+            pos = -39.5;
             pos2 = -58;
         }
         actionBuilder = actionBuilder
-                .afterTime(0, new PlacePixelOnBackDrop())
-                .afterTime(0, new RaiseArm(0.5, 350))
-                .strafeToConstantHeading(new Vector2d(49, multiplier * pos))
-                .afterTime(2, new VomitPixelOnBackdrop())
+                .afterTime(0, new RaiseArm(0.5, 800))
+                .strafeToConstantHeading(new Vector2d(48, multiplier * pos))
+                .afterTime(2.5, new VomitPixelOnBackdrop())
                 .afterTime(3.2, new RaiseArm())
                 .afterTime(3.3, new GrabPixel())
+                .afterTime(2.5, new RaiseIntake(0))
                 .waitSeconds(3)
                 .strafeToConstantHeading(new Vector2d(42, multiplier * pos2))
                 .turn(multiplier * 0.00001)
-                .lineToX(60)
-                .afterTime(0, new RaiseIntake(0))
-                .afterTime(0, new LowerArm(0.5, 700));
+                .afterTime(0, new LowerArm(0.5, 700))
+                .lineToX(60);
 
         // For testing placing on backdrop
 //        actionBuilder = drive.actionBuilder(drive.pose)
@@ -599,6 +603,7 @@ public class NewKongRedStacks extends LinearOpMode
 //                        .afterTime(1.7, new VomitPixelOnGround())
 //                        .afterTime(4, new PlacePixelOnBackDrop())
 //                        .afterTime(5, new LowerArm());
+
         Actions.runBlocking(actionBuilder.build());
     }
 }
