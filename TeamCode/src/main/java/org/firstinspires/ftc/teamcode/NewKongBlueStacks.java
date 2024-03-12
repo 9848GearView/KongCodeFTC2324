@@ -366,7 +366,7 @@ public class NewKongBlueStacks extends LinearOpMode
         new fLockPixelToggle(1).run();
         new bLockPixelToggle(1).run();
         new PutBoxToCertainPosition(1).run();
-//        new PutIntakeToCertainPosition(2).run();
+        new PutIntakeToCertainPosition(2).run();
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -541,26 +541,27 @@ public class NewKongBlueStacks extends LinearOpMode
                     .turnTo(Math.PI);
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
-                    .afterTime(0, new RaiseIntake(2))
+                    .afterTime(0, new RaiseIntake(0))
                     .strafeTo(new Vector2d(-48, multiplier * -12))
                     .strafeTo(new Vector2d(-36, multiplier * -12))
                     .afterTime(.5, new PlacePixelOnGround())
                     .afterTime(0, new LowerArm(0.5, 400))
-                    .afterTime(1.5, new VomitPixelOnGround())
-                    .afterTime(2, new RaiseArm(0.5, 400))
+                    .afterTime(2, new VomitPixelOnGround())
+                    .afterTime(2, new RaiseIntake(2))
+                    .afterTime(2.6, new RaiseArm(0.5, 400))
                     .waitSeconds(3)
                     .turnTo(Math.PI);
         } else {
             actionBuilder = actionBuilder
-                    .strafeTo(new Vector2d(-32, multiplier * -33))
-                    .turnTo(0.00001)
+                    .afterTime(0, new RaiseIntake(0))
+                    .strafeTo(new Vector2d(-46, multiplier * -12))
                     .afterTime(.5, new PlacePixelOnGround())
                     .afterTime(0, new LowerArm(0.5, 400))
-                    .afterTime(1.5, new VomitPixelOnGround())
-                    .afterTime(2, new RaiseArm(0.5, 400))
+                    .afterTime(2, new VomitPixelOnGround())
+                    .afterTime(2, new RaiseIntake(2))
+                    .afterTime(2.6, new RaiseArm(0.5, 400))
                     .waitSeconds(3)
-                    .strafeTo(new Vector2d(-40, multiplier * -12))
-                    .turnTo(Math.PI + 0.02);
+                    .turnTo(Math.PI);
         }
 
         actionBuilder = actionBuilder
@@ -569,7 +570,7 @@ public class NewKongBlueStacks extends LinearOpMode
                 .lineToX(24)
                 .turnTo(Math.PI);
 
-        double pos = -33.5;
+        double pos = -33.75;
         double pos2 = -8;
         if (smp == SpikeMarkPosition.UNO) {
             pos = -39.5;
@@ -579,20 +580,20 @@ public class NewKongBlueStacks extends LinearOpMode
             pos2 = -8;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -28;
+            pos = -27;
             pos2 = -10;
         }
         actionBuilder = actionBuilder
-                .afterTime(0, new RaiseArm(0.5, 900))
+                .afterTime(0, new RaiseArm(0.5, 800))
                 .strafeToConstantHeading(new Vector2d(52, multiplier * pos))
                 .afterTime(2.5, new VomitPixelOnBackdrop())
                 .afterTime(3.2, new RaiseArm())
                 .afterTime(3.3, new GrabPixel())
+                .afterTime(2.5, new RaiseIntake(0))
                 .waitSeconds(3)
                 .strafeToConstantHeading(new Vector2d(42, multiplier * pos2))
                 .turn(multiplier * 0.00001)
                 .lineToX(60)
-                .afterTime(0, new RaiseIntake(0))
                 .afterTime(0, new LowerArm(0.5, 700));
 
         // For testing placing on backdrop
