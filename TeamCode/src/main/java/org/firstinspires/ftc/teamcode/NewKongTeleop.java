@@ -390,13 +390,13 @@ public class NewKongTeleop extends LinearOpMode {
             double BLPower = r * Math.sin(robotAngle) + rightX;
             double BRPower = r * Math.cos(robotAngle) - rightX;
 
-            double ratio = 1.0 / Math.max(Math.max(Math.abs(BLPower), Math.abs(BRPower)),
-                    Math.max(Math.abs(FLPower), Math.abs(FRPower)));
+//            double ratio = 1.0 / Math.max(Math.max(Math.abs(BLPower), Math.abs(BRPower)),
+//                    Math.max(Math.abs(FLPower), Math.abs(FRPower)));
 
-            FLPower *= ratio;// TODO: Remove later maybe idk
-            FRPower *= ratio;
-            BLPower *= ratio;
-            BRPower *= ratio;
+//            FLPower *= ratio;
+//            FRPower *= ratio;
+//            BLPower *= ratio;
+//            BRPower *= ratio;
 
             // Send calculated power to wheels
             if ((gamepad1.right_trigger > 0) || (gamepad1.left_trigger > 0)) {
@@ -454,14 +454,10 @@ public class NewKongTeleop extends LinearOpMode {
                 new setIsRobotMoving(false).run();
             }
 
-            if (index == 0) {
-                if (intakePos == 0) { //only if index == 0 ??
-                    IntakeMotor.setPower(gamepad2.dpad_up ? -1 : gamepad2.dpad_down ? 1 : 0);
-                } else {
-                    IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : gamepad2.dpad_down ? 0.75 : 0);
-                }
+            if (intakePos == 0 && index == 0) { //only if index == 0 ??
+                IntakeMotor.setPower(gamepad2.dpad_up ? -1 : gamepad2.dpad_down ? 1 : 0);
             } else {
-                IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : 0);
+                IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : gamepad2.dpad_down ? 0.75 : 0);
             }
 
             boolean DpadLeft = gamepad2.dpad_left;
