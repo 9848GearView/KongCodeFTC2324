@@ -38,6 +38,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
+import org.firstinspires.ftc.teamcode.constants.TeleopServoConstants;
 import org.firstinspires.ftc.teamcode.constants.TestServoConstants;
 
 import java.lang.Math;
@@ -92,6 +93,7 @@ public class NewKongTeleop extends LinearOpMode {
     private boolean oldCirclePressed = true;
     private boolean oldSquarePressed = true;
     private boolean oldRBumperPressed = true;
+    private double oldRTriggerPressed = 0;
     private boolean oldLBumper = true;
     private boolean oldStartPressed = true;
     private boolean firstSquarePressed = false;
@@ -102,15 +104,15 @@ public class NewKongTeleop extends LinearOpMode {
     private boolean fingerMovementFinished = true;
     private boolean intakeMoving = false;
     private int index = 0; // 0 is ready to intake, 2 is intermediate, 3 is ready to place
-    private double[] LEServoPositions = TestServoConstants.LEServoPositions;
-    private double[] REServoPositions = TestServoConstants.REServoPositions;
-    private double[] ClawLPositions = TestServoConstants.ClawLPositions;
-    private double[] WServoPositions = TestServoConstants.WServoPositions;
-    private double[] ClawRPositions = TestServoConstants.ClawRPositions;
-    private double[] FingerFPositions = TestServoConstants.FingerFPositions;
-    private double[] FingerBPositions = TestServoConstants.FingerBPositions;
-    private double[] LeftIntakePositions = TestServoConstants.LeftIntakePositions;
-    private double[] RightIntakePositions = TestServoConstants.RightIntakePositions;
+    private double[] LEServoPositions = TeleopServoConstants.LEServoPositions;
+    private double[] REServoPositions = TeleopServoConstants.REServoPositions;
+    private double[] ClawLPositions = TeleopServoConstants.ClawLPositions;
+    private double[] WServoPositions = TeleopServoConstants.WServoPositions;
+    private double[] ClawRPositions = TeleopServoConstants.ClawRPositions;
+    private double[] FingerFPositions = TeleopServoConstants.FingerFPositions;
+    private double[] FingerBPositions = TeleopServoConstants.FingerBPositions;
+    private double[] LeftIntakePositions = TeleopServoConstants.LeftIntakePositions;
+    private double[] RightIntakePositions = TeleopServoConstants.RightIntakePositions;
 
     private DigitalChannel LDLEDG;
     private DigitalChannel LULEDG;
@@ -492,10 +494,23 @@ public class NewKongTeleop extends LinearOpMode {
             boolean crossPressed = gamepad2.cross;
             boolean squarePressed = gamepad2.square;
             boolean rBumperPressed = gamepad2.right_bumper;
+            double rTriggerPressed = gamepad2.right_trigger;
             boolean startPressed = gamepad2.start;
 
             if (startPressed && !oldStartPressed) {
                 manualIntakeControl = !manualIntakeControl;
+            }
+
+            if (index == 3) {
+                if (rTriggerPressed > 0 && oldRTriggerPressed < 0.01) {
+                    WServoPositions[2] = Math.max(0, WServoPositions[2] - 0.03);
+                    new PutBoxToCertainPosition(2).run();
+                }
+
+                if (rBumperPressed && oldRBumperPressed) {
+                    WServoPositions[2] = Math.min(1, WServoPositions[2] + 0.03);
+                    new PutBoxToCertainPosition(2).run();
+                }
             }
 
             if (index == 0) { //bucket down
@@ -623,12 +638,14 @@ public class NewKongTeleop extends LinearOpMode {
             telemetry.addData("manual intake control", manualIntakeControl);
             telemetry.addData("fposition", fingerF.getPosition());
             telemetry.addData("bposition", fingerB.getPosition());
+            telemetry.addData("wservobackpos", WServoPositions[2]);
             telemetry.update();
             oldCrossPressed = crossPressed;
             oldCirclePressed = circlePressed;
             oldSquarePressed = squarePressed;
             oldTrianglePressed = trianglePressed;
             oldRBumperPressed = rBumperPressed;
+            oldRTriggerPressed = rTriggerPressed;
             oldLBumper = LBumper;
             oldStartPressed = startPressed;
             oldDpadLeft = DpadLeft;

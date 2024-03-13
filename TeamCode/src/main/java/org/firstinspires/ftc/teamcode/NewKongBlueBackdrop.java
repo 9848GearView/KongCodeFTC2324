@@ -541,6 +541,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -36)
+                    //add intake up line to not hit truss?
                     .strafeTo(new Vector2d(16, multiplier * -40))
                     .turnTo(multiplier * -Math.PI / 2 + 0.00001)
                     .waitSeconds(1)
@@ -562,10 +563,10 @@ public class NewKongBlueBackdrop extends LinearOpMode
         }
 
         actionBuilder = actionBuilder
-                .afterTime(0, new RaiseArm(0.5, 100))
+                .afterTime(0, new RaiseArm(0.5, 50))
                 .afterTime(0, new PlacePixelOnBackDrop());
 
-        double pos = -35;
+        double pos = -34;
         double pos2 = -10;
         if (smp == SpikeMarkPosition.TRES) {
             pos = -28;
@@ -575,11 +576,12 @@ public class NewKongBlueBackdrop extends LinearOpMode
             pos = -44;
             pos2 = -10;
         }
+        pos2 = -61;
         actionBuilder = actionBuilder
                 .turnTo(Math.PI + 0.04)
                 .lineToX(42)
                 .waitSeconds(1)
-                .strafeToConstantHeading(new Vector2d(48, multiplier * pos))
+                .strafeToConstantHeading(new Vector2d(49.5, multiplier * pos))
                 .afterTime(1, new VomitPixelOnBackdrop())
                 .afterTime(2.2, new RaiseArm())
                 .afterTime(2.3, new GrabPixel())
