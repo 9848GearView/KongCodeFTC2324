@@ -366,7 +366,9 @@ public class NewKongRedBackdrop extends LinearOpMode
         new fLockPixelToggle(1).run();
         new bLockPixelToggle(1).run();
         new PutBoxToCertainPosition(1).run();
-//        new PutIntakeToCertainPosition(2).run();
+        new PutIntakeToCertainPosition(2).run();
+        PlaneLauncher.setPosition(0.79);
+
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -541,7 +543,7 @@ public class NewKongRedBackdrop extends LinearOpMode
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -36)
-                    .strafeTo(new Vector2d(18, multiplier * -41))
+                    .strafeTo(new Vector2d(18, multiplier * -38))
                     .turnTo(-Math.PI / 2 + 0.00001)
                     .waitSeconds(1)
                     .afterTime(0, new PlacePixelOnGround())

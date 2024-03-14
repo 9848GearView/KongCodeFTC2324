@@ -42,6 +42,7 @@ import org.firstinspires.ftc.teamcode.constants.TeleopServoConstants;
 import org.firstinspires.ftc.teamcode.constants.TestServoConstants;
 
 import java.lang.Math;
+import java.sql.Time;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -96,6 +97,7 @@ public class NewKongTeleop extends LinearOpMode {
     private double oldRTriggerPressed = 0;
     private boolean oldLBumper = true;
     private boolean oldStartPressed = true;
+    private boolean oldBackPressed = true;
     private boolean firstSquarePressed = false;
     private boolean oldDpadLeft = true;
     private boolean oldDpadRight = true;
@@ -113,6 +115,7 @@ public class NewKongTeleop extends LinearOpMode {
     private double[] FingerBPositions = TeleopServoConstants.FingerBPositions;
     private double[] LeftIntakePositions = TeleopServoConstants.LeftIntakePositions;
     private double[] RightIntakePositions = TeleopServoConstants.RightIntakePositions;
+    private double[] LauncherPosition = TeleopServoConstants.LauncherPosition;
 
     private DigitalChannel LDLEDG;
     private DigitalChannel LULEDG;
@@ -289,6 +292,16 @@ public class NewKongTeleop extends LinearOpMode {
             public void run() { fingerMovementFinished = val; }
         }
 
+        class setLauncherPosition extends TimerTask {
+            int pos;
+
+            public setLauncherPosition(int pos) { this.pos = pos; }
+
+            public void run() {
+                PlaneLauncher.setPosition(LauncherPosition[pos]);
+            }
+        }
+
         telemetry.addData("Status", "sInitialized");
         telemetry.update();
 
@@ -372,8 +385,10 @@ public class NewKongTeleop extends LinearOpMode {
         new fLockPixelToggle(0).run();
         new bLockPixelToggle(0).run();
         new PutBoxToCertainPosition(0).run();
+        PlaneLauncher.setPosition(0.79);
 
         // Wait for the game to start (driver presses PLAY)
+
         waitForStart();
         runtime.reset();
 
@@ -456,6 +471,18 @@ public class NewKongTeleop extends LinearOpMode {
                 new setIsRobotMoving(false).run();
             }
 
+            if (gamepad1.x) {  //alt strafe for when placing (Dion's request)
+                FLMotor.setPower(.6);
+                FRMotor.setPower(-.6);
+                BLMotor.setPower(-.6);
+                BRMotor.setPower(.6);
+            } else if (gamepad1.b) {
+                FLMotor.setPower(-.6);
+                FRMotor.setPower(.6);
+                BLMotor.setPower(.6);
+                BRMotor.setPower(-.6);
+            }
+
             if (intakePos == 0 && index == 0) { //only if index == 0 ??
                 IntakeMotor.setPower(gamepad2.dpad_up ? -1 : gamepad2.dpad_down ? 1 : 0);
             } else {
@@ -482,11 +509,21 @@ public class NewKongTeleop extends LinearOpMode {
                 RightSlide.setPower(-gamepad2.left_stick_y);
             }
 
-            if (gamepad2.left_bumper) {
-                PlaneLauncher.setPosition(0.3);
+            if (gamepad2.left_bumper && gamepad2.left_trigger > 0 && runtime.seconds() > 90) {
+                timer.schedule(new setLauncherPosition(1), 0); //position 0.79, release drone
+                timer.schedule(new setLauncherPosition(0), 1); //position 0.3, reset drone launcher
             }
-            if (gamepad2.left_trigger > 0) {
-                PlaneLauncher.setPosition(0.79);
+
+//            if (gamepad2.left_trigger > 0 && runtime.seconds() > 90) {
+//                PlaneLauncher.setPosition(0.79);
+//            }
+//
+//            if (gamepad2.left_bumper && runtime.seconds() > 90) {
+//                PlaneLauncher.setPosition(0.3);
+//            }
+
+            if (runtime.milliseconds() > 118_000) { // intake up time decided on by team
+                new PutIntakeToCertainPosition(2).run();
             }
 
             boolean circlePressed = gamepad2.circle;
@@ -496,6 +533,7 @@ public class NewKongTeleop extends LinearOpMode {
             boolean rBumperPressed = gamepad2.right_bumper;
             double rTriggerPressed = gamepad2.right_trigger;
             boolean startPressed = gamepad2.start;
+            boolean backPressed = gamepad2.back;
 
             if (startPressed && !oldStartPressed) {
                 manualIntakeControl = !manualIntakeControl;
@@ -512,7 +550,11 @@ public class NewKongTeleop extends LinearOpMode {
                     new PutBoxToCertainPosition(2).run();
                 }
             }
-
+            if (backPressed && !oldBackPressed && fingersLocked) {  //for when it doesn't lock correctly (Mrs. B Request)
+                timer.schedule(new fLockPixelToggle(2), 0 * DELAY_BETWEEN_MOVES);
+                timer.schedule(new bLockPixelToggle(2), 0 * DELAY_BETWEEN_MOVES);
+                timer.schedule(new setFingerMovementFinished(false), 0 * DELAY_BETWEEN_MOVES);
+            }
             if (index == 0) { //bucket down
                 if (crossPressed && !oldCrossPressed && !isArmMoving) { //grab
                     if (!fingersLocked) {
@@ -650,6 +692,7 @@ public class NewKongTeleop extends LinearOpMode {
             oldStartPressed = startPressed;
             oldDpadLeft = DpadLeft;
             oldDpadRight = DpadRight;
+            oldBackPressed = backPressed;
         }
     }
 }

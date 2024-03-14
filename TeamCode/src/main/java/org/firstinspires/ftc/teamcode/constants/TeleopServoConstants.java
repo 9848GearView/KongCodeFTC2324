@@ -13,9 +13,10 @@ public class TeleopServoConstants {
     public static final double[] WServoPositions = {.95, .36, .56, 0.73};
     public static final double[] ClawLPositions = {0, 0.65, 0.82};
     public static final double[] ClawRPositions = {0, 0.65, 0.82};
-    public static final double[] FingerFPositions = {0.6, 0.1}; //Ben: moved servo finger to close better, servo positions changed
-    public static final double[] FingerBPositions = {1, .7};
+    public static final double[] FingerFPositions = {0.65, 0.15, 0.0};
+    public static final double[] FingerBPositions = {1, .5, .35};
     public static final double[] LeftIntakePositions = {0.00, 0.1, 1};
     public static final double[] RightIntakePositions = {0.00, 0.1, 1};
+    public static final double[] LauncherPosition = {0.3, 0.79};
 
 }

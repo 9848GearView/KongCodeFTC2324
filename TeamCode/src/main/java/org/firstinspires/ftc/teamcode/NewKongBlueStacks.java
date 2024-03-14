@@ -367,6 +367,8 @@ public class NewKongBlueStacks extends LinearOpMode
         new bLockPixelToggle(1).run();
         new PutBoxToCertainPosition(1).run();
         new PutIntakeToCertainPosition(2).run();
+        PlaneLauncher.setPosition(0.79);
+
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
