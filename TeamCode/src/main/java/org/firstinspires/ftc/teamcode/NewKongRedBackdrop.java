@@ -564,7 +564,7 @@ public class NewKongRedBackdrop extends LinearOpMode
         }
 
         actionBuilder = actionBuilder
-                .afterTime(0, new RaiseArm(0.5, 200))
+//                .afterTime(0, new RaiseArm(-0.5, 200))
                 .afterTime(0, new PlacePixelOnBackDrop());
 
         double pos = -42;

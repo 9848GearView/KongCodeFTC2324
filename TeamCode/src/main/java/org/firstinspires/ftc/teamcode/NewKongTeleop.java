@@ -511,8 +511,8 @@ public class NewKongTeleop extends LinearOpMode {
             }
 
             if ((gamepad2.left_bumper || gamepad2.left_trigger > 0) && runtime.seconds() > 90) {
-                timer.schedule(new setLauncherPosition(0), 0); //position 0.79, release drone
-                timer.schedule(new setLauncherPosition(1), 1000); //position 0.3, reset drone launcher
+                timer.schedule(new setLauncherPosition(0), 0); //position 0.3, release drone
+                timer.schedule(new setLauncherPosition(1), 1000); //position 0.79, reset drone launcher
             }
 
 //            if (gamepad2.left_trigger > 0 && runtime.seconds() > 90) {
@@ -629,7 +629,8 @@ public class NewKongTeleop extends LinearOpMode {
 //                    timer.schedule(new FixCaddersMistake(0), 8 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new PutBoxToCertainPosition(0), 2 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(1), 2 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(3), 4 * DELAY_BETWEEN_MOVES); //prevent hitting spool
+                    timer.schedule(new LowerArmToCertainServoPosition(0), 6 * DELAY_BETWEEN_MOVES); //increase delay as needed
                     timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
                     firstSquarePressed = false;
 //                    timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
