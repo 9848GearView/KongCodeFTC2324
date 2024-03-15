@@ -74,6 +74,7 @@ public class NewKongTeleop extends LinearOpMode {
     private ColorSensor backColorSensor;
     private AnalogInput frontAnalogInput;
     private AnalogInput backAnalogInput;
+    private boolean isIntakeUp = false;
     private DcMotor FLMotor = null;
     private DcMotor FRMotor = null;
     private DcMotor BLMotor = null;
@@ -509,9 +510,9 @@ public class NewKongTeleop extends LinearOpMode {
                 RightSlide.setPower(-gamepad2.left_stick_y);
             }
 
-            if (gamepad2.left_bumper && gamepad2.left_trigger > 0 && runtime.seconds() > 90) {
-                timer.schedule(new setLauncherPosition(1), 0); //position 0.79, release drone
-                timer.schedule(new setLauncherPosition(0), 1); //position 0.3, reset drone launcher
+            if ((gamepad2.left_bumper || gamepad2.left_trigger > 0) && runtime.seconds() > 90) {
+                timer.schedule(new setLauncherPosition(0), 0); //position 0.79, release drone
+                timer.schedule(new setLauncherPosition(1), 1000); //position 0.3, reset drone launcher
             }
 
 //            if (gamepad2.left_trigger > 0 && runtime.seconds() > 90) {
@@ -522,9 +523,10 @@ public class NewKongTeleop extends LinearOpMode {
 //                PlaneLauncher.setPosition(0.3);
 //            }
 
-            if (runtime.milliseconds() > 118_000) { // intake up time decided on by team
-                new PutIntakeToCertainPosition(2).run();
-            }
+//            if (runtime.milliseconds() > 118_000 && !isIntakeUp) { // intake up time decided on by team
+//                new PutIntakeToCertainPosition(2).run();
+//                isIntakeUp = true;
+//            }
 
             boolean circlePressed = gamepad2.circle;
             boolean trianglePressed = gamepad2.triangle;
@@ -550,10 +552,11 @@ public class NewKongTeleop extends LinearOpMode {
                     new PutBoxToCertainPosition(2).run();
                 }
             }
-            if (backPressed && !oldBackPressed && fingersLocked) {  //for when it doesn't lock correctly (Mrs. B Request)
+            if (backPressed && !oldBackPressed /*&& fingersLocked*/) {  //for when it doesn't lock correctly (Mrs. B Request)
                 timer.schedule(new fLockPixelToggle(2), 0 * DELAY_BETWEEN_MOVES);
                 timer.schedule(new bLockPixelToggle(2), 0 * DELAY_BETWEEN_MOVES);
                 timer.schedule(new setFingerMovementFinished(false), 0 * DELAY_BETWEEN_MOVES);
+                fingersLocked = true;
             }
             if (index == 0) { //bucket down
                 if (crossPressed && !oldCrossPressed && !isArmMoving) { //grab
