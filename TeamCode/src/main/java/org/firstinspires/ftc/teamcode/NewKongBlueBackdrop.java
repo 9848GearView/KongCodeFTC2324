@@ -397,7 +397,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
             }
         });
 
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, 64, -Math.PI / 2));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, 66, -Math.PI / 2));
 
         waitForStart();
 
@@ -531,9 +531,9 @@ public class NewKongBlueBackdrop extends LinearOpMode
 
         if (smp == SpikeMarkPosition.TRES) {
             actionBuilder = actionBuilder
-                    .lineToY(multiplier * -35)
+                    .lineToY(multiplier * -37)
                     .turnTo(0.00001)
-                    .lineToX(15)
+                    .lineToX(13)
                     .afterTime(0, new PlacePixelOnGround())
                     .afterTime(0, new LowerArm(0.5, 400))
                     .afterTime(1.5, new VomitPixelOnGround())
@@ -544,7 +544,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -36)
                     //add intake up line to not hit truss?
-                    .strafeTo(new Vector2d(16, multiplier * -40))
+                    .strafeTo(new Vector2d(14, multiplier * -40))
                     .turnTo(multiplier * -Math.PI / 2 + 0.00001)
                     .waitSeconds(1)
                     .afterTime(0, new PlacePixelOnGround())
@@ -556,7 +556,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -34)
                     .turnTo(0.00001)
-                    .lineToX(37)
+                    .lineToX(34)
                     .afterTime(0, new PlacePixelOnGround())
                     .afterTime(0, new LowerArm(0.5, 400))
                     .afterTime(1.5, new VomitPixelOnGround())
@@ -565,20 +565,19 @@ public class NewKongBlueBackdrop extends LinearOpMode
         }
 
         actionBuilder = actionBuilder
-//                .afterTime(0, new RaiseArm(-0.5, 200))
+                .afterTime(0, new RaiseArm(-0.5, 50))
                 .afterTime(0, new PlacePixelOnBackDrop());
 
-        double pos = -34;
-        double pos2 = -10;
+        double pos = -34; // placing pos
+        double pos2 = -10; // parking pos
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -28;
+            pos = -29;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.UNO) {
-            pos = -44;
+            pos = -46;
             pos2 = -10;
         }
-        pos2 = -61;
         actionBuilder = actionBuilder
                 .turnTo(Math.PI + 0.04)
                 .lineToX(42)
