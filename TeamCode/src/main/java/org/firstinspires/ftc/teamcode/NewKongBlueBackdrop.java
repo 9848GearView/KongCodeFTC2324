@@ -569,9 +569,9 @@ public class NewKongBlueBackdrop extends LinearOpMode
                 .afterTime(0, new PlacePixelOnBackDrop());
 
         double pos = -34; // placing pos
-        double pos2 = -12; // parking pos
+        double pos2 = -8; // parking pos
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -29;
+            pos = -30;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.UNO) {

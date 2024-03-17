@@ -533,7 +533,7 @@ public class NewKongRedBackdrop extends LinearOpMode
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -36)
                     .turnTo(0.00001)
-                    .lineToX(15)
+                    .lineToX(13)
                     .afterTime(0, new PlacePixelOnGround())
                     .afterTime(0, new LowerArm(0.5, 400))
                     .afterTime(1.5, new VomitPixelOnGround())
@@ -543,7 +543,7 @@ public class NewKongRedBackdrop extends LinearOpMode
         } else if (smp == SpikeMarkPosition.DOS) {
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -36)
-                    .strafeTo(new Vector2d(18, multiplier * -38))
+                    .strafeTo(new Vector2d(15, multiplier * -38))
                     .turnTo(-Math.PI / 2 + 0.00001)
                     .waitSeconds(1)
                     .afterTime(0, new PlacePixelOnGround())
@@ -555,7 +555,7 @@ public class NewKongRedBackdrop extends LinearOpMode
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -34)
                     .turnTo(0.00001)
-                    .lineToX(37)
+                    .lineToX(34)
                     .afterTime(0, new PlacePixelOnGround())
                     .afterTime(0, new LowerArm(0.5, 400))
                     .afterTime(1.5, new VomitPixelOnGround())
@@ -564,7 +564,7 @@ public class NewKongRedBackdrop extends LinearOpMode
         }
 
         actionBuilder = actionBuilder
-//                .afterTime(0, new RaiseArm(-0.5, 200))
+                .afterTime(0, new RaiseArm(-0.5, 50))
                 .afterTime(0, new PlacePixelOnBackDrop());
 
         double pos = -42;
@@ -575,8 +575,9 @@ public class NewKongRedBackdrop extends LinearOpMode
         }
         if (smp == SpikeMarkPosition.TRES) {
             pos = -42;
-            pos2 = -10;
+            pos2 = -12;
         }
+        pos2 = -12;
         actionBuilder = actionBuilder
                 .turnTo(Math.PI - 0.04)
                 .lineToX(42)
