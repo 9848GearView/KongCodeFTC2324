@@ -569,14 +569,14 @@ public class NewKongBlueBackdrop extends LinearOpMode
                 .afterTime(0, new PlacePixelOnBackDrop());
 
         double pos = -34; // placing pos
-        double pos2 = -10; // parking pos
+        double pos2 = -12; // parking pos
         if (smp == SpikeMarkPosition.TRES) {
             pos = -29;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.UNO) {
             pos = -46;
-            pos2 = -10;
+            pos2 = -12;
         }
         actionBuilder = actionBuilder
                 .turnTo(Math.PI + 0.04)
