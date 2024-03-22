@@ -485,7 +485,7 @@ public class NewKongTeleop extends LinearOpMode {
             }
 
             if (intakePos == 0 && index == 0) { //only if index == 0 ??
-                IntakeMotor.setPower(gamepad2.dpad_up ? -1 : gamepad2.dpad_down ? 1 : 0);
+                IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : gamepad2.dpad_down ? 0.75 : 0);
             } else {
                 IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : gamepad2.dpad_down ? 0.75 : 0);
             }

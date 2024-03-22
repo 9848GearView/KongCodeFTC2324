@@ -578,6 +578,7 @@ public class NewKongBlueBackdrop extends LinearOpMode
             pos = -46;
             pos2 = -12;
         }
+        pos2 = -8; // parking pos
         actionBuilder = actionBuilder
                 .turnTo(Math.PI + 0.04)
                 .lineToX(42)

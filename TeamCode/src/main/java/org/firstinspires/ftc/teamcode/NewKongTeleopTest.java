@@ -29,8 +29,6 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import android.util.Size;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -40,17 +38,14 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.constants.TeleopServoConstants;
 import org.firstinspires.ftc.teamcode.constants.TestServoConstants;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.lang.Math;
+import java.sql.Time;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.List;
+
 
 /*
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
@@ -67,9 +62,6 @@ import java.util.List;
 
 @TeleOp(name="NewKongTeleopTest", group="Robot")
 public class NewKongTeleopTest extends LinearOpMode {
-    private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
-    private AprilTagProcessor aprilTag;
-    private VisionPortal visionPortal;
     public static boolean manualIntakeControl = false;
     public static int intakePos = 2;
     public static boolean isArmMoving = false;
@@ -82,6 +74,7 @@ public class NewKongTeleopTest extends LinearOpMode {
     private ColorSensor backColorSensor;
     private AnalogInput frontAnalogInput;
     private AnalogInput backAnalogInput;
+    private boolean isIntakeUp = false;
     private DcMotor FLMotor = null;
     private DcMotor FRMotor = null;
     private DcMotor BLMotor = null;
@@ -102,8 +95,10 @@ public class NewKongTeleopTest extends LinearOpMode {
     private boolean oldCirclePressed = true;
     private boolean oldSquarePressed = true;
     private boolean oldRBumperPressed = true;
+    private double oldRTriggerPressed = 0;
     private boolean oldLBumper = true;
     private boolean oldStartPressed = true;
+    private boolean oldBackPressed = true;
     private boolean firstSquarePressed = false;
     private boolean oldDpadLeft = true;
     private boolean oldDpadRight = true;
@@ -111,18 +106,17 @@ public class NewKongTeleopTest extends LinearOpMode {
     private boolean backFingerLocked = false;
     private boolean fingerMovementFinished = true;
     private boolean intakeMoving = false;
-    private PixelColor colorPixelF = PixelColor.NONE;
-    private PixelColor colorPixelB = PixelColor.NONE;
     private int index = 0; // 0 is ready to intake, 2 is intermediate, 3 is ready to place
-    private double[] LEServoPositions = TestServoConstants.LEServoPositions;
-    private double[] REServoPositions = TestServoConstants.REServoPositions;
-    private double[] ClawLPositions = TestServoConstants.ClawLPositions;
-    private double[] WServoPositions = TestServoConstants.WServoPositions;
-    private double[] ClawRPositions = TestServoConstants.ClawRPositions;
-    private double[] FingerFPositions = TestServoConstants.FingerFPositions;
-    private double[] FingerBPositions = TestServoConstants.FingerBPositions;
-    private double[] LeftIntakePositions = TestServoConstants.LeftIntakePositions;
-    private double[] RightIntakePositions = TestServoConstants.RightIntakePositions;
+    private double[] LEServoPositions = TeleopServoConstants.LEServoPositions;
+    private double[] REServoPositions = TeleopServoConstants.REServoPositions;
+    private double[] ClawLPositions = TeleopServoConstants.ClawLPositions;
+    private double[] WServoPositions = TeleopServoConstants.WServoPositions;
+    private double[] ClawRPositions = TeleopServoConstants.ClawRPositions;
+    private double[] FingerFPositions = TeleopServoConstants.FingerFPositions;
+    private double[] FingerBPositions = TeleopServoConstants.FingerBPositions;
+    private double[] LeftIntakePositions = TeleopServoConstants.LeftIntakePositions;
+    private double[] RightIntakePositions = TeleopServoConstants.RightIntakePositions;
+    private double[] LauncherPosition = TeleopServoConstants.LauncherPosition;
 
     private DigitalChannel LDLEDG;
     private DigitalChannel LULEDG;
@@ -299,7 +293,15 @@ public class NewKongTeleopTest extends LinearOpMode {
             public void run() { fingerMovementFinished = val; }
         }
 
-        initAprilTag();
+        class setLauncherPosition extends TimerTask {
+            int pos;
+
+            public setLauncherPosition(int pos) { this.pos = pos; }
+
+            public void run() {
+                PlaneLauncher.setPosition(LauncherPosition[pos]);
+            }
+        }
 
         telemetry.addData("Status", "sInitialized");
         telemetry.update();
@@ -384,9 +386,10 @@ public class NewKongTeleopTest extends LinearOpMode {
         new fLockPixelToggle(0).run();
         new bLockPixelToggle(0).run();
         new PutBoxToCertainPosition(0).run();
-        new PutIntakeToCertainPosition(2).run();
+        PlaneLauncher.setPosition(0.79);
 
         // Wait for the game to start (driver presses PLAY)
+
         waitForStart();
         runtime.reset();
 
@@ -395,17 +398,23 @@ public class NewKongTeleopTest extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-            telemetryAprilTag();
-
             // Send calculated power to wheels
             // KYLE CODE
             double r = Math.hypot(gamepad1.left_stick_x, -gamepad1.left_stick_y);
             double robotAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
             double rightX = gamepad1.right_stick_x;
-            final double FLPower = r * Math.cos(robotAngle) + rightX;
-            final double FRPower = r * Math.sin(robotAngle) - rightX;
-            final double BLPower = r * Math.sin(robotAngle) + rightX;
-            final double BRPower = r * Math.cos(robotAngle) - rightX;
+            double FLPower = r * Math.cos(robotAngle) + rightX;
+            double FRPower = r * Math.sin(robotAngle) - rightX;
+            double BLPower = r * Math.sin(robotAngle) + rightX;
+            double BRPower = r * Math.cos(robotAngle) - rightX;
+
+//            double ratio = 1.0 / Math.max(Math.max(Math.abs(BLPower), Math.abs(BRPower)),
+//                    Math.max(Math.abs(FLPower), Math.abs(FRPower)));
+
+//            FLPower *= ratio;
+//            FRPower *= ratio;
+//            BLPower *= ratio;
+//            BRPower *= ratio;
 
             // Send calculated power to wheels
             if ((gamepad1.right_trigger > 0) || (gamepad1.left_trigger > 0)) {
@@ -463,14 +472,22 @@ public class NewKongTeleopTest extends LinearOpMode {
                 new setIsRobotMoving(false).run();
             }
 
-            if (index == 0) {
-                if (intakePos == 0) { //only if index == 0 ??
-                    IntakeMotor.setPower(gamepad2.dpad_up ? -1 : gamepad2.dpad_down ? 1 : 0);
-                } else {
-                    IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : gamepad2.dpad_down ? 0.75 : 0);
-                }
+            if (gamepad1.x) {  //alt strafe for when placing (Dion's request)
+                FLMotor.setPower(.6);
+                FRMotor.setPower(-.6);
+                BLMotor.setPower(-.6);
+                BRMotor.setPower(.6);
+            } else if (gamepad1.b) {
+                FLMotor.setPower(-.6);
+                FRMotor.setPower(.6);
+                BLMotor.setPower(.6);
+                BRMotor.setPower(-.6);
+            }
+
+            if (intakePos == 0 && index == 0) { //only if index == 0 ??
+                IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : gamepad2.dpad_down ? 0.75 : 0);
             } else {
-                IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : 0);
+                IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : gamepad2.dpad_down ? 0.75 : 0);
             }
 
             boolean DpadLeft = gamepad2.dpad_left;
@@ -493,64 +510,66 @@ public class NewKongTeleopTest extends LinearOpMode {
                 RightSlide.setPower(-gamepad2.left_stick_y);
             }
 
-            if (gamepad2.left_bumper) {
-                PlaneLauncher.setPosition(0.3);
+            if ((gamepad2.left_bumper || gamepad2.left_trigger > 0) && runtime.seconds() > -1) {
+                timer.schedule(new setLauncherPosition(0), 0); //position 0.3, release drone
+                timer.schedule(new setLauncherPosition(1), 1000); //position 0.79, reset drone launcher
             }
-            if (gamepad2.left_trigger > 0) {
-                PlaneLauncher.setPosition(0.79);
-            }
+
+//            if (gamepad2.left_trigger > 0 && runtime.seconds() > 90) {
+//                PlaneLauncher.setPosition(0.79);
+//            }
+//
+//            if (gamepad2.left_bumper && runtime.seconds() > 90) {
+//                PlaneLauncher.setPosition(0.3);
+//            }
+
+//            if (runtime.milliseconds() > 118_000 && !isIntakeUp) { // intake up time decided on by team
+//                new PutIntakeToCertainPosition(2).run();
+//                isIntakeUp = true;
+//            }
 
             boolean circlePressed = gamepad2.circle;
             boolean trianglePressed = gamepad2.triangle;
             boolean crossPressed = gamepad2.cross;
             boolean squarePressed = gamepad2.square;
             boolean rBumperPressed = gamepad2.right_bumper;
+            double rTriggerPressed = gamepad2.right_trigger;
             boolean startPressed = gamepad2.start;
+            boolean backPressed = gamepad2.back;
 
             if (startPressed && !oldStartPressed) {
                 manualIntakeControl = !manualIntakeControl;
             }
 
+            if (index == 3) {
+                if (rTriggerPressed > 0 && oldRTriggerPressed < 0.01) {
+                    WServoPositions[2] = Math.max(0, WServoPositions[2] - 0.03);
+                    new PutBoxToCertainPosition(2).run();
+                }
+
+                if (rBumperPressed && oldRBumperPressed) {
+                    WServoPositions[2] = Math.min(1, WServoPositions[2] + 0.03);
+                    new PutBoxToCertainPosition(2).run();
+                }
+            }
+            if (backPressed && !oldBackPressed /*&& fingersLocked*/) {  //for when it doesn't lock correctly (Mrs. B Request)
+                timer.schedule(new fLockPixelToggle(2), 0 * DELAY_BETWEEN_MOVES);
+                timer.schedule(new bLockPixelToggle(2), 0 * DELAY_BETWEEN_MOVES);
+                timer.schedule(new setFingerMovementFinished(false), 0 * DELAY_BETWEEN_MOVES);
+                fingersLocked = true;
+            }
             if (index == 0) { //bucket down
-                if (!manualIntakeControl) {
-                    if (!backFingerLocked && fingerMovementFinished && backColorSensor.red() + backColorSensor.green() + backColorSensor.blue() > 700) {
-                        new bLockPixelToggle(1).run();
+                if (crossPressed && !oldCrossPressed && !isArmMoving) { //grab
+                    if (!fingersLocked) {
+                        timer.schedule(new fLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
+                        timer.schedule(new bLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
                         backFingerLocked = true;
-                        new setFingerMovementFinished(false).run();
-                        timer.schedule(new setFingerMovementFinished(true), 500);
-                    }
-                    if (backFingerLocked && frontColorSensor.red() + frontColorSensor.green() + frontColorSensor.blue() > 700) {
-                        new fLockPixelToggle(1).run();
-                    }
-                    if (backFingerLocked && fingerMovementFinished && backAnalogInput.getVoltage() > 1.2) {
-                        // TODO: change numbers until box shake is acceptable
-                        new bLockPixelToggle(0).run();
+                        fingersLocked = true;
+                    } else { //release
+                        timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+                        timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
                         backFingerLocked = false;
-                        new setFingerMovementFinished(false).run();
-                        new PutBoxToCertainPosition(3).run();
-                        timer.schedule(new PutBoxToCertainPosition(0), 900);
-                        timer.schedule(new setFingerMovementFinished(true), 1000);
-                        timer.schedule(new bLockPixelToggle(1), 400);
-                        timer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                backFingerLocked = true;
-                            }
-                        }, 900);
-                    }
-                } else {
-                    if (crossPressed && !oldCrossPressed && !isArmMoving) { //grab
-                        if (!fingersLocked) { //grab
-                            timer.schedule(new fLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
-                            timer.schedule(new bLockPixelToggle(1), 0 * DELAY_BETWEEN_MOVES);
-                            backFingerLocked = true;
-                            fingersLocked = true;
-                        } else { //release
-                            timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-                            timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-                            backFingerLocked = false;
-                            fingersLocked = false;
-                        }
+                        fingersLocked = false;
                     }
                 }
                 if (circlePressed && !oldCirclePressed && !isArmMoving) { //bucket up
@@ -610,51 +629,32 @@ public class NewKongTeleopTest extends LinearOpMode {
 //                    timer.schedule(new FixCaddersMistake(0), 8 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new PutBoxToCertainPosition(0), 2 * DELAY_BETWEEN_MOVES);
                     timer.schedule(new LowerArmToCertainServoPosition(1), 2 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new LowerArmToCertainServoPosition(0), 3 * DELAY_BETWEEN_MOVES);
+                    timer.schedule(new LowerArmToCertainServoPosition(3), 5 * DELAY_BETWEEN_MOVES); //prevent hitting spool
+                    timer.schedule(new LowerArmToCertainServoPosition(0), 10 * DELAY_BETWEEN_MOVES); //increase delay as needed
                     timer.schedule(new setIsArmMoving(false), 3 * DELAY_BETWEEN_MOVES);
                     firstSquarePressed = false;
-                    timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-                    timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
-                    backFingerLocked = false;
-                    fingersLocked = false;
+//                    timer.schedule(new fLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+//                    timer.schedule(new bLockPixelToggle(0), 0 * DELAY_BETWEEN_MOVES);
+//                    backFingerLocked = false;
+//                    fingersLocked = false;
                     index = 0;
                 }
             }
 
             // Lights
-            if (frontColorSensor.red() + frontColorSensor.green() + frontColorSensor.blue() < 700) {
+            if (Math.abs(fingerF.getPosition() - FingerFPositions[1]) < 0.01) {
                 LULEDR.setState(true);
                 RULEDR.setState(true);
                 LULEDG.setState(false);
                 RULEDG.setState(false);
-                colorPixelF = PixelColor.NONE;
             } else {
                 LULEDR.setState(false);
                 RULEDR.setState(false);
                 LULEDG.setState(true);
                 RULEDG.setState(true);
-                if (frontColorSensor.green() + frontColorSensor.blue() + frontColorSensor.red() > 2500) {
-                    colorPixelF = PixelColor.WHITE;
-                }else if (frontColorSensor.blue()  > frontColorSensor.green() && frontColorSensor.blue() > frontColorSensor.red()) {
-                    colorPixelF = PixelColor.PURPLE;
-                }else if (frontColorSensor.red() + frontColorSensor.green() + frontColorSensor.blue() < 1050) {
-                    colorPixelF = PixelColor.YELLOW;
-                }else{
-                    colorPixelF = PixelColor.GREEN;
-                }
             }
-            if (backColorSensor.green() + backColorSensor.blue() + backColorSensor.red() > 2500) {
-                    colorPixelB = PixelColor.WHITE;
-            }else if(backColorSensor.red() + backColorSensor.green() + backColorSensor.blue() < 700) {
-                colorPixelB = PixelColor.NONE;
-            }else if (backColorSensor.blue()  > backColorSensor.green() && backColorSensor.blue() > backColorSensor.red()) {
-                colorPixelB = PixelColor.PURPLE;
-            }else if (backColorSensor.red() + backColorSensor.green() + backColorSensor.blue() < 1050) {
-                colorPixelB = PixelColor.YELLOW;
-            }else {
-                colorPixelB = PixelColor.GREEN;
-            }
-            if (backFingerLocked) {
+
+            if (Math.abs(fingerB.getPosition() - FingerBPositions[1]) < 0.01) {
                 LDLEDR.setState(true);
                 RDLEDR.setState(true);
                 LDLEDG.setState(false);
@@ -682,122 +682,21 @@ public class NewKongTeleopTest extends LinearOpMode {
             telemetry.addData("dpad_right", DpadRight);
             telemetry.addData("pos", intakePos);
             telemetry.addData("manual intake control", manualIntakeControl);
-            telemetry.addData("Front pixel color", colorPixelF);
-            telemetry.addData("Back pixel color", colorPixelB);
-            telemetry.addData("backFingerLocked", backFingerLocked);
-            telemetry.addData("FingerFinished", fingerMovementFinished);
+            telemetry.addData("fposition", fingerF.getPosition());
+            telemetry.addData("bposition", fingerB.getPosition());
+            telemetry.addData("wservobackpos", WServoPositions[2]);
             telemetry.update();
             oldCrossPressed = crossPressed;
             oldCirclePressed = circlePressed;
             oldSquarePressed = squarePressed;
             oldTrianglePressed = trianglePressed;
             oldRBumperPressed = rBumperPressed;
+            oldRTriggerPressed = rTriggerPressed;
             oldLBumper = LBumper;
             oldStartPressed = startPressed;
             oldDpadLeft = DpadLeft;
             oldDpadRight = DpadRight;
+            oldBackPressed = backPressed;
         }
-
-        visionPortal.close();
-
-    }
-
-    private void initAprilTag() {
-
-        // Create the AprilTag processor.
-        aprilTag = new AprilTagProcessor.Builder()
-
-                // The following default settings are available to un-comment and edit as needed.
-                //.setDrawAxes(false)
-                //.setDrawCubeProjection(false)
-                //.setDrawTagOutline(true)
-                //.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
-                //.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
-                //.setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
-
-                // == CAMERA CALIBRATION ==
-                // If you do not manually specify calibration parameters, the SDK will attempt
-                // to load a predefined calibration for your camera.
-                //Focals (pixels) - Fx: 946.868 Fy: 946.868
-                //        Optical center - Cx: 397.024 Cy: 293.943
-                //        Radial distortion (Brown's Model)
-                //        K1: 0.152515 K2: -0.13222 K3: 0.00047578
-                //        P1: 0.0208688 P2: 0.0438113
-                //        Skew: 0
-                .setLensIntrinsics(946.868, 946.868, 397.024, 293.943)
-                // ... these parameters are fx, fy, cx, cy.
-
-                .build();
-
-        // Adjust Image Decimation to trade-off detection-range for detection-rate.
-        // eg: Some typical detection data using a Logitech C920 WebCam
-        // Decimation = 1 ..  Detect 2" Tag from 10 feet away at 10 Frames per second
-        // Decimation = 2 ..  Detect 2" Tag from 6  feet away at 22 Frames per second
-        // Decimation = 3 ..  Detect 2" Tag from 4  feet away at 30 Frames Per Second (default)
-        // Decimation = 3 ..  Detect 5" Tag from 10 feet away at 30 Frames Per Second (default)
-        // Note: Decimation can be changed on-the-fly to adapt during a match.
-        //aprilTag.setDecimation(3);
-
-        // Create the vision portal by using a builder.
-        VisionPortal.Builder builder = new VisionPortal.Builder();
-
-        // Set the camera (webcam vs. built-in RC phone camera).
-        if (USE_WEBCAM) {
-            builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 2"));
-        } else {
-            builder.setCamera(BuiltinCameraDirection.BACK);
-        }
-
-        // Choose a camera resolution. Not all cameras support all resolutions.
-        builder.setCameraResolution(new Size(640, 480));
-
-        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-        //builder.enableLiveView(true);
-
-        // Set the stream format; MJPEG uses less bandwidth than default YUY2.
-        //builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
-
-        // Choose whether or not LiveView stops if no processors are enabled.
-        // If set "true", monitor shows solid orange screen if no processors enabled.
-        // If set "false", monitor shows camera view without annotations.
-        //builder.setAutoStopLiveView(false);
-
-        // Set and enable the processor.
-        builder.addProcessor(aprilTag);
-
-        // Build the Vision Portal, using the above settings.
-        visionPortal = builder.build();
-
-        // Disable or re-enable the aprilTag processor at any time.
-        //visionPortal.setProcessorEnabled(aprilTag, true);
-
-    }   // end method initAprilTag()
-
-
-    /**
-     * Add telemetry about AprilTag detections.
-     */
-    private void telemetryAprilTag() {
-
-        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        telemetry.addData("# AprilTags Detected", currentDetections.size());
-
-        // Step through the list of detections and display info for each one.
-        for (AprilTagDetection detection : currentDetections) {
-            if (detection.metadata != null) {
-                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
-                telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
-                telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
-                telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
-            } else {
-                telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
-                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
-            }
-        }   // end for() loop
-
-        // Add "key" information to telemetry
-        telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
-        telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
-        telemetry.addLine("RBE = Range, Bearing & Elevation");
     }
 }

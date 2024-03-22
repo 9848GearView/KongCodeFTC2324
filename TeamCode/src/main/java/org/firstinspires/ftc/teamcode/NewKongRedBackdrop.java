@@ -533,9 +533,9 @@ public class NewKongRedBackdrop extends LinearOpMode
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -36)
                     .turnTo(0.00001)
-                    .lineToX(13)
+                    .lineToX(12)
                     .afterTime(0, new PlacePixelOnGround())
-                    .afterTime(0, new LowerArm(0.5, 400))
+                    .afterTime(0, new LowerArm(0.5, 500))
                     .afterTime(1.5, new VomitPixelOnGround())
                     .afterTime(2, new RaiseArm(0.5, 400))
                     .waitSeconds(3)
@@ -547,7 +547,7 @@ public class NewKongRedBackdrop extends LinearOpMode
                     .turnTo(-Math.PI / 2 + 0.00001)
                     .waitSeconds(1)
                     .afterTime(0, new PlacePixelOnGround())
-                    .afterTime(0, new LowerArm(0.5, 400))
+                    .afterTime(0, new LowerArm(0.5, 500))
                     .afterTime(1.5, new VomitPixelOnGround())
                     .afterTime(2, new RaiseArm(0.5, 400))
                     .waitSeconds(3);
@@ -555,26 +555,27 @@ public class NewKongRedBackdrop extends LinearOpMode
             actionBuilder = actionBuilder
                     .lineToY(multiplier * -34)
                     .turnTo(0.00001)
-                    .lineToX(34)
+                    .lineToX(33)
                     .afterTime(0, new PlacePixelOnGround())
-                    .afterTime(0, new LowerArm(0.5, 400))
+                    .afterTime(0, new LowerArm(0.5, 500))
                     .afterTime(1.5, new VomitPixelOnGround())
                     .afterTime(2, new RaiseArm(0.5, 400))
                     .waitSeconds(3);
         }
 
         actionBuilder = actionBuilder
-                .afterTime(0, new RaiseArm(-0.5, 50))
-                .afterTime(0, new PlacePixelOnBackDrop());
+                .afterTime(0, new RaiseArm(-0.5, 150))
+                .afterTime(0, new PlacePixelOnBackDrop())
+                .afterTime(0, new RaiseIntake(0));
 
         double pos = -42;
-        double pos2 = -15;
+        double pos2 = -17;
         if (smp == SpikeMarkPosition.UNO) {
             pos = -27;
             pos2 = -61;
         }
         if (smp == SpikeMarkPosition.TRES) {
-            pos = -42;
+            pos = -46;
             pos2 = -12;
         }
         pos2 = -12;
