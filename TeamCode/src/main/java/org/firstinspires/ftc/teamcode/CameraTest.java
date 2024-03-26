@@ -78,9 +78,6 @@ public class CameraTest extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        initAprilTag();
-
-
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         pipeline = new BlueTeamElementDeterminationPipeline();
@@ -96,12 +93,31 @@ public class CameraTest extends LinearOpMode {
         telemetry.addData(">", "Touch Play to start OpMode");
         telemetry.update();
 
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        {
+            @Override
+            public void onOpened()
+            {
+                webcam.startStreaming(640,480, OpenCvCameraRotation.UPRIGHT);
+            }
+
+            @Override
+            public void onError(int errorCode)
+            {
+                /*
+                 * This will be called if the camera could not be opened
+                 */
+                telemetry.addData("erroCode", errorCode);
+            }
+        });
+
         waitForStart();
 
         if (opModeIsActive()) {
-            webcam.closeCameraDeviceAsync(() -> {
-                telemetry.addData("Status", "CLOSED");
-            });
+
+            webcam.closeCameraDeviceAsync(() -> telemetry.addData("Status", "CLOSED"));
+
+            initAprilTag();
 
             while (opModeIsActive()) {
 
@@ -109,40 +125,6 @@ public class CameraTest extends LinearOpMode {
 
                 // Push telemetry to the Driver Station.
                 telemetry.update();
-
-                // Save CPU resources; can resume streaming when needed.
-                if (gamepad1.dpad_down) {
-                    visionPortal.stopStreaming();
-                    visionPortal.close();
-                    webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-                    {
-                        @Override
-                        public void onOpened()
-                        {
-//                webcam.startStreaming(640,480, OpenCvCameraRotation.UPRIGHT);
-                        }
-
-                        @Override
-                        public void onError(int errorCode)
-                        {
-                            /*
-                             * This will be called if the camera could not be opened
-                             */
-                            telemetry.addData("erroCode", errorCode);
-                        }
-                    });
-
-                    webcam.startStreaming(640,480, OpenCvCameraRotation.UPRIGHT);
-                } else if (gamepad1.dpad_up) {
-                    webcam.stopStreaming();
-                    webcam.closeCameraDeviceAsync(new OpenCvCamera.AsyncCameraCloseListener() {
-                        @Override
-                        public void onClose() {
-
-                        }
-                    });
-                    visionPortal.resumeStreaming();
-                }
 
                 // Share the CPU.
                 sleep(20);
@@ -191,7 +173,7 @@ public class CameraTest extends LinearOpMode {
 
         webcam2 = hardwareMap.get(WebcamName.class, "Webcam 2");
 
-        builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+        builder.setCamera(webcam2)
                 .addProcessor(aprilTag);
 
         builder.setCameraResolution(new Size(640, 480));
@@ -201,8 +183,8 @@ public class CameraTest extends LinearOpMode {
         // Create the vision portal by using a builder.
         visionPortal = builder.build();
 
-        visionPortal.setProcessorEnabled(aprilTag, false); // to disable
-        visionPortal.stopStreaming();
+//        visionPortal.setProcessorEnabled(aprilTag, false); // to disable
+//        visionPortal.stopStreaming();
 
     }   // end method initAprilTag()
 
