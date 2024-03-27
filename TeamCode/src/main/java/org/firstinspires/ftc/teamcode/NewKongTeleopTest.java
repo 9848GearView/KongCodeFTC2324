@@ -484,11 +484,7 @@ public class NewKongTeleopTest extends LinearOpMode {
                 BRMotor.setPower(-.6);
             }
 
-            if (intakePos == 0 && index == 0) { //only if index == 0 ??
-                IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : gamepad2.dpad_down ? 0.75 : 0);
-            } else {
-                IntakeMotor.setPower(gamepad2.dpad_up ? -0.75 : gamepad2.dpad_down ? 0.75 : 0);
-            }
+            IntakeMotor.setPower(gamepad2.dpad_up ? -0.7 : gamepad2.dpad_down ? 0.7 : 0);
 
             boolean DpadLeft = gamepad2.dpad_left;
             boolean DpadRight = gamepad2.dpad_right;
@@ -510,7 +506,7 @@ public class NewKongTeleopTest extends LinearOpMode {
                 RightSlide.setPower(-gamepad2.left_stick_y);
             }
 
-            if ((gamepad2.left_bumper || gamepad2.left_trigger > 0) && runtime.seconds() > -1) {
+            if ((gamepad2.left_bumper || gamepad2.left_trigger > 0)) {
                 timer.schedule(new setLauncherPosition(0), 0); //position 0.3, release drone
                 timer.schedule(new setLauncherPosition(1), 1000); //position 0.79, reset drone launcher
             }
